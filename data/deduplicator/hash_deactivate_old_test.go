@@ -133,6 +133,7 @@ var _ = Describe("HashDeactivateOld", func() {
 				Entry("is LifeScan Verio", "LifeScan", "Verio"),
 				Entry("is LifeScan Verio Flex", "LifeScan", "Verio Flex"),
 				Entry("is Abbott FreeStyle Libre", "Abbott", "FreeStyle Libre"),
+				Entry("is Diabeloop DBLG1", "Diabeloop", "DBLG1"),
 			)
 		})
 

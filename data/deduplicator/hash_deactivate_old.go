@@ -25,6 +25,7 @@ var _HashDeactivateOldExpectedDeviceManufacturerModels = map[string][]string{
 	"Medtronic": {"523", "723", "551", "751", "554", "754", "1510", "1511", "1512", "1710", "1711", "1712", "1715", "1780"},
 	"LifeScan":  {"OneTouch Ultra 2", "OneTouch UltraMini", "Verio", "Verio Flex"},
 	"Abbott":    {"FreeStyle Libre"},
+	"Diabeloop": {"DBLG1"},
 }
 
 func NewHashDeactivateOldFactory() (Factory, error) {
