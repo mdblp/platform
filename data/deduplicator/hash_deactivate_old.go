@@ -22,10 +22,11 @@ const _HashDeactivateOldDeduplicatorName = "org.tidepool.hash-deactivate-old"
 const _HashDeactivateOldDeduplicatorVersion = "1.1.0"
 
 var _HashDeactivateOldExpectedDeviceManufacturerModels = map[string][]string{
-	"Medtronic": {"523", "723", "551", "751", "554", "754", "1510", "1511", "1512", "1710", "1711", "1712", "1715", "1780"},
-	"LifeScan":  {"OneTouch Ultra 2", "OneTouch UltraMini", "Verio", "Verio Flex"},
-	"Abbott":    {"FreeStyle Libre"},
-	"Diabeloop": {"DBLG1"},
+	"Abbott":          {"FreeStyle Libre"},
+	"LifeScan":        {"OneTouch Ultra 2", "OneTouch UltraMini", "Verio", "Verio Flex"},
+	"Medtronic":       {"523", "551", "554", "723", "751", "754", "1510", "1511", "1512", "1710", "1711", "1712", "1715", "1780"},
+	"Trividia Health": {"TRUE METRIX", "TRUE METRIX AIR", "TRUE METRIX GO"},
+	"Diabeloop":       {"DBLG1"},
 }
 
 func NewHashDeactivateOldFactory() (Factory, error) {
@@ -104,7 +105,7 @@ func (h *hashDeactivateOldDeduplicator) AddDatasetData(ctx context.Context, data
 
 func (h *hashDeactivateOldDeduplicator) DeduplicateDataset(ctx context.Context) error {
 	if err := h.dataSession.ArchiveDeviceDataUsingHashesFromDataset(ctx, h.dataset); err != nil {
-		return errors.Wrapf(err, "unable to archive device data using hashes from dataset with id %q", h.dataset.UploadID)
+		return errors.Wrapf(err, "unable to archive device data using hashes from dataset with id %q", *h.dataset.UploadID)
 	}
 
 	return h.BaseDeduplicator.DeduplicateDataset(ctx)
@@ -112,7 +113,7 @@ func (h *hashDeactivateOldDeduplicator) DeduplicateDataset(ctx context.Context) 
 
 func (h *hashDeactivateOldDeduplicator) DeleteDataset(ctx context.Context) error {
 	if err := h.dataSession.UnarchiveDeviceDataUsingHashesFromDataset(ctx, h.dataset); err != nil {
-		return errors.Wrapf(err, "unable to unarchive device data using hashes from dataset with id %q", h.dataset.UploadID)
+		return errors.Wrapf(err, "unable to unarchive device data using hashes from dataset with id %q", *h.dataset.UploadID)
 	}
 
 	return h.BaseDeduplicator.DeleteDataset(ctx)

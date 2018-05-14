@@ -11,13 +11,13 @@ import (
 )
 
 type Config struct {
-	Addresses        []string
-	TLS              bool
-	Database         string
-	CollectionPrefix string
-	Username         *string
-	Password         *string
-	Timeout          time.Duration
+	Addresses        []string      `json:"addresses"`
+	TLS              bool          `json:"tls"`
+	Database         string        `json:"database"`
+	CollectionPrefix string        `json:"collectionPrefix"`
+	Username         *string       `json:"-"`
+	Password         *string       `json:"-"`
+	Timeout          time.Duration `json:"timeout"`
 }
 
 func NewConfig() *Config {
@@ -33,8 +33,9 @@ func (c *Config) Load(configReporter config.Reporter) error {
 	}
 
 	c.Addresses = SplitAddresses(configReporter.GetWithDefault("addresses", ""))
-	if tlsString, found := configReporter.Get("tls"); found {
-		tls, err := strconv.ParseBool(tlsString)
+	if tlsString, err := configReporter.Get("tls"); err == nil {
+		var tls bool
+		tls, err = strconv.ParseBool(tlsString)
 		if err != nil {
 			return errors.New("tls is invalid")
 		}
@@ -42,14 +43,15 @@ func (c *Config) Load(configReporter config.Reporter) error {
 	}
 	c.Database = configReporter.GetWithDefault("database", "")
 	c.CollectionPrefix = configReporter.GetWithDefault("collection_prefix", "")
-	if username, found := configReporter.Get("username"); found {
+	if username, err := configReporter.Get("username"); err == nil {
 		c.Username = pointer.String(username)
 	}
-	if password, found := configReporter.Get("password"); found {
+	if password, err := configReporter.Get("password"); err == nil {
 		c.Password = pointer.String(password)
 	}
-	if timeoutString, found := configReporter.Get("timeout"); found {
-		timeout, err := strconv.ParseInt(timeoutString, 10, 0)
+	if timeoutString, err := configReporter.Get("timeout"); err == nil {
+		var timeout int64
+		timeout, err = strconv.ParseInt(timeoutString, 10, 0)
 		if err != nil {
 			return errors.New("timeout is invalid")
 		}
