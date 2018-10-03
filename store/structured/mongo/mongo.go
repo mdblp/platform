@@ -55,6 +55,9 @@ func NewStore(cfg *Config, lgr log.Logger) (*Store, error) {
 		dialInfo.Password = *cfg.Password
 	}
 	dialInfo.Timeout = cfg.Timeout
+	if cfg.Source != nil {
+		dialInfo.Source = *cfg.Source
+	}
 
 	lgr.WithField("config", cfg).Debug("Dialing Mongo database")
 
