@@ -58,6 +58,11 @@ func NewStore(cfg *Config, lgr log.Logger) (*Store, error) {
 	if cfg.Source != nil {
 		dialInfo.Source = *cfg.Source
 	}
+	if cfg.Mechanism != nil {
+		dialInfo.Mechanism = *cfg.Mechanism
+	} else {
+		dialInfo.Mechanism = "SCRAM-SHA-1"
+	}
 
 	lgr.WithField("config", cfg).Debug("Dialing Mongo database")
 

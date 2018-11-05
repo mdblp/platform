@@ -20,6 +20,7 @@ type Config struct {
 	Password         *string       `json:"-"`
 	Timeout          time.Duration `json:"timeout"`
 	Source           *string       `json:"-"`
+	Mechanism        *string       `json:"-"`
 }
 
 func NewConfig() *Config {
@@ -53,6 +54,9 @@ func (c *Config) Load(configReporter config.Reporter) error {
 	}
 	if source, err := configReporter.Get("source"); err == nil {
 		c.Source = pointer.FromString(source)
+	}
+	if mechanism, err := configReporter.Get("mechanism"); err == nil {
+		c.Mechanism = pointer.FromString(mechanism)
 	}
 	if timeoutString, err := configReporter.Get("timeout"); err == nil {
 		var timeout int64
