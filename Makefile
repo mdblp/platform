@@ -1,3 +1,8 @@
+# variables that have to be setup for Docker
+# DOCKER_REGISTRY
+# DOCKER_USERNAME
+# DOCKER_PASSWORD
+
 ROOT_DIRECTORY:=$(realpath $(dir $(realpath $(lastword $(MAKEFILE_LIST)))))
 
 REPOSITORY_GOPATH:=$(word 1, $(subst :, ,$(GOPATH)))
@@ -28,7 +33,7 @@ else ifdef TRAVIS_TAG
 	DOCKER:=true
 endif
 ifdef DOCKER_FILE
-	DOCKER_REPOSITORY:="mdblp/$(REPOSITORY_NAME)-$(patsubst .%,%,$(suffix $(DOCKER_FILE)))"
+	DOCKER_REPOSITORY:="${DOCKER_REGISTRY}/$(REPOSITORY_NAME)-$(patsubst .%,%,$(suffix $(DOCKER_FILE)))"
 endif
 
 default: test
@@ -222,7 +227,7 @@ endif
 
 docker:
 ifdef DOCKER
-	@echo "$(DOCKER_PASSWORD)" | docker login --username "$(DOCKER_USERNAME)" --password-stdin docker.ci.diabeloop.eu
+	@echo "$(DOCKER_PASSWORD)" | docker login --username "$(DOCKER_USERNAME)" --password-stdin $(DOCKER_REGISTRY)
 	@cd $(ROOT_DIRECTORY) && for DOCKER_FILE in $(shell ls -1 Dockerfile.*); do $(MAKE) docker-build DOCKER_FILE="$${DOCKER_FILE}"; done
 	@cd $(ROOT_DIRECTORY) && for DOCKER_FILE in $(shell ls -1 Dockerfile.*); do $(MAKE) docker-push DOCKER_FILE="$${DOCKER_FILE}"; done
 endif
