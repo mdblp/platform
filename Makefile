@@ -20,7 +20,7 @@ FIND_MAIN_CMD:=find . -path './$(BUILD)*' -not -path './vendor/*' -name '*.go' -
 TRANSFORM_GO_BUILD_CMD:=sed 's|\.\(.*\)\(/[^/]*\)/[^/]*|_bin\1\2\2 .\1\2/.|'
 GO_BUILD_CMD:=go build $(GO_BUILD_FLAGS) $(GO_LD_FLAGS) -o
 
-ifeq ($(TRAVIS_BRANCH),master)
+ifeq ($(TRAVIS_BRANCH),dblp)
 ifeq ($(TRAVIS_PULL_REQUEST_BRANCH),)
 	DOCKER:=true
 endif
@@ -28,7 +28,7 @@ else ifdef TRAVIS_TAG
 	DOCKER:=true
 endif
 ifdef DOCKER_FILE
-	DOCKER_REPOSITORY:="tidepool/$(REPOSITORY_NAME)-$(patsubst .%,%,$(suffix $(DOCKER_FILE)))"
+	DOCKER_REPOSITORY:="mdblp/$(REPOSITORY_NAME)-$(patsubst .%,%,$(suffix $(DOCKER_FILE)))"
 endif
 
 default: test
@@ -222,7 +222,7 @@ endif
 
 docker:
 ifdef DOCKER
-	@echo "$(DOCKER_PASSWORD)" | docker login --username "$(DOCKER_USERNAME)" --password-stdin
+	@echo "$(DOCKER_PASSWORD)" | docker login --username "$(DOCKER_USERNAME)" --password-stdin docker.ci.diabeloop.eu
 	@cd $(ROOT_DIRECTORY) && for DOCKER_FILE in $(shell ls -1 Dockerfile.*); do $(MAKE) docker-build DOCKER_FILE="$${DOCKER_FILE}"; done
 	@cd $(ROOT_DIRECTORY) && for DOCKER_FILE in $(shell ls -1 Dockerfile.*); do $(MAKE) docker-push DOCKER_FILE="$${DOCKER_FILE}"; done
 endif
@@ -241,7 +241,7 @@ endif
 docker-push:
 ifdef DOCKER
 ifdef DOCKER_REPOSITORY
-ifeq ($(TRAVIS_BRANCH),master)
+ifeq ($(TRAVIS_BRANCH),dblp)
 ifeq ($(TRAVIS_PULL_REQUEST_BRANCH),)
 	@docker push "$(DOCKER_REPOSITORY)"
 endif
