@@ -12,9 +12,9 @@ REPOSITORY_NAME:=$(notdir $(REPOSITORY_PACKAGE))
 ifdef TRAVIS_TAG
 	VERSION_BASE:=$(TRAVIS_TAG)
 else
-	VERSION_BASE:=$(shell git describe --abbrev=0 --tags 2> /dev/null || echo 'v0.0.0')
+	VERSION_BASE:=$(shell git describe --abbrev=0 --tags 2> /dev/null || echo 'dblp.0.0.0')
 endif
-VERSION_BASE:=$(VERSION_BASE:v%=%)
+VERSION_BASE:=$(VERSION_BASE:dblp.%=%)
 VERSION_SHORT_COMMIT:=$(shell git rev-parse --short HEAD)
 VERSION_FULL_COMMIT:=$(shell git rev-parse HEAD)
 VERSION_PACKAGE:=$(REPOSITORY_PACKAGE)/application
@@ -238,7 +238,7 @@ ifdef DOCKER_FILE
 	@docker build --tag "$(DOCKER_REPOSITORY):development" --target=development --file "$(DOCKER_FILE)" .
 	@docker build --tag "$(DOCKER_REPOSITORY)" --file "$(DOCKER_FILE)" .
 ifdef TRAVIS_TAG
-	@docker tag "$(DOCKER_REPOSITORY)" "$(DOCKER_REPOSITORY):$(TRAVIS_TAG:v%=%)"
+	@docker tag "$(DOCKER_REPOSITORY)" "$(DOCKER_REPOSITORY):$(VERSION_BASE)"
 endif
 endif
 endif
@@ -252,7 +252,7 @@ ifeq ($(TRAVIS_PULL_REQUEST_BRANCH),)
 endif
 endif
 ifdef TRAVIS_TAG
-	@docker push "$(DOCKER_REPOSITORY):$(TRAVIS_TAG:dblp.%=%)"
+	@docker push "$(DOCKER_REPOSITORY):$(VERSION_BASE)"
 endif
 endif
 endif
