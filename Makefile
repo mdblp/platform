@@ -25,9 +25,6 @@ FIND_MAIN_CMD:=find . -path './$(BUILD)*' -not -path './vendor/*' -name '*.go' -
 TRANSFORM_GO_BUILD_CMD:=sed 's|\.\(.*\)\(/[^/]*\)/[^/]*|_bin\1\2\2 .\1\2/.|'
 GO_BUILD_CMD:=go build $(GO_BUILD_FLAGS) $(GO_LD_FLAGS) -o
 
-ifeq ($(TRAVIS_BRANCH),feature/re-enable-docker)
-	DOCKER:=true
-endif
 ifeq ($(TRAVIS_BRANCH),dblp)
 ifeq ($(TRAVIS_PULL_REQUEST_BRANCH),)
 	DOCKER:=true
@@ -255,7 +252,7 @@ ifeq ($(TRAVIS_PULL_REQUEST_BRANCH),)
 endif
 endif
 ifdef TRAVIS_TAG
-	@docker push "$(DOCKER_REPOSITORY):$(TRAVIS_TAG:v%=%)"
+	@docker push "$(DOCKER_REPOSITORY):$(TRAVIS_TAG:dblp.%=%)"
 endif
 endif
 endif

@@ -50,5 +50,4 @@ services:
   - mongodb
 
 script:
- # - make ci-generate ci-build ci-test ci-deploy ci-docker
- - make ci-docker
+  - make ci-generate ci-build ci-test ci-deploy ci-docker
