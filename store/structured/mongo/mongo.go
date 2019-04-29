@@ -4,8 +4,8 @@ import (
 	"crypto/tls"
 	"net"
 
-	mgo "gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
+	mgo "github.com/globalsign/mgo"
+	"github.com/globalsign/mgo/bson"
 
 	"github.com/tidepool-org/platform/errors"
 	"github.com/tidepool-org/platform/log"
@@ -24,54 +24,45 @@ type Status struct {
 	Ping        string
 }
 
-func NewStore(cfg *Config, lgr log.Logger) (*Store, error) {
-	if cfg == nil {
+//NewStore constructs a Store from a Config, using the given logger
+func NewStore(config *Config, logger log.Logger) (*Store, error) {
+	if config == nil {
 		return nil, errors.New("config is missing")
-	} else if err := cfg.Validate(); err != nil {
+	} else if err := config.Validate(); err != nil {
 		return nil, errors.Wrap(err, "config is invalid")
 	}
-	if lgr == nil {
+	if logger == nil {
 		return nil, errors.New("logger is missing")
 	}
 
 	loggerFields := map[string]interface{}{
-		"database":         cfg.Database,
-		"collectionPrefix": cfg.CollectionPrefix,
+		"database":         config.Database,
+		"collectionPrefix": config.CollectionPrefix,
 	}
-	lgr = lgr.WithFields(loggerFields)
+	logger = logger.WithFields(loggerFields)
 
-	dialInfo := mgo.DialInfo{}
-	dialInfo.Addrs = cfg.Addresses
-	if cfg.TLS {
+	dialInfo, err := mgo.ParseURL(config.AsConnectionString())
+	if err != nil {
+		return nil, errors.Wrap(err, "URL is unparseable")
+	}
+
+	// override the DialServer is we are using TLS because we don't have the proper CA certs installed.
+	if config.TLS {
 		dialInfo.DialServer = func(serverAddr *mgo.ServerAddr) (net.Conn, error) {
 			return tls.Dial("tcp", serverAddr.String(), &tls.Config{InsecureSkipVerify: true}) // TODO: Secure this connection
 		}
 	}
-	dialInfo.Database = cfg.Database
-	if cfg.Username != nil {
-		dialInfo.Username = *cfg.Username
-	}
-	if cfg.Password != nil {
-		dialInfo.Password = *cfg.Password
-	}
-	dialInfo.Timeout = cfg.Timeout
-	if cfg.Source != nil {
-		dialInfo.Source = *cfg.Source
-	}
-	if cfg.Mechanism != nil {
-		dialInfo.Mechanism = *cfg.Mechanism
-	} else {
-		dialInfo.Mechanism = "SCRAM-SHA-1"
-	}
 
-	lgr.WithField("config", cfg).Debug("Dialing Mongo database")
+	dialInfo.Timeout = config.Timeout
 
-	session, err := mgo.DialWithInfo(&dialInfo)
+	logger.WithField("config", config).Debug("Dialing Mongo database")
+
+	session, err := mgo.DialWithInfo(dialInfo)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to dial database")
 	}
 
-	lgr.Debug("Verifying Mongo build version is supported")
+	logger.Debug("Verifying Mongo build version is supported")
 
 	buildInfo, err := session.BuildInfo()
 	if err != nil {
@@ -84,27 +75,30 @@ func NewStore(cfg *Config, lgr log.Logger) (*Store, error) {
 		return nil, errors.Newf("unsupported mongo build version %q", buildInfo.Version)
 	}
 
-	lgr.Debug("Setting Mongo consistency mode to Strong")
+	logger.Debug("Setting Mongo consistency mode to Strong")
 
 	session.SetMode(mgo.Strong, true)
 
 	// TODO: Do we need to set Safe so we get write > 1?
 
 	return &Store{
-		Config:  cfg,
+		Config:  config,
 		Session: session,
 	}, nil
 }
 
+//Store represents a live session to a Mongo database
 type Store struct {
 	Config  *Config
 	Session *mgo.Session
 }
 
+//IsClosed returns true if the session is closed
 func (s *Store) IsClosed() bool {
 	return s.Session == nil
 }
 
+//Close the session to the Mongo database
 func (s *Store) Close() error {
 	if s.Session != nil {
 		s.Session.Close()
@@ -113,6 +107,7 @@ func (s *Store) Close() error {
 	return nil
 }
 
+//Status returns the current state of the sessions
 func (s *Store) Status() interface{} {
 	status := &Status{
 		State: "CLOSED",
