@@ -274,7 +274,7 @@ func RandomStringArrayLengthMinimum() int {
 }
 
 func RandomTime() time.Time {
-	return RandomTimeFromRange(RandomTimeMinimum(), RandomTimeMaximum())
+	return RandomTimeFromRange(RandomTimeMinimum(), RandomTimeMaximum()).UTC()
 }
 
 func RandomTimeFromArray(array []time.Time) time.Time {
@@ -294,13 +294,13 @@ func RandomTimeFromRange(minimum time.Time, maximum time.Time) time.Time {
 	if maximum.After(RandomTimeMaximum()) {
 		maximum = RandomTimeMaximum()
 	}
-	return minimum.Add(time.Duration(rand.Int63n(int64(maximum.Sub(minimum)))))
+	return minimum.Add(time.Duration(rand.Int63n(int64(maximum.Sub(minimum))))).UTC()
 }
 
 func RandomTimeMaximum() time.Time {
-	return time.Now().Add(RandomDurationMaximum())
+	return time.Now().Add(RandomDurationMaximum()).UTC()
 }
 
 func RandomTimeMinimum() time.Time {
-	return time.Now().Add(RandomDurationMinimum())
+	return time.Now().Add(RandomDurationMinimum()).UTC()
 }

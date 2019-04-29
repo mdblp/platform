@@ -185,7 +185,7 @@ var _ = Describe("Client", func() {
 		var requestBody *RequestBody
 		var requestJSON []byte
 		var responseString string
-		var headersInspector *request.HeadersInspector
+		// var headersInspector *request.HeadersInspector
 		var inspectors []request.ResponseInspector
 		var httpClient *http.Client
 
@@ -215,7 +215,7 @@ var _ = Describe("Client", func() {
 			Expect(requestJSON).ToNot(BeNil())
 			requestJSON = append(requestJSON, []byte("\n")...)
 			responseString = test.NewVariableString(0, 32, test.CharsetText)
-			headersInspector = request.NewHeadersInspector()
+			// headersInspector = request.NewHeadersInspector()
 			inspectors = []request.ResponseInspector{}
 			httpClient = http.DefaultClient
 		})
