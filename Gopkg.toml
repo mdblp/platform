@@ -31,7 +31,7 @@ ignored = ["google.golang.org/appengine/urlfetch"]
 
 [[constraint]]
   branch = "v2"
-  name = "gopkg.in/mgo.v2"
+  name = "github.com/globalsign/mgo"
 
 [[constraint]]
   name = "gopkg.in/tylerb/graceful.v1"
