@@ -1,5 +1,9 @@
 ## Unreleased
 
+### Added
+
+- Add support for Diabeloop generic device DBLXX
+
 ## v0.3.1 [2019-06-06]
 
 ### Fix
