@@ -1,8 +1,12 @@
 # Diabeloop/platform
+
 ## Unreleased
 ### Added
-
 - [PT-580] Integration from Tidepool [v1.32.1](https://github.com/tidepool-org/platform/releases/tag/v1.32.1)
+
+## v0.4.0 [2019-06-17]
+### Added
+- [PT-383] Integration from Tidepool [v1.31.0](https://github.com/tidepool-org/platform/releases/tag/v1.31.0)
 
 ## v0.3.1 [2019-06-06]
 

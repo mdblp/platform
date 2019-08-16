@@ -49,7 +49,7 @@ endif
 
 check-environment: check-gopath
 
-CompileDaemon: check-environment 
+CompileDaemon: check-environment
 ifeq ($(shell which CompileDaemon),)
 	cd vendor/github.com/githubnemo/CompileDaemon && go install .
 endif
