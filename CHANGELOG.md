@@ -1,4 +1,26 @@
-## HEAD
+# Diabeloop/platform
+## Unreleased
+### Added
+
+- [PT-580] Integration from Tidepool [v1.32.1](https://github.com/tidepool-org/platform/releases/tag/v1.32.1)
+
+## v0.3.1 [2019-06-06]
+
+### Fix
+
+- PT-423 temporarily remove the condition that forces bolus.expectedNormal > bolus.normal
+
+## v0.3.0 [2019-05-07]
+
+### Added
+
+- Add Diabeloop device DBL4K
+
+## v0.2.1 [2018-12-06]
+
+- Bring back DBLG1 device
+
+# Tidepool/platform
 
 ## v1.32.1
 
