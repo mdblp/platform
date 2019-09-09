@@ -3,6 +3,8 @@
 ## Unreleased
 ### Added
 - [PT-580] Integration from Tidepool [v1.32.1](https://github.com/tidepool-org/platform/releases/tag/v1.32.1)
+### Fixed
+- [PT-624] Platform Data: dataset is not deleted when calling "DELETE" on "/v1/data_sets/:dataSetId"
 
 ## v0.4.0 [2019-06-17]
 ### Added
