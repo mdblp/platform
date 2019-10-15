@@ -1,7 +1,7 @@
 # Platform 
 The Tidepool platform API
 
-## Unreleased
+## [v0.6.0] 2019-10-15
 ### Added
 - [PT-580] Integration from Tidepool [v1.32.1](#v1.32.1)
 
