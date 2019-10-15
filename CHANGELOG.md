@@ -3,7 +3,7 @@ The Tidepool platform API
 
 ## Unreleased
 ### Added
-- [PT-580] Integration from Tidepool [v1.32.1](https://github.com/tidepool-org/platform/releases/tag/v1.32.1)
+- [PT-580] Integration from Tidepool [v1.32.1](#v1.32.1)
 
 ## [v0.5.1] 2019-09-23
 ### Fixed
