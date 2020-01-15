@@ -1,6 +1,10 @@
 # Platform 
 The Tidepool platform API
 
+## unreleased
+### Fixed
+- PT-9.3 Patch platform-data to prevent from Android bug to happen
+
 ## [v0.6.0] 2019-10-15
 ### Added
 - [PT-580] Integration from Tidepool [v1.32.1](#v1.32.1)

@@ -87,6 +87,12 @@ func (a *Alarm) Validate(validator structure.Validator) {
 	}
 }
 
+// IsValid
+// returns true if there is no error in the validator
+func (a *Alarm) IsValid(validator structure.Validator) bool {
+	return !(validator.HasError())
+}
+
 func (a *Alarm) Normalize(normalizer data.Normalizer) {
 	if !normalizer.HasMeta() {
 		normalizer = normalizer.WithMeta(a.Meta())
