@@ -170,8 +170,7 @@ func (u *Upload) Validate(validator structure.Validator) {
 	validator.String("version", u.Version).LengthGreaterThanOrEqualTo(VersionLengthMinimum)
 }
 
-// IsValid
-// returns true if there is no error in the validator
+// IsValid returns true if there is no error in the validator
 func (u *Upload) IsValid(validator structure.Validator) bool {
 	return !(validator.HasError())
 }

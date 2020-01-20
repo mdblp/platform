@@ -148,8 +148,7 @@ func (p *Pump) Validate(validator structure.Validator) {
 	}
 }
 
-// IsValid
-// returns true if there is no error in the validator
+// IsValid returns true if there is no error in the validator
 func (p *Pump) IsValid(validator structure.Validator) bool {
 	return !(validator.HasError())
 }

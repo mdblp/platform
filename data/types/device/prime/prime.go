@@ -71,8 +71,7 @@ func (p *Prime) Validate(validator structure.Validator) {
 	}
 }
 
-// IsValid
-// returns true if there is no error in the validator
+// IsValid returns true if there is no error in the validator
 func (p *Prime) IsValid(validator structure.Validator) bool {
 	return !(validator.HasError())
 }

@@ -58,8 +58,7 @@ func (i *Insulin) Validate(validator structure.Validator) {
 	validator.String("site", i.Site).NotEmpty().LengthLessThanOrEqualTo(SiteLengthMaximum)
 }
 
-// IsValid
-// returns true if there is no error in the validator
+// IsValid returns true if there is no error in the validator
 func (i *Insulin) IsValid(validator structure.Validator) bool {
 	return !(validator.HasError())
 }

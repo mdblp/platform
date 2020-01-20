@@ -70,8 +70,7 @@ func (s *Suspend) Validate(validator structure.Validator) {
 	validateSuppressed(validator.WithReference("suppressed"), s.Suppressed)
 }
 
-// IsValid
-// returns true if there is no error in the validator
+// IsValid returns true if there is no error in the validator
 func (s *Suspend) IsValid(validator structure.Validator) bool {
 	return !(validator.HasError())
 }

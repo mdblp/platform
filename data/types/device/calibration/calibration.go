@@ -50,8 +50,7 @@ func (c *Calibration) Validate(validator structure.Validator) {
 	validator.Float64("value", c.Value).Exists().InRange(dataBloodGlucose.ValueRangeForUnits(c.Units))
 }
 
-// IsValid
-// returns true if there is no error in the validator
+// IsValid returns true if there is no error in the validator
 func (c *Calibration) IsValid(validator structure.Validator) bool {
 	return !(validator.HasError())
 }

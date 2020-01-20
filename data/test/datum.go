@@ -80,8 +80,7 @@ func (d *Datum) Validate(validator structure.Validator) {
 	d.ValidateInputs = append(d.ValidateInputs, validator)
 }
 
-// IsValid
-// returns true if there is no error and no warning in the validator
+// IsValid returns true if there is no error and no warning in the validator
 func (d *Datum) IsValid(validator structure.Validator) bool {
 	return !(validator.HasError())
 }

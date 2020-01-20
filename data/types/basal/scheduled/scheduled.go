@@ -73,8 +73,7 @@ func (s *Scheduled) Validate(validator structure.Validator) {
 	validator.String("scheduleName", s.ScheduleName).NotEmpty()
 }
 
-// IsValid
-// returns true if there is no error and no warning in the validator
+// IsValid returns true if there is no error and no warning in the validator
 func (s *Scheduled) IsValid(validator structure.Validator) bool {
 	return !(validator.HasError() || validator.HasWarning())
 }

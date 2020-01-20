@@ -82,7 +82,7 @@ func ValidateWithExpectedOrigins(validatable structure.Validatable, expectedOrig
 	}
 }
 
-// ValidateWarningsWithOrigin
+// ValidateWarningsWithOrigin validates the content of warning message after Validate()
 func ValidateWarningsWithOrigin(validatable structure.Validatable, origin structure.Origin, expectedErrors ...error) {
 	validator := structureValidator.New()
 	gomega.Expect(validator).ToNot(gomega.BeNil())
@@ -90,7 +90,7 @@ func ValidateWarningsWithOrigin(validatable structure.Validatable, origin struct
 	errorsTest.ExpectEqual(validator.Warning(), expectedErrors...)
 }
 
-// ValidateWarningsWithExpectedOrigins
+// ValidateWarningsWithExpectedOrigins makes validation against warnings
 func ValidateWarningsWithExpectedOrigins(validatable structure.Validatable, expectedOrigins []structure.Origin, expectedWarnings ...error) {
 	for _, origin := range structure.Origins() {
 		var expected bool

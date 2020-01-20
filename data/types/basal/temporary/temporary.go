@@ -86,8 +86,7 @@ func (t *Temporary) Validate(validator structure.Validator) {
 	validateSuppressed(validator.WithReference("suppressed"), t.Suppressed)
 }
 
-// IsValid
-// returns true if there is no error in the validator
+// IsValid returns true if there is no error in the validator
 func (t *Temporary) IsValid(validator structure.Validator) bool {
 	return !(validator.HasError())
 }

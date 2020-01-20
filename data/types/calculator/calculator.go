@@ -102,8 +102,7 @@ func (c *Calculator) Validate(validator structure.Validator) {
 	validator.String("units", c.Units).Exists().OneOf(dataBloodGlucose.Units()...)
 }
 
-// IsValid
-// returns true if there is no error in the validator
+// IsValid returns true if there is no error in the validator
 func (c *Calculator) IsValid(validator structure.Validator) bool {
 	return !(validator.HasError())
 }

@@ -110,8 +110,7 @@ func (c *Combination) Validate(validator structure.Validator) {
 	}
 }
 
-// IsValid
-// returns true if there is no error in the validator
+// IsValid returns true if there is no error in the validator
 func (c *Combination) IsValid(validator structure.Validator) bool {
 	return !(validator.HasError())
 }
