@@ -120,20 +120,3 @@ func (b *Base) WithReference(reference string) *Base {
 	}
 	return base
 }
-
-func (b *Base) WithReferenceNoWarning(reference string) *Base {
-	base := &Base{
-		origin:       b.origin,
-		source:       b.source,
-		meta:         b.meta,
-		serializable: b.serializable,
-		warning:      b.warning,
-	}
-	if base.source != nil {
-		base.source = base.source.WithReference(reference)
-	}
-	if base.warning.Error != nil {
-		base.warning = &errors.Serializable{}
-	}
-	return base
-}
