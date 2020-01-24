@@ -73,6 +73,10 @@ func (b *Base) ReportWarning(err error) {
 	}
 }
 
+func (b *Base) ResetWarning() {
+	b.warning = &errors.Serializable{}
+}
+
 func (b *Base) WithOrigin(origin structure.Origin) *Base {
 	return &Base{
 		origin:       origin,
@@ -113,6 +117,23 @@ func (b *Base) WithReference(reference string) *Base {
 	}
 	if base.source != nil {
 		base.source = base.source.WithReference(reference)
+	}
+	return base
+}
+
+func (b *Base) WithReferenceNoWarning(reference string) *Base {
+	base := &Base{
+		origin:       b.origin,
+		source:       b.source,
+		meta:         b.meta,
+		serializable: b.serializable,
+		warning:      b.warning,
+	}
+	if base.source != nil {
+		base.source = base.source.WithReference(reference)
+	}
+	if base.warning.Error != nil {
+		base.warning = &errors.Serializable{}
 	}
 	return base
 }
