@@ -19,7 +19,7 @@ It gives details on the parameter, its current value and its previous value.
   "level": "1",
   "minValue": "0",
   "maxValue": "10",
-  "processed": "True",
+  "processed": "yes",
   "linkedSubType": ["DeviceParameterName1", "DeviceParameterName2"]
 } 
 ```
@@ -46,12 +46,12 @@ Required:
 
 ### units
 
-Units that is used for this parameter. 
+Units that is used for this parameter. If this field is not set a default unit will be used. 
 
 ```
 QUICK SUMMARY
 Required:
-    platform: yes
+    platform: no
 ```
 
 ### timezoneOffset
@@ -101,7 +101,7 @@ Minimal value of the device parameter.
 ```
 QUICK SUMMARY
 Required:
-    platform: yes
+    platform: no
 ```
 
 ### maxValue 
@@ -111,18 +111,18 @@ Maximal value of the device parameter.
 ```
 QUICK SUMMARY
 Required:
-    platform: yes
+    platform: no
 ```
 
 ### processed 
 
-Is it a parameter value that has been calculated by the System ? If the value is entered directly by the edn-user, `processed` is set to `no`
+Is it a parameter value that has been calculated by the System ? If the value is entered directly by the end-user, `processed` is set to `no`
 
 ```
 QUICK SUMMARY
 Required:
     platform: no
-Range:
+Enum:
     `yes`
     `no`    
 ```
@@ -135,7 +135,4 @@ List of SubTypes used to process the parameter.
 QUICK SUMMARY
 Required:
     platform: if processed = `yes`
-Range:
-    `yes`
-    `no`    
 ```
