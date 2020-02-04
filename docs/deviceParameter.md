@@ -7,8 +7,8 @@ It gives details on the parameter, its current value and its previous value.
 
 ```json
 {
-  "type": "DeviceEvent",
-  "subType": "DeviceParameter",
+  "type": "deviceEvent",
+  "subType": "deviceParameter",
   "time": "2020-01-20T08:17:07.920Z",
   "timezoneOffset": 60,
   "name": "Name of the Parameter",
