@@ -9,6 +9,7 @@ import (
 	dataTypesDeviceReservoirchange "github.com/tidepool-org/platform/data/types/device/reservoirchange"
 	dataTypesDeviceStatus "github.com/tidepool-org/platform/data/types/device/status"
 	dataTypesDeviceTimechange "github.com/tidepool-org/platform/data/types/device/timechange"
+	dataTypesDeviceParameter "github.com/tidepool-org/platform/data/types/device/deviceparameter"
 	"github.com/tidepool-org/platform/structure"
 	structureValidator "github.com/tidepool-org/platform/structure/validator"
 )
@@ -54,6 +55,8 @@ func NewDeviceDatum(parser structure.ObjectParser) data.Datum {
 		return dataTypesDeviceStatus.New()
 	case dataTypesDeviceTimechange.SubType:
 		return dataTypesDeviceTimechange.New()
+	case dataTypesDeviceParameter.SubType:
+		return dataTypesDeviceParameter.New()
 	}
 
 	parser.WithReferenceErrorReporter("subType").ReportError(structureValidator.ErrorValueStringNotOneOf(*value, subTypes))
