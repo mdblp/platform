@@ -82,7 +82,6 @@ var _ = Describe("Status", func() {
 		Expect(deviceparameter.LastUpdateDateTimeFormat).To(Equal(updateTimeFormat))
 	})
 
-
 	It("ProcessedValues returns expected", func() {
 		Expect(deviceparameter.ProcessedValues()).To(Equal([]string{"yes", "no"}))
 	})
@@ -172,9 +171,9 @@ var _ = Describe("Status", func() {
 					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueStringNotOneOf("nil", []string{"yes", "no"}), "/processed", NewMeta()),
 				),
 				Entry("linkedSubType missing when processed is yes",
-					func(datum *deviceparameter.DeviceParameter) { 
+					func(datum *deviceparameter.DeviceParameter) {
 						*datum.Processed = "yes"
-						datum.LinkedSubType = nil	
+						datum.LinkedSubType = nil
 					},
 					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueNotExists(), "/linkedSubType", NewMeta()),
 				),
@@ -225,9 +224,9 @@ var _ = Describe("Status", func() {
 					func(datum *deviceparameter.DeviceParameter) { *datum.Processed = "nil" },
 				),
 				Entry("does not modify the datum; linkedSubType missing when processed is yes",
-					func(datum *deviceparameter.DeviceParameter) { 
+					func(datum *deviceparameter.DeviceParameter) {
 						*datum.Processed = "yes"
-						datum.LinkedSubType = nil	
+						datum.LinkedSubType = nil
 					},
 				),
 			)

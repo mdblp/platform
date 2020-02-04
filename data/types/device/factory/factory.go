@@ -5,11 +5,11 @@ import (
 	"github.com/tidepool-org/platform/data/types/device"
 	dataTypesDeviceAlarm "github.com/tidepool-org/platform/data/types/device/alarm"
 	dataTypesDeviceCalibration "github.com/tidepool-org/platform/data/types/device/calibration"
+	dataTypesDeviceParameter "github.com/tidepool-org/platform/data/types/device/deviceparameter"
 	dataTypesDevicePrime "github.com/tidepool-org/platform/data/types/device/prime"
 	dataTypesDeviceReservoirchange "github.com/tidepool-org/platform/data/types/device/reservoirchange"
 	dataTypesDeviceStatus "github.com/tidepool-org/platform/data/types/device/status"
 	dataTypesDeviceTimechange "github.com/tidepool-org/platform/data/types/device/timechange"
-	dataTypesDeviceParameter "github.com/tidepool-org/platform/data/types/device/deviceparameter"
 	"github.com/tidepool-org/platform/structure"
 	structureValidator "github.com/tidepool-org/platform/structure/validator"
 )

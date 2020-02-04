@@ -7,12 +7,11 @@ import (
 )
 
 const (
-	SubType = "deviceParameter"
+	SubType                  = "deviceParameter"
 	LastUpdateDateTimeFormat = "2006-01-02T15:04:05.000Z"
-	ProcessedYes = "yes"
-	ProcessedNo = "no"
+	ProcessedYes             = "yes"
+	ProcessedNo              = "no"
 )
-
 
 func ProcessedValues() []string {
 	return []string{
@@ -21,22 +20,21 @@ func ProcessedValues() []string {
 	}
 }
 func LevelValues() []string {
-	return []string{ "1", "2" ,"3", } 
+	return []string{"1", "2", "3"}
 }
 
 type DeviceParameter struct {
-	device.Device `bson:",inline"`
-	Name *string `json:"name" bson:"name"`
-	Value *string `json:"value" bson:"value"`
-	Units *string `json:"units,omitempty" bson:"units,omitempty"`
-	LastUpdateDate *string `json:"lastUpdateDate" bson:"lastUpdateDate"`
-	PreviousValue *string `json:"previousValue,omitempty" bson:"previousValue,omitempty"`
-	Level *string `json:"level,omitempty" bson:"level,omitempty"`
-	MinValue *string `json:"minValue,omitempty" bson:"minValue,omitempty"`
-	MaxValue *string `json:"maxValue,omitempty" bson:"maxValue,omitempty"`
-	Processed *string `json:"processed,omitempty" bson:"processed,omitempty"`
-	LinkedSubType *[]string `json:"linkedSubType,omitempty" bson:"linkedSubType,omitempty"`
-
+	device.Device  `bson:",inline"`
+	Name           *string   `json:"name" bson:"name"`
+	Value          *string   `json:"value" bson:"value"`
+	Units          *string   `json:"units,omitempty" bson:"units,omitempty"`
+	LastUpdateDate *string   `json:"lastUpdateDate" bson:"lastUpdateDate"`
+	PreviousValue  *string   `json:"previousValue,omitempty" bson:"previousValue,omitempty"`
+	Level          *string   `json:"level,omitempty" bson:"level,omitempty"`
+	MinValue       *string   `json:"minValue,omitempty" bson:"minValue,omitempty"`
+	MaxValue       *string   `json:"maxValue,omitempty" bson:"maxValue,omitempty"`
+	Processed      *string   `json:"processed,omitempty" bson:"processed,omitempty"`
+	LinkedSubType  *[]string `json:"linkedSubType,omitempty" bson:"linkedSubType,omitempty"`
 }
 
 func New() *DeviceParameter {
@@ -61,7 +59,7 @@ func (p *DeviceParameter) Parse(parser structure.ObjectParser) {
 	p.MinValue = parser.String("minValue")
 	p.MaxValue = parser.String("maxValue")
 	p.Processed = parser.String("processed")
-	p.LinkedSubType= parser.StringArray("linkedSubType")
+	p.LinkedSubType = parser.StringArray("linkedSubType")
 }
 
 func (p *DeviceParameter) Validate(validator structure.Validator) {
@@ -81,7 +79,7 @@ func (p *DeviceParameter) Validate(validator structure.Validator) {
 
 	if p.Processed != nil && len(*p.Processed) > 0 {
 		validator.String("processed", p.Processed).Exists().OneOf(ProcessedValues()...)
-		if(*p.Processed == ProcessedYes) {
+		if *p.Processed == ProcessedYes {
 			validator.StringArray("linkedSubType", p.LinkedSubType).Exists().NotEmpty()
 		}
 	}
