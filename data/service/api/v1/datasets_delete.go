@@ -26,6 +26,7 @@ func DataSetsDelete(dataServiceContext dataService.Context) {
 		return
 	}
 	if dataSet == nil {
+		// FIXME: This is a temporary fix, it should return an error.
 		dataServiceContext.RespondWithStatusAndData(http.StatusOK, ErrorDataSetIDNotFound(dataSetID))
 		return
 	}
