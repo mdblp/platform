@@ -55,3 +55,4 @@ services:
 
 script:
   - make ci-generate ci-build ci-test ci-deploy ci-docker
+  - ./doc.sh

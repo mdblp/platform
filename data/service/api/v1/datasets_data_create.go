@@ -16,6 +16,20 @@ import (
 	structureValidator "github.com/tidepool-org/platform/structure/validator"
 )
 
+// DataSetsDataCreate godoc
+// @Summary Add data to a DataSets
+// @ID platform-data-api-DataSetsDataCreate
+// @Accept json
+// @Produce json
+// @Param dataSetID path string true "dataSet ID"
+// @Param data body []types.Base true "Array of data, of one type only"
+// @Success 200 "Operation is a success"
+// @Failure 400 {object} service.Error "Data set id is missing"
+// @Failure 403 {object} service.Error "Auth token is not authorized for requested action"
+// @Failure 404 {object} service.Error "Data set with specified id not found"
+// @Failure 409 {object} service.Error "Data set with specified id is closed for new data"
+// @Failure 500 {object} service.Error "Unable to perform the operation"
+// @Router /v1/datasets/:dataSetId/data [post]
 func DataSetsDataCreate(dataServiceContext dataService.Context) {
 	ctx := dataServiceContext.Request().Context()
 	lgr := log.LoggerFromContext(ctx)
