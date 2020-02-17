@@ -9,4 +9,4 @@ if [ ! -x "$GOPATH/bin/swag" ]; then
 fi
 
 $GOPATH/bin/swag --version
-$GOPATH/bin/swag init -g ./services/data/data.go -o docs/api/v1/data
+$GOPATH/bin/swag init --generalInfo ./services/data/data.go --output docs/api/v1/data
