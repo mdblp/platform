@@ -31,7 +31,7 @@ import (
 // @Failure 400 {object} service.Error "Data set id is missing"
 // @Failure 403 {object} service.Error "Auth token is not authorized for requested action"
 // @Failure 404 {object} service.Error "Data set with specified id not found"
-// @Failure 409 {object} service.Error "Data set with specified id is closed for new data"
+// @Failure 409 {object} service.Error "Data set with specified id is closed"
 // @Failure 500 {object} service.Error "Unable to perform the operation"
 // @Router /v1/datasets/:dataSetId/data [post]
 func DataSetsDataCreate(dataServiceContext dataService.Context) {
