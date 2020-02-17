@@ -11,6 +11,21 @@ import (
 	"github.com/tidepool-org/platform/service"
 )
 
+// UsersDataSetsGet godoc
+// @Summary Create a data sets
+// @Description Create a new data sets.
+// @Description Caller must be a service, the owner, or have the authorizations to do it in behalf of the user.
+// @ID platform-data-api-UsersDataSetsGet
+// @Produce json
+// @Param userId path string true "user ID"
+// @Param pageNum query int false "When using pagination, page number, default = 0"
+// @Param numElem query int false "When using pagination, number of elements by page, default = 100 (min 1, max 1000)"
+// @Param deletedDS query bool false "True to return the deleted datasets"
+// @Success 200 {object} []upload.Upload "Operation is a success"
+// @Failure 400 {object} service.Error "User id is missing or JSON body is malformed"
+// @Failure 403 {object} service.Error "Forbiden: caller is not authorized"
+// @Failure 500 {object} service.Error "Unable to perform the operation"
+// @Router /v1/users/:userId/datasets?page=:pageNum&size=:numElem&deleted=:deletedDS [get]
 func UsersDataSetsGet(dataServiceContext dataService.Context) {
 	ctx := dataServiceContext.Request().Context()
 

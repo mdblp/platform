@@ -8,4 +8,5 @@ if [ ! -x "$GOPATH/bin/swag" ]; then
   go get -u github.com/swaggo/swag/cmd/swag
 fi
 
+$GOPATH/bin/swag --version
 $GOPATH/bin/swag init -g ./services/data/data.go -o docs/api/v1/data
