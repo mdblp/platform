@@ -15,7 +15,6 @@ import (
 // @Description Caller must be a service, the owner, or have the authorizations to do it in behalf of the user.
 // @ID platform-data-api-DataSetsDataDelete
 // @Accept json
-// @Produce json
 // @Param dataSetId path string true "dataSet ID"
 // @Param X-Tidepool-Service-Secret header string false "The platform-data service secret"
 // @Param X-Tidepool-Session-Token header string false "A tidepool session token"

@@ -19,7 +19,6 @@ type dataSetsDeleteParams struct {
 // @Description Delete a DataSets
 // @ID platform-data-api-DataSetsDelete
 // @Accept json
-// @Produce json
 // @Param dataSetID path string true "dataSet ID"
 // @Param dataSetsDeleteParams body dataSetsDeleteParams false "True to really remove the dataset and associated data"
 // @Param X-Tidepool-Service-Secret header string false "The platform-data service secret"
