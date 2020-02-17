@@ -22,6 +22,10 @@ type dataSetsDeleteParams struct {
 // @Produce json
 // @Param dataSetID path string true "dataSet ID"
 // @Param dataSetsDeleteParams body dataSetsDeleteParams false "True to really remove the dataset and associated data"
+// @Param X-Tidepool-Service-Secret header string false "The platform-data service secret"
+// @Param X-Tidepool-Session-Token header string false "A tidepool session token"
+// @Param restricted_token header string false "A tidepool restricted token"
+// @Param Authorization header string false "A tidepool authorization token"
 // @Success 200 "Operation is a success"
 // @Failure 400 {object} service.Error "Data set id is missing"
 // @Failure 403 {object} service.Error "Auth token is not authorized for requested action"
