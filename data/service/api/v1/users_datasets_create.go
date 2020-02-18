@@ -23,7 +23,7 @@ import (
 // @Accept json
 // @Produce json
 // @Param userId path string true "user ID"
-// @Param usersDataSetsCreateParams body upload.Upload true "Datasets informations"
+// @Param usersDataSetsCreateParams body data.DataSetCreate true "The new data set information"
 // @Param X-Tidepool-Service-Secret header string false "The platform-data service secret"
 // @Param X-Tidepool-Session-Token header string false "A tidepool session token"
 // @Param restricted_token header string false "A tidepool restricted token"

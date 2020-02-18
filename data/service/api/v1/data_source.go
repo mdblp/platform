@@ -265,6 +265,7 @@ func GetSource(dataServiceContext dataService.Context) {
 // @Param X-Tidepool-Session-Token header string false "A tidepool session token"
 // @Param restricted_token header string false "A tidepool restricted token"
 // @Param Authorization header string false "A tidepool authorization token"
+// @Param DataSourceUpdate body source.Update true "The update fields of the data source"
 // @Success 200 {object} source.Source "The data source updated"
 // @Failure 400 {object} service.Error "Bad request (id is missing, bad revision value)"
 // @Failure 401 {object} service.Error "Not authenticated"
