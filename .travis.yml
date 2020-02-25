@@ -10,6 +10,8 @@ go_import_path: github.com/tidepool-org/platform
 dist: trusty
 
 env:
+  global:
+    - BUILD_OPENAPI_DOC=true
   - DEP_VERSION="0.5.3"
 
 before_install:
@@ -55,4 +57,3 @@ services:
 
 script:
   - make ci-generate ci-build ci-test ci-deploy ci-docker
-  - ./buildDoc.sh
