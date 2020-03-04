@@ -35,6 +35,7 @@ const (
 	TimeZoneOffsetMaximum   = 7 * 24 * 60  // TODO: Fix! Limit to reasonable values
 	TimeZoneOffsetMinimum   = -7 * 24 * 60 // TODO: Fix! Limit to reasonable values
 	VersionMinimum          = 0
+	parsingTimeFormat       = "2006-01-02T15:04:05.999-0700"
 )
 
 type Base struct {
@@ -250,7 +251,6 @@ func (b *Base) Normalize(normalizer data.Normalizer) {
 		sort.Strings(*b.Tags)
 	}
 	if b.Time != nil && *b.Time != "" {
-		parsingTimeFormat := "2006-01-02T15:04:05.999-0700"
 		parsedTime, err := time.Parse(TimeFormat, *b.Time)
 		if err != nil {
 			parsedTime, err = time.Parse(parsingTimeFormat, *b.Time)
@@ -268,16 +268,14 @@ func (b *Base) Normalize(normalizer data.Normalizer) {
 				}
 			}
 			if b.TimeZoneOffset == nil {
-				offsetSet := false
 				if b.TimeZoneName != nil && *b.TimeZoneName != "" {
 					zoneLoc, err := time.LoadLocation(*b.TimeZoneName)
 					if err == nil {
 						_, offset := parsedTime.UTC().In(zoneLoc).Zone()
 						b.TimeZoneOffset = pointer.FromInt(offset / 60)
-						offsetSet = true
 					}
 				}
-				if offsetSet == false {
+				if b.TimeZoneOffset == nil {
 					b.TimeZoneOffset = pointer.FromInt(0)
 				}
 			}
