@@ -249,6 +249,61 @@ func (b *Base) Normalize(normalizer data.Normalizer) {
 	if b.Tags != nil {
 		sort.Strings(*b.Tags)
 	}
+	if b.Time != nil && *b.Time != "" {
+		parsingTimeFormat := "2006-01-02T15:04:05.999-0700"
+		parsedTime, err := time.Parse(TimeFormat, *b.Time)
+		if err != nil {
+			parsedTime, err = time.Parse(parsingTimeFormat, *b.Time)
+		}
+		if err == nil {
+			utcTimeString := parsedTime.UTC().Format(TimeFormat)
+			_, offset := parsedTime.Zone()
+			// Time field is not well formatted in UTC
+			if utcTimeString != *b.Time {
+				b.Time = pointer.FromString(utcTimeString)
+				// Time field was not set to UTC timezone
+				// we update zone name / zone offset
+				if utcTimeString != parsedTime.Format(TimeFormat) {
+					b.TimeZoneOffset = pointer.FromInt(offset / 60)
+				}
+			}
+			if b.TimeZoneOffset == nil {
+				offsetSet := false
+				if b.TimeZoneName != nil && *b.TimeZoneName != "" {
+					zoneLoc, err := time.LoadLocation(*b.TimeZoneName)
+					if err == nil {
+						_, offset := parsedTime.UTC().In(zoneLoc).Zone()
+						b.TimeZoneOffset = pointer.FromInt(offset / 60)
+						offsetSet = true
+					}
+				}
+				if offsetSet == false {
+					b.TimeZoneOffset = pointer.FromInt(0)
+				}
+			}
+			offsetZone := time.FixedZone("offsetZone", *b.TimeZoneOffset*60)
+			// For TimeZoneName we only check that :
+			// the current timezone offset is valid for the TimeZoneName passed in
+			// if not TimeZoneName is reset to nil
+			if b.TimeZoneName != nil {
+				tzCompareFormat := "15:04:05 -0700"
+				currentZoneName := *b.TimeZoneName
+				zoneLoc, err := time.LoadLocation(currentZoneName)
+				if err == nil {
+					localZoneTime := parsedTime.In(zoneLoc)
+					localOffsetTime := parsedTime.In(offsetZone)
+					if localZoneTime.Format(tzCompareFormat) != localOffsetTime.Format(tzCompareFormat) {
+						b.TimeZoneName = nil
+					}
+				} else {
+					b.TimeZoneName = nil
+				}
+			}
+			// Setting DeviceTime to Time in offset zone (with the correct format)
+			b.DeviceTime = pointer.FromString(parsedTime.UTC().In(offsetZone).Format(DeviceTimeFormat))
+		}
+
+	}
 }
 
 func (b *Base) IdentityFields() ([]string, error) {
