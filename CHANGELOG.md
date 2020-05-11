@@ -2,7 +2,7 @@
 The Tidepool platform API
 
 ## Unreleased 
-### Engineering use
+### Changed
 - PT-1291 Remove Highwater metrics
 
 ## 0.7.1 - 2020-03-16
