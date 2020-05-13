@@ -47,22 +47,22 @@ And the additional field we would need:
     "subType": "normal",
     "normal": 3.5,
     "expectedNormal": 4.0, 
-    "prescriptor": "auto-altered"
+    "prescriptor": "hybrid"
   }
 }
 ```
 
 ## food 
 
-As of now we don't have the information of the origin of the rescueCarbs value, is it a patient decision, is it a suystem recommendation, and in that case what was the recommendation vs the actual value.
+As of now we don't have the information of the origin of the rescueCarbs value, is it a patient decision, is it a system recommendation, and in that case what was the recommendation vs the actual value.
 
 Here we are introducing 2 new fields in the food object:
 - `prescribedNutrition`: same structure as nutrition. It's an optional field. It gives the value that has been recommended by the system. 
 - `prescriptor`: is the origin of the `rescuecarbs` object. This field is optional in most of the cases. 
-    - range of values: `auto | manual | auto-altered`
+    - range of values: `auto | manual | hybrid`
     - `auto`: nutrition and prescribedNutrition are equal
     - `manual`: prescribedNutrition is ignored
-    - `auto-altered`: nutrition and prescribedNutrition are __not equal__, `prescribedNutrition` is mandatory in that case. 
+    - `hybrid`: nutrition and prescribedNutrition are __not equal__, `prescribedNutrition` is mandatory in that case. 
 
 ```json
 {
@@ -80,7 +80,7 @@ Here we are introducing 2 new fields in the food object:
       "units": "grams"
     }
   },
-  "prescriptor": "auto-altered",
+  "prescriptor": "hybrid",
   "meal": "rescuecarbs",
   "deviceId": "IdOfTheDevice",
   "deviceTime": "2020-05-12T06:50:08",
@@ -99,7 +99,7 @@ Here we are introducing 2 new fields in the food object:
 
 Here we are introducing 2 new fields in the bolus objects:
 - `prescriptor`: same as above in `food`. This field is optional. 
-- `insulinOnBoard`: amount of active insulin estimated by the system. This field will be accepted when `prescriptor` is either `auto` or `auto-altered`. It will be ignored for `manual` entries.
+- `insulinOnBoard`: amount of active insulin estimated by the system. This field will be accepted when `prescriptor` is either `auto` or `hybrid`. It will be ignored for `manual` entries.
 
 ```json
 {
@@ -111,7 +111,55 @@ Here we are introducing 2 new fields in the bolus objects:
   "subType": "normal",
   "normal": 3.5,
   "expectedNormal": 4.0, 
-  "prescriptor": "system-altered"
+  "prescriptor": "hybrid"
+}
+```
+
+## biphasic bolus
+
+A `biphasic` bolus is a 2 parts bolus that is defined by the system. Below is the definition for this new type of bolus that leverages most of the fields from `Normal` bolus. The subType associated to this type of bolus is `biphasic`.
+We add the following fields:
+- `bolusId`: unique ID provided by the client that is used to link the 2 parts of the bolus.
+- part: `1 | 2`. It's either the first part or the second part of the bolus. We will see that the first part of the bolus has to contain additional mandatory fields. 
+- `normal` and `expectedNormal` are similar to what is defined in `Normal` bolus. 
+- `linkedBolus` defined the second part of the bolus at the time the first part is created. It's an estimated bolus that may be modified by the system. This section is mandatory for any `"part":1` object. 
+  - `linkedBolus.Normal`: the expected value for the second part of the biphasic bolus. The actual value is provided by the `"part":2` object.
+  - `linkedBolus.Duration`: the expected duration between the first and the second part of the biphasic bolus. The actual duration is provided by the `"part":2` object through the effective time of this second object.
+- `prescriptor`: same as above in `food`. This field is optional. 
+
+__Note #1__: this type of bolus can be used in the wizard object the same way we use the `Normal` bolus.
+
+__Note #2__: the `"part":2` object is not mandatory. The system can decide to cancel this second part of the bolus. 
+
+```json
+{
+  "time": "2020-05-12T12:00:00.000Z",
+  "timezoneOffset": 120,
+  "deviceTime": "2020-05-12T12:00:08",
+  "deviceId": "IdOfTheDevice",
+  "type": "bolus",
+  "subType": "biphasic",
+  "bolusId": "Bo123456789",
+  "part": 1,
+  "normal": 3.5,
+  "expectedNormal": 4.0, 
+  "linkedBolus": {
+    "Normal": 3.5,
+    "Duration": 3600000
+  },
+  "prescriptor": "system"
+}
+{
+  "time": "2020-05-12T12:50:00.000Z",
+  "timezoneOffset": 120,
+  "deviceTime": "2020-05-12T12:50:08",
+  "deviceId": "IdOfTheDevice",
+  "type": "bolus",
+  "subType": "biphasic",
+  "bolusId": "Bo123456789",
+  "part": 2,
+  "normal": 3.5,
+  "prescriptor": "system"
 }
 ```
 
@@ -119,8 +167,12 @@ Here we are introducing 2 new fields in the bolus objects:
 
 We need additional fields to get the time at which the physical activity is created, and the last time it was updated by the patient:
 - `entryTime` is a UTC string timestamp that defines at what time the patient has entered the physical activity. This field is optional. It takes the same format as `time` field.
-- `lastUpdatedTime` is a UTC string timestamp that gives the last time the patient has updated the physical activity. This field is optional. It takes the same format as `time` field.
-  - `lastUpdatedTime` >= `entryTime`
+- `eventType`: type of event, either `start` or `end`
+  - `start` defines the beginning of the event. The `duration` is the estimated one. The `time` field gives the actual start time of the event.
+  - `stop` gives the end of the event. The `duration` is the actual duration. The `time` field gives the actual end time of the event. 
+- `eventID`: unique ID provided by the client that is used to link stop and start events.
+
+In the below example, the physical activity is entered on the handset at 8:00am. It starts at 8:50am for 60 minutes. Finally the stop event says that activity stopped at 9:40, that is tha actual duration was 50 minutes. This last information was entered at 10:00am.
 
 ```json
 {
@@ -130,13 +182,27 @@ We need additional fields to get the time at which the physical activity is crea
     	"value": 60,
     	"units": "minutes"
     },
-    "clockDriftOffset": 0,
-    "conversionOffset": 0,
-    "deviceId": "DexG5MobRec_DX72101079",
+    "eventType": "start",
+    "eventId": "AP123456789",
+    "deviceId": "DBLG1.1.6",
     "deviceTime": "2016-07-12T23:52:47",
     "entryTime": "2020-05-12T08:00:08.000Z",
-    "lastUpdatedTime": "2020-05-12T08:30:08.000Z",
     "time": "2020-05-12T08:50:08.000Z",
+    "timezoneOffset": 60
+}
+{
+    "type": "physicalActivity",
+    "reportedIntensity": "medium",
+    "duration": { 
+    	"value": 50,
+    	"units": "minutes"
+    },
+    "eventType": "stop",
+    "eventId": "AP123456789",
+    "deviceId": "DBLG1.1.6",
+    "deviceTime": "2016-07-12T23:52:47",
+    "entryTime": "2020-05-12T10:00:08.000Z",
+    "time": "2020-05-12T09:40:08.000Z",
     "timezoneOffset": 60
 }
 ```
@@ -148,13 +214,13 @@ Leveraging the `deviceEvent` type with the already defined `alarm` subType. We a
 - `alarmCode`: code of the alarm. This field is optional. 
 - `alarmLabel`: label or description of the alarm. This field is optional. 
 - `eventId`: unique Id of the event generated by the client system. This ID will be used to reconciliate data for the same event. 
-- `eventType`: `start | acknowledge` is the type of event for the given alarm.
-  - `start`: alarm generated by the system
-  - `acknowledge`: the system has received the patient acknowledge. 
+- `eventType`: `start | stop` is the type of event for the given alarm.
+  - `start`: alarm created by the system
+  - `stop`: the system has received the patient acknowledge. 
 
-For a given alarm that has been acknowledged by the patient, we will receive 2 deviceEvents:
-- the first one that gives the creation time on system, `eventType`: `start`
-- the second one that gives the patient acknowledge, `eventType`: `acknowledge`
+For a given alarm that has been acknowledged by the patient, we will receive 2 deviceEvents of subType `alarm` with the same `eventId`:
+- the first one gives the creation time on the system, `eventType`: `start`
+- the second one gives the patient acknowledge, `eventType`: `stop`
 
 ```json
 {
@@ -168,29 +234,31 @@ For a given alarm that has been acknowledged by the patient, we will receive 2 d
   "eventType": "alarm",
   "deviceId": "Id12345",
   "deviceTime": "2018-02-01T00:00:00",
-  "guid": "e3c82e3d-23ba-4048-9056-7b1b3c5aa4cc",
-  "id": "d5ed640dd8f74e6cb1a6bff796de3ba2",
   "time": "2020-05-12T08:50:08.000Z",
   "timezoneOffset": 60
 }
 ```
 
-
 ## Zen mode
 Leveraging the `deviceEvent` type and creating a new `zen` subType.
 
 - `subType`: `zen`
-- `endTime`: is a UTC string timestamp that indicates at what time the event is terminated. 
+- `duration`: is a structured object that gives the duration of the event. 
+- `eventType`: `start | stop` is the type of event for the given event.
+  - `start`: event created by the system. The `duration` attached to this object is the expected duration of the event.
+  - `stop`: the event is stopped. The `duration` attached to this object is the actual duration of the event.
 
 ```json
 {
   "type": "deviceEvent",
   "subType": "zen",
-  "endTime": "2020-05-12T09:50:08.000Z",
+  "eventType": "start", 
+  "duration": { 
+    "value": 3,
+    "units": "hours"
+  },
   "deviceId": "Id12345",
   "deviceTime": "2018-02-01T00:00:00",
-  "guid": "e3c82e3d-23ba-4048-9056-7b1b3c5aa4cc",
-  "id": "d5ed640dd8f74e6cb1a6bff796de3ba2",
   "time": "2020-05-12T08:50:08.000Z",
   "timezoneOffset": 60
 }
@@ -200,17 +268,22 @@ Leveraging the `deviceEvent` type and creating a new `zen` subType.
 Leveraging the `deviceEvent` type and creating a new `confidential` subType.
 
 - `subType`: `confidential`
-- `endTime`: is a UTC string timestamp that indicates at what time the event is terminated. 
+- `duration`: is a structured object that gives the duration of the event. 
+- `eventType`: `start | stop` is the type of event for the given event.
+  - `start`: event created by the system. The `duration` attached to this object is the expected duration of the event.
+  - `stop`: the event is stopped. The `duration` attached to this object is the actual duration of the event.
 
 ```json
 {
   "type": "deviceEvent",
   "subType": "confidential",
-  "endTime": "2020-05-12T10:50:08.000Z",
+  "eventType": "start", 
+  "duration": { 
+    "value": 180,
+    "units": "minutes"
+  },
   "deviceId": "Id12345",
   "deviceTime": "2018-02-01T00:00:00",
-  "guid": "e3c82e3d-23ba-4048-9056-7b1b3c5aa4cc",
-  "id": "d5ed640dd8f74e6cb1a6bff796de3ba2",
   "time": "2020-05-12T08:50:08.000Z",
   "timezoneOffset": 60
 }
