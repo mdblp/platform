@@ -22,14 +22,14 @@ Here is an example of what can be sent with the related meaning:
 - `bolus.prescriptor` is a new field that describes the origin of the bolus. Details are defined in the below food section. 
 
 And the additional field we would need:
-- `entryTime` is a UTC string timestamp that defines at what time the patient has entered the meal. This field is optional. It takes the same format as `time` field.
+- `inputTime` is a UTC string timestamp that defines at what time the patient has entered the meal. This field is optional. It takes the same format as `time` field.
 
 ```json
 {
   "time": "2020-05-12T08:50:08.000Z",
   "timezoneOffset": 120,
   "deviceTime": "2020-05-12T08:50:08",
-  "entryTime": "2020-05-12T08:45:08.000Z",
+  "inputTime": "2020-05-12T08:45:08.000Z",
   "deviceId": "IdOfTheDevice",
   "type": "wizard",
   "carbInput": 50,
@@ -119,7 +119,7 @@ Here we are introducing 2 new fields in the bolus objects:
 
 A `biphasic` bolus is a 2 parts bolus that is defined by the system. Below is the definition for this new type of bolus that leverages most of the fields from `Normal` bolus. The subType associated to this type of bolus is `biphasic`.
 We add the following fields:
-- `bolusId`: unique ID provided by the client that is used to link the 2 parts of the bolus.
+- `eventId`: unique ID provided by the client that is used to link the 2 parts of the bolus.
 - part: `1 | 2`. It's either the first part or the second part of the bolus. We will see that the first part of the bolus has to contain additional mandatory fields. 
 - `normal` and `expectedNormal` are similar to what is defined in `Normal` bolus. 
 - `linkedBolus` defined the second part of the bolus at the time the first part is created. It's an estimated bolus that may be modified by the system. This section is mandatory for any `"part":1` object. 
@@ -139,7 +139,7 @@ __Note #2__: the `"part":2` object is not mandatory. The system can decide to ca
   "deviceId": "IdOfTheDevice",
   "type": "bolus",
   "subType": "biphasic",
-  "bolusId": "Bo123456789",
+  "eventId": "Bo123456789",
   "part": 1,
   "normal": 3.5,
   "expectedNormal": 4.0, 
@@ -156,7 +156,7 @@ __Note #2__: the `"part":2` object is not mandatory. The system can decide to ca
   "deviceId": "IdOfTheDevice",
   "type": "bolus",
   "subType": "biphasic",
-  "bolusId": "Bo123456789",
+  "eventId": "Bo123456789",
   "part": 2,
   "normal": 3.5,
   "prescriptor": "system"
@@ -166,7 +166,7 @@ __Note #2__: the `"part":2` object is not mandatory. The system can decide to ca
 ## physical activity
 
 We need additional fields to get the time at which the physical activity is created, and the last time it was updated by the patient:
-- `entryTime` is a UTC string timestamp that defines at what time the patient has entered the physical activity. This field is optional. It takes the same format as `time` field.
+- `inputTime` is a UTC string timestamp that defines at what time the patient has entered the physical activity. This field is optional. It takes the same format as `time` field.
 - `eventType`: type of event, either `start` or `end`
   - `start` defines the beginning of the event. The `duration` is the estimated one. The `time` field gives the actual start time of the event.
   - `stop` gives the end of the event. The `duration` is the actual duration. The `time` field gives the actual end time of the event. 
@@ -186,7 +186,7 @@ In the below example, the physical activity is entered on the handset at 8:00am.
     "eventId": "AP123456789",
     "deviceId": "DBLG1.1.6",
     "deviceTime": "2016-07-12T23:52:47",
-    "entryTime": "2020-05-12T08:00:08.000Z",
+    "inputTime": "2020-05-12T08:00:08.000Z",
     "time": "2020-05-12T08:50:08.000Z",
     "timezoneOffset": 60
 }
@@ -201,7 +201,7 @@ In the below example, the physical activity is entered on the handset at 8:00am.
     "eventId": "AP123456789",
     "deviceId": "DBLG1.1.6",
     "deviceTime": "2016-07-12T23:52:47",
-    "entryTime": "2020-05-12T10:00:08.000Z",
+    "inputTime": "2020-05-12T10:00:08.000Z",
     "time": "2020-05-12T09:40:08.000Z",
     "timezoneOffset": 60
 }
@@ -239,20 +239,23 @@ For a given alarm that has been acknowledged by the patient, we will receive 2 d
 }
 ```
 
-## Zen mode
-Leveraging the `deviceEvent` type and creating a new `zen` subType.
+## Zen mode && Confidential mode
 
-- `subType`: `zen`
+Leveraging the `deviceEvent` type and creating 2 new subTypes with the same structure: `zen` and `confidential`.
+
+- `subType`: `zen | confidential`
 - `duration`: is a structured object that gives the duration of the event. 
 - `eventType`: `start | stop` is the type of event for the given event.
   - `start`: event created by the system. The `duration` attached to this object is the expected duration of the event.
   - `stop`: the event is stopped. The `duration` attached to this object is the actual duration of the event.
+- `eventId`: unique ID provided by the client that is used to link stop and start events.
 
 ```json
 {
   "type": "deviceEvent",
   "subType": "zen",
   "eventType": "start", 
+  "eventId": "Zen123456789",
   "duration": { 
     "value": 3,
     "units": "hours"
@@ -262,22 +265,11 @@ Leveraging the `deviceEvent` type and creating a new `zen` subType.
   "time": "2020-05-12T08:50:08.000Z",
   "timezoneOffset": 60
 }
-```
-
-## Confidential mode
-Leveraging the `deviceEvent` type and creating a new `confidential` subType.
-
-- `subType`: `confidential`
-- `duration`: is a structured object that gives the duration of the event. 
-- `eventType`: `start | stop` is the type of event for the given event.
-  - `start`: event created by the system. The `duration` attached to this object is the expected duration of the event.
-  - `stop`: the event is stopped. The `duration` attached to this object is the actual duration of the event.
-
-```json
 {
   "type": "deviceEvent",
   "subType": "confidential",
   "eventType": "start", 
+  "eventId": "Conf123456789",
   "duration": { 
     "value": 180,
     "units": "minutes"
