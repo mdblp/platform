@@ -144,8 +144,8 @@ __Note #2__: the `"part":2` object is not mandatory. The system can decide to ca
   "normal": 3.5,
   "expectedNormal": 4.0, 
   "linkedBolus": {
-    "Normal": 3.5,
-    "Duration": 3600000
+    "normal": 3.5,
+    "duration": 3600000
   },
   "prescriptor": "system"
 }
@@ -170,7 +170,7 @@ We need additional fields to get the time at which the physical activity is crea
 - `eventType`: type of event, either `start` or `end`
   - `start` defines the beginning of the event. The `duration` is the estimated one. The `time` field gives the actual start time of the event.
   - `stop` gives the end of the event. The `duration` is the actual duration. The `time` field gives the actual end time of the event. 
-- `eventID`: unique ID provided by the client that is used to link stop and start events.
+- `eventId`: unique ID provided by the client that is used to link stop and start events.
 
 In the below example, the physical activity is entered on the handset at 8:00am. It starts at 8:50am for 60 minutes. Finally the stop event says that activity stopped at 9:40, that is tha actual duration was 50 minutes. This last information was entered at 10:00am.
 
