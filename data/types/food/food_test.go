@@ -36,6 +36,8 @@ func NewFood(ingredientArrayDepthLimit int) *food.Food {
 	}
 	datum.Name = pointer.FromString(test.RandomStringFromRange(1, 100))
 	datum.Nutrition = NewNutrition()
+	datum.Prescriptor = pointer.FromString(test.RandomStringFromArray(food.Presciptors()))
+	datum.PrescribedNutrition = NewNutrition()
 	return datum
 }
 
@@ -53,6 +55,8 @@ func CloneFood(datum *food.Food) *food.Food {
 	clone.MealOther = pointer.CloneString(datum.MealOther)
 	clone.Name = pointer.CloneString(datum.Name)
 	clone.Nutrition = CloneNutrition(datum.Nutrition)
+	clone.Prescriptor = pointer.CloneString(datum.Prescriptor)
+	clone.PrescribedNutrition = CloneNutrition(datum.PrescribedNutrition)
 	return clone
 }
 
@@ -114,6 +118,8 @@ var _ = Describe("Food", func() {
 			Expect(datum.MealOther).To(BeNil())
 			Expect(datum.Name).To(BeNil())
 			Expect(datum.Nutrition).To(BeNil())
+			Expect(datum.Prescriptor).To(BeNil())
+			Expect(datum.PrescribedNutrition).To(BeNil())
 		})
 	})
 
@@ -310,6 +316,38 @@ var _ = Describe("Food", func() {
 						datum.MealOther = pointer.FromString(test.RandomStringFromRange(1, 100))
 					},
 					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueExists(), "/mealOther", NewMeta()),
+				),
+				Entry("meal rescuecarbs; prescriptor exists",
+					func(datum *food.Food) {
+						datum.Meal = pointer.FromString("rescuecarbs")
+						datum.MealOther = nil
+						datum.Prescriptor = pointer.FromString("auto")
+					},
+				),
+				Entry("meal rescuecarbs; prescriptor and prescribedNutrition exist",
+					func(datum *food.Food) {
+						datum.Meal = pointer.FromString("rescuecarbs")
+						datum.MealOther = nil
+						datum.Prescriptor = pointer.FromString("auto")
+						datum.PrescribedNutrition = NewNutrition()
+					},
+				),
+				Entry("meal rescuecarbs; invalid prescriptor ",
+					func(datum *food.Food) {
+						datum.Meal = pointer.FromString("rescuecarbs")
+						datum.MealOther = nil
+						datum.Prescriptor = pointer.FromString("invalid")
+					},
+					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueStringNotOneOf("invalid", []string{"auto", "manual", "hybrid"}), "/prescriptor", NewMeta()),
+				),
+				Entry("meal rescuecarbs; prescribedNutrition exists and prescriptor is missing",
+					func(datum *food.Food) {
+						datum.Meal = pointer.FromString("rescuecarbs")
+						datum.MealOther = nil
+						datum.PrescribedNutrition = NewNutrition()
+						datum.Prescriptor = nil
+					},
+					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueNotExists(), "/prescriptor", NewMeta()),
 				),
 				Entry("name missing",
 					func(datum *food.Food) { datum.Name = nil },

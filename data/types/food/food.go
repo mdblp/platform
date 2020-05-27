@@ -19,6 +19,9 @@ const (
 	MealSnack              = "snack"
 	MealRescueCarbs        = "rescuecarbs"
 	NameLengthMaximum      = 100
+	ManualPrescriptor      = "manual"
+	AutoPrescriptor        = "auto"
+	HybridPrescriptor      = "hybrid"
 )
 
 func Meals() []string {
@@ -32,17 +35,27 @@ func Meals() []string {
 	}
 }
 
+func Presciptors() []string {
+	return []string{
+		AutoPrescriptor,
+		ManualPrescriptor,
+		HybridPrescriptor,
+	}
+}
+
 type Food struct {
 	types.Base `bson:",inline"`
 
-	Amount      *Amount          `json:"amount,omitempty" bson:"amount,omitempty"`
-	Brand       *string          `json:"brand,omitempty" bson:"brand,omitempty"`
-	Code        *string          `json:"code,omitempty" bson:"code,omitempty"`
-	Ingredients *IngredientArray `json:"ingredients,omitempty" bson:"ingredients,omitempty"`
-	Meal        *string          `json:"meal,omitempty" bson:"meal,omitempty"`
-	MealOther   *string          `json:"mealOther,omitempty" bson:"mealOther,omitempty"`
-	Name        *string          `json:"name,omitempty" bson:"name,omitempty"`
-	Nutrition   *Nutrition       `json:"nutrition,omitempty" bson:"nutrition,omitempty"`
+	Amount              *Amount          `json:"amount,omitempty" bson:"amount,omitempty"`
+	Brand               *string          `json:"brand,omitempty" bson:"brand,omitempty"`
+	Code                *string          `json:"code,omitempty" bson:"code,omitempty"`
+	Ingredients         *IngredientArray `json:"ingredients,omitempty" bson:"ingredients,omitempty"`
+	Meal                *string          `json:"meal,omitempty" bson:"meal,omitempty"`
+	MealOther           *string          `json:"mealOther,omitempty" bson:"mealOther,omitempty"`
+	Name                *string          `json:"name,omitempty" bson:"name,omitempty"`
+	Nutrition           *Nutrition       `json:"nutrition,omitempty" bson:"nutrition,omitempty"`
+	PrescribedNutrition *Nutrition       `json:"prescribedNutrition,omitempty" bson:"prescribedNutrition,omitempty"`
+	Prescriptor         *string          `json:"prescriptor,omitempty" bson:"prescriptor,omitempty"`
 }
 
 func New() *Food {
@@ -66,6 +79,8 @@ func (f *Food) Parse(parser structure.ObjectParser) {
 	f.MealOther = parser.String("mealOther")
 	f.Name = parser.String("name")
 	f.Nutrition = ParseNutrition(parser.WithReferenceObjectParser("nutrition"))
+	f.PrescribedNutrition = ParseNutrition(parser.WithReferenceObjectParser("prescribedNutrition"))
+	f.Prescriptor = parser.String("prescriptor")
 }
 
 func (f *Food) Validate(validator structure.Validator) {
@@ -97,6 +112,19 @@ func (f *Food) Validate(validator structure.Validator) {
 	if f.Nutrition != nil {
 		f.Nutrition.Validate(validator.WithReference("nutrition"))
 	}
+	if f.Meal != nil && *f.Meal == MealRescueCarbs {
+		if f.PrescribedNutrition != nil {
+			f.PrescribedNutrition.Validate(validator.WithReference("nutrition"))
+			validator.String("prescriptor", f.Prescriptor).Exists()
+		}
+		if f.Prescriptor != nil {
+			validator.String("prescriptor", f.Prescriptor).OneOf(Presciptors()...)
+		}
+	} else {
+		// Prescriptors are ignored for other types of meals
+		f.Prescriptor = nil
+		f.PrescribedNutrition = nil
+	}
 }
 
 // IsValid returns true if there is no error in the validator
@@ -119,5 +147,8 @@ func (f *Food) Normalize(normalizer data.Normalizer) {
 	}
 	if f.Nutrition != nil {
 		f.Nutrition.Normalize(normalizer.WithReference("nutrition"))
+	}
+	if f.PrescribedNutrition != nil {
+		f.PrescribedNutrition.Normalize(normalizer.WithReference("nutrition"))
 	}
 }
