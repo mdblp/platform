@@ -4,6 +4,7 @@ import (
 	"github.com/tidepool-org/platform/data"
 	"github.com/tidepool-org/platform/data/types"
 	"github.com/tidepool-org/platform/structure"
+	structureValidator "github.com/tidepool-org/platform/structure/validator"
 )
 
 const (
@@ -113,17 +114,17 @@ func (f *Food) Validate(validator structure.Validator) {
 		f.Nutrition.Validate(validator.WithReference("nutrition"))
 	}
 	if f.Meal != nil && *f.Meal == MealRescueCarbs {
-		if f.PrescribedNutrition != nil {
-			f.PrescribedNutrition.Validate(validator.WithReference("nutrition"))
-			validator.String("prescriptor", f.Prescriptor).Exists()
-		}
 		if f.Prescriptor != nil {
 			validator.String("prescriptor", f.Prescriptor).OneOf(Presciptors()...)
 		}
-	} else {
-		// Prescriptors are ignored for other types of meals
-		f.Prescriptor = nil
-		f.PrescribedNutrition = nil
+
+		if *f.Prescriptor == HybridPrescriptor && f.PrescribedNutrition == nil {
+			// Prescribed Nutrition is mandatory
+			validator.WithReference("prescribedNutrition").ReportError(structureValidator.ErrorValueNotExists())
+		}
+		if f.PrescribedNutrition != nil {
+			f.PrescribedNutrition.Validate(validator.WithReference("nutrition"))
+		}
 	}
 }
 
@@ -138,6 +139,12 @@ func (f *Food) Normalize(normalizer data.Normalizer) {
 	}
 
 	f.Base.Normalize(normalizer)
+
+	if f.Meal != nil && *f.Meal != MealRescueCarbs {
+		// Prescriptors are ignored for other types of meals
+		f.Prescriptor = nil
+		f.PrescribedNutrition = nil
+	}
 
 	if f.Amount != nil {
 		f.Amount.Normalize(normalizer.WithReference("amount"))
