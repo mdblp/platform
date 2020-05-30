@@ -1,6 +1,8 @@
 package calculator_test
 
 import (
+	"time"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
@@ -18,6 +20,7 @@ import (
 	"github.com/tidepool-org/platform/data/types/bolus/normal"
 	dataTypesBolusNormalTest "github.com/tidepool-org/platform/data/types/bolus/normal/test"
 	"github.com/tidepool-org/platform/data/types/calculator"
+	commontypesTest "github.com/tidepool-org/platform/data/types/common/test"
 	dataTypesTest "github.com/tidepool-org/platform/data/types/test"
 	errorsTest "github.com/tidepool-org/platform/errors/test"
 	"github.com/tidepool-org/platform/pointer"
@@ -45,6 +48,7 @@ func NewCalculator(units *string) *calculator.Calculator {
 	datum.Recommended = NewRecommended()
 	datum.Units = units
 	datum.CarbUnits = pointer.FromString(test.RandomStringFromArray(calculator.CarbUnits()))
+	datum.InputTime = commontypesTest.NewInputTime()
 	return datum
 }
 
@@ -104,6 +108,7 @@ func CloneCalculator(datum *calculator.Calculator) *calculator.Calculator {
 	clone.Recommended = CloneRecommended(datum.Recommended)
 	clone.Units = pointer.CloneString(datum.Units)
 	clone.CarbUnits = pointer.CloneString(datum.CarbUnits)
+	clone.InputTime = commontypesTest.CloneInputTime(datum.InputTime)
 	return clone
 }
 
@@ -152,6 +157,7 @@ var _ = Describe("Calculator", func() {
 			Expect(datum.Recommended).To(BeNil())
 			Expect(datum.Units).To(BeNil())
 			Expect(datum.CarbUnits).To(BeNil())
+			Expect(datum.InputTime.InputTime).To(BeNil())
 		})
 	})
 
@@ -1266,6 +1272,25 @@ var _ = Describe("Calculator", func() {
 				Entry("units mg/dl; recommended valid",
 					pointer.FromString("mg/dl"),
 					func(datum *calculator.Calculator, units *string) { datum.Recommended = NewRecommended() },
+				),
+				Entry("Valid inputTime",
+					pointer.FromString("mg/dl"),
+					func(datum *calculator.Calculator, units *string) {
+						datum.InputTime.InputTime = pointer.FromString(test.RandomTime().Format(time.RFC3339Nano))
+					},
+				),
+				Entry("No inputTime",
+					pointer.FromString("mg/dl"),
+					func(datum *calculator.Calculator, units *string) {
+						datum.InputTime = nil
+					},
+				),
+				Entry("InputTime invalid",
+					pointer.FromString("mg/dl"),
+					func(datum *calculator.Calculator, units *string) {
+						datum.InputTime.InputTime = pointer.FromString("invalid")
+					},
+					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueStringAsTimeNotValid("invalid", time.RFC3339Nano), "/inputTime", NewMeta()),
 				),
 			)
 

@@ -8,6 +8,7 @@ import (
 	dataTypesBolusExtended "github.com/tidepool-org/platform/data/types/bolus/extended"
 	dataTypesBolusFactory "github.com/tidepool-org/platform/data/types/bolus/factory"
 	dataTypesBolusNormal "github.com/tidepool-org/platform/data/types/bolus/normal"
+	commontypes "github.com/tidepool-org/platform/data/types/common"
 	"github.com/tidepool-org/platform/structure"
 	structureValidator "github.com/tidepool-org/platform/structure/validator"
 )
@@ -47,11 +48,13 @@ type Calculator struct {
 	Recommended              *Recommended             `json:"recommended,omitempty" bson:"recommended,omitempty"`
 	Units                    *string                  `json:"units,omitempty" bson:"units,omitempty"`
 	CarbUnits                *string                  `json:"carbUnits,omitempty" bson:"carbUnits,omitempty"`
+	InputTime                *commontypes.InputTime   `bson:",inline"`
 }
 
 func New() *Calculator {
 	return &Calculator{
-		Base: types.New(Type),
+		Base:      types.New(Type),
+		InputTime: commontypes.NewInputTime(),
 	}
 }
 
@@ -72,6 +75,7 @@ func (c *Calculator) Parse(parser structure.ObjectParser) {
 	c.Units = parser.String("units")
 	c.Bolus = dataTypesBolusFactory.ParseBolusDatum(parser.WithReferenceObjectParser("bolus"))
 	c.CarbUnits = parser.String("carbUnits")
+	c.InputTime.Parse(parser)
 }
 
 func (c *Calculator) Validate(validator structure.Validator) {
@@ -115,6 +119,9 @@ func (c *Calculator) Validate(validator structure.Validator) {
 
 	if c.CarbUnits != nil {
 		validator.String("carbUnits", c.CarbUnits).OneOf(CarbUnits()...)
+	}
+	if c.InputTime != nil {
+		c.InputTime.Validate(validator)
 	}
 }
 
@@ -164,5 +171,9 @@ func (c *Calculator) Normalize(normalizer data.Normalizer) {
 
 	if normalizer.Origin() == structure.OriginExternal {
 		c.Units = dataBloodGlucose.NormalizeUnits(c.Units)
+	}
+
+	if c.InputTime != nil {
+		c.InputTime.Normalize(normalizer.WithReference("inputTime"))
 	}
 }
