@@ -41,6 +41,8 @@ func NewPhysical() *physical.Physical {
 	datum.Name = pointer.FromString(test.RandomStringFromRange(1, 100))
 	datum.ReportedIntensity = pointer.FromString(test.RandomStringFromArray(physical.ReportedIntensities()))
 	datum.Step = NewStep()
+	datum.EventType = pointer.FromString(test.RandomStringFromArray(physical.Events()))
+	datum.EventID = pointer.FromString("123456789")
 	return datum
 }
 
@@ -62,6 +64,8 @@ func ClonePhysical(datum *physical.Physical) *physical.Physical {
 	clone.Name = pointer.CloneString(datum.Name)
 	clone.ReportedIntensity = pointer.CloneString(datum.ReportedIntensity)
 	clone.Step = CloneStep(datum.Step)
+	clone.EventType = pointer.CloneString(datum.EventType)
+	clone.EventID = pointer.CloneString(datum.EventID)
 	return clone
 }
 
@@ -103,6 +107,10 @@ var _ = Describe("Physical", func() {
 		Expect(physical.ReportedIntensities()).To(Equal([]string{"high", "low", "medium"}))
 	})
 
+	It("Events returns expected", func() {
+		Expect(physical.Events()).To(Equal([]string{"start", "stop"}))
+	})
+
 	Context("New", func() {
 		It("returns the expected datum with all values initialized", func() {
 			datum := physical.New()
@@ -120,6 +128,8 @@ var _ = Describe("Physical", func() {
 			Expect(datum.Name).To(BeNil())
 			Expect(datum.ReportedIntensity).To(BeNil())
 			Expect(datum.Step).To(BeNil())
+			Expect(datum.EventType).To(BeNil())
+			Expect(datum.EventID).To(BeNil())
 		})
 	})
 
@@ -1278,6 +1288,12 @@ var _ = Describe("Physical", func() {
 				),
 				Entry("step valid",
 					func(datum *physical.Physical) { datum.Step = NewStep() },
+				),
+				Entry("EventType exists, EventID missing",
+					func(datum *physical.Physical) {
+						datum.EventID = nil
+					},
+					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueNotExists(), "/eventId", NewMeta()),
 				),
 				Entry("multiple errors",
 					func(datum *physical.Physical) {

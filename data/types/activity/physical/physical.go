@@ -90,6 +90,8 @@ const (
 	ReportedIntensityHigh                     = "high"
 	ReportedIntensityLow                      = "low"
 	ReportedIntensityMedium                   = "medium"
+	StartEvent                                = "start"
+	StopEvent                                 = "stop"
 )
 
 // Note: ActivityTypes from Apple HealthKit HKWorkoutActivityType
@@ -182,6 +184,13 @@ func ReportedIntensities() []string {
 	}
 }
 
+func Events() []string {
+	return []string{
+		StartEvent,
+		StopEvent,
+	}
+}
+
 type Physical struct {
 	types.Base `bson:",inline"`
 
@@ -197,6 +206,9 @@ type Physical struct {
 	Name              *string                   `json:"name,omitempty" bson:"name,omitempty"`
 	ReportedIntensity *string                   `json:"reportedIntensity,omitempty" bson:"reportedIntensity,omitempty"`
 	Step              *Step                     `json:"step,omitempty" bson:"step,omitempty"`
+	EventID           *string                   `json:"eventId,omitempty" bson:"eventId,omitempty"`
+	EventType         *string                   `json:"eventType,omitempty" bson:"eventType,omitempty"`
+	// inputTime
 }
 
 func New() *Physical {
@@ -224,6 +236,8 @@ func (p *Physical) Parse(parser structure.ObjectParser) {
 	p.Name = parser.String("name")
 	p.ReportedIntensity = parser.String("reportedIntensity")
 	p.Step = ParseStep(parser.WithReferenceObjectParser("step"))
+	p.EventID = parser.String("eventId")
+	p.EventType = parser.String("eventType")
 }
 
 func (p *Physical) Validate(validator structure.Validator) {
@@ -265,6 +279,10 @@ func (p *Physical) Validate(validator structure.Validator) {
 	validator.String("reportedIntensity", p.ReportedIntensity).OneOf(ReportedIntensities()...)
 	if p.Step != nil {
 		p.Step.Validate(validator.WithReference("step"))
+	}
+	validator.String("eventType", p.EventType).OneOf(Events()...)
+	if p.EventType != nil {
+		validator.String("eventId", p.EventID).Exists()
 	}
 }
 
