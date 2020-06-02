@@ -61,6 +61,10 @@ func (d *Device) Validate(validator structure.Validator) {
 	}
 
 	validator.String("subType", &d.SubType).Exists().NotEmpty()
+
+	if d.EventType != "" {
+		validator.String("eventType", &d.EventType).OneOf(Events()...)
+	}
 }
 
 func (d *Device) IdentityFields() ([]string, error) {
