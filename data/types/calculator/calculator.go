@@ -9,6 +9,7 @@ import (
 	dataTypesBolusFactory "github.com/tidepool-org/platform/data/types/bolus/factory"
 	dataTypesBolusNormal "github.com/tidepool-org/platform/data/types/bolus/normal"
 	commontypes "github.com/tidepool-org/platform/data/types/common"
+	"github.com/tidepool-org/platform/data/types/food"
 	"github.com/tidepool-org/platform/structure"
 	structureValidator "github.com/tidepool-org/platform/structure/validator"
 )
@@ -49,6 +50,7 @@ type Calculator struct {
 	Units                    *string                  `json:"units,omitempty" bson:"units,omitempty"`
 	CarbUnits                *string                  `json:"carbUnits,omitempty" bson:"carbUnits,omitempty"`
 	InputTime                *commontypes.InputTime   `bson:",inline"`
+	InputMeal                *food.Meal               `json:"inputMeal,omitempty" bson:"inputMeal,omitempty"`
 }
 
 func New() *Calculator {
@@ -76,6 +78,7 @@ func (c *Calculator) Parse(parser structure.ObjectParser) {
 	c.Bolus = dataTypesBolusFactory.ParseBolusDatum(parser.WithReferenceObjectParser("bolus"))
 	c.CarbUnits = parser.String("carbUnits")
 	c.InputTime.Parse(parser)
+	c.InputMeal.Parse(parser)
 }
 
 func (c *Calculator) Validate(validator structure.Validator) {
@@ -122,6 +125,9 @@ func (c *Calculator) Validate(validator structure.Validator) {
 	}
 	if c.InputTime != nil {
 		c.InputTime.Validate(validator)
+	}
+	if c.InputMeal != nil {
+		c.InputMeal.Validate(validator)
 	}
 }
 
@@ -175,5 +181,8 @@ func (c *Calculator) Normalize(normalizer data.Normalizer) {
 
 	if c.InputTime != nil {
 		c.InputTime.Normalize(normalizer.WithReference("inputTime"))
+	}
+	if c.InputMeal != nil {
+		c.InputMeal.Normalize(normalizer.WithReference("inputMeal"))
 	}
 }
