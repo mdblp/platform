@@ -20,6 +20,9 @@ const (
 	AlarmTypeOcclusion  = "occlusion"
 	AlarmTypeOther      = "other"
 	AlarmTypeOverLimit  = "over_limit"
+	AlarmTypeHandset    = "handset"
+	IsAnAlarm           = "alarm"
+	IsAnAlert           = "alert"
 )
 
 func AlarmTypes() []string {
@@ -33,15 +36,26 @@ func AlarmTypes() []string {
 		AlarmTypeOcclusion,
 		AlarmTypeOther,
 		AlarmTypeOverLimit,
+		AlarmTypeHandset,
+	}
+}
+
+func AlarmLevels() []string {
+	return []string{
+		IsAnAlarm,
+		IsAnAlert,
 	}
 }
 
 type Alarm struct {
 	device.Device `bson:",inline"`
 
-	AlarmType *string     `json:"alarmType,omitempty" bson:"alarmType,omitempty"`
-	Status    *data.Datum `json:"-" bson:"-"`
-	StatusID  *string     `json:"status,omitempty" bson:"status,omitempty"`
+	AlarmType  *string     `json:"alarmType,omitempty" bson:"alarmType,omitempty"`
+	Status     *data.Datum `json:"-" bson:"-"`
+	StatusID   *string     `json:"status,omitempty" bson:"status,omitempty"`
+	AlarmLevel *string     `json:"alarmLevel,omitempty" bson:"alarmLevel,omitempty"`
+	AlarmCode  *string     `json:"alarmCode,omitempty" bson:"alarmCode,omitempty"`
+	AlarmLabel *string     `json:"alarmLabel,omitempty" bson:"alarmLabel,omitempty"`
 }
 
 func New() *Alarm {
@@ -59,6 +73,9 @@ func (a *Alarm) Parse(parser structure.ObjectParser) {
 
 	a.AlarmType = parser.String("alarmType")
 	a.Status = dataTypesDeviceStatus.ParseStatusDatum(parser.WithReferenceObjectParser("status"))
+	a.AlarmLevel = parser.String("alarmLevel")
+	a.AlarmCode = parser.String("alarmCode")
+	a.AlarmLabel = parser.String("alarmLabel")
 }
 
 func (a *Alarm) Validate(validator structure.Validator) {
@@ -84,6 +101,9 @@ func (a *Alarm) Validate(validator structure.Validator) {
 			validator.WithReference("status").ReportError(structureValidator.ErrorValueExists())
 		}
 		validator.String("statusId", a.StatusID).Using(data.IDValidator)
+	}
+	if a.AlarmLevel != nil {
+		validator.String("alarmLevel", a.AlarmLevel).Exists().OneOf(AlarmLevels()...)
 	}
 }
 
