@@ -63,15 +63,9 @@ func (m *Meal) Parse(parser structure.ObjectParser) {
 }
 
 func (m *Meal) Validate(validator structure.Validator) {
-	if m.Meal != nil {
-		validator.String("meal", m.Meal).Exists().OneOf(MealSize()...)
-	}
-	if m.Snack != nil {
-		validator.String("snack", m.Snack).Exists().OneOf(IsASnack()...)
-	}
-	if m.Fat != nil {
-		validator.String("fat", m.Fat).Exists().OneOf(IsFat()...)
-	}
+	validator.String("meal", m.Meal).OneOf(MealSize()...)
+	validator.String("snack", m.Snack).OneOf(IsASnack()...)
+	validator.String("fat", m.Fat).OneOf(IsFat()...)
 }
 
 func (m *Meal) Normalize(normalizer data.Normalizer) {}

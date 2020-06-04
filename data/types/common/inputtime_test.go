@@ -1,4 +1,4 @@
-package commontypes_test
+package common_test
 
 import (
 	"time"
@@ -7,8 +7,8 @@ import (
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
 
-	commontypes "github.com/tidepool-org/platform/data/types/common"
-	commontypesTest "github.com/tidepool-org/platform/data/types/common/test"
+	dataTypesCommon "github.com/tidepool-org/platform/data/types/common"
+	dataTypesCommonTest "github.com/tidepool-org/platform/data/types/common/test"
 	"github.com/tidepool-org/platform/test"
 
 	dataNormalizer "github.com/tidepool-org/platform/data/normalizer"
@@ -19,18 +19,18 @@ import (
 	structureValidator "github.com/tidepool-org/platform/structure/validator"
 )
 
-func NewInputTime() *commontypes.InputTime {
-	datum := commontypesTest.NewInputTime()
+func NewInputTime() *dataTypesCommon.InputTime {
+	datum := dataTypesCommonTest.NewInputTime()
 	timeReference := test.RandomTime()
 	datum.InputTime = pointer.FromString(timeReference.Format(time.RFC3339Nano))
 	return datum
 }
 
-func CloneInputTime(datum *commontypes.InputTime) *commontypes.InputTime {
+func CloneInputTime(datum *dataTypesCommon.InputTime) *dataTypesCommon.InputTime {
 	if datum == nil {
 		return nil
 	}
-	clone := commontypesTest.NewInputTime()
+	clone := dataTypesCommonTest.NewInputTime()
 	clone.InputTime = pointer.CloneString(datum.InputTime)
 	return clone
 }
@@ -39,7 +39,7 @@ var _ = Describe("InputTime", func() {
 
 	Context("NewInputTime", func() {
 		It("is successful", func() {
-			Expect(commontypes.NewInputTime()).To(Equal(&commontypes.InputTime{}))
+			Expect(dataTypesCommon.NewInputTime()).To(Equal(&dataTypesCommon.InputTime{}))
 		})
 	})
 
@@ -50,21 +50,21 @@ var _ = Describe("InputTime", func() {
 
 		Context("Validate", func() {
 			DescribeTable("validates the datum",
-				func(mutator func(datum *commontypes.InputTime), expectedErrors ...error) {
+				func(mutator func(datum *dataTypesCommon.InputTime), expectedErrors ...error) {
 					datum := NewInputTime()
 					mutator(datum)
 					dataTypesTest.ValidateWithExpectedOrigins(datum, structure.Origins(), expectedErrors...)
 				},
 				Entry("succeeds",
-					func(datum *commontypes.InputTime) {},
+					func(datum *dataTypesCommon.InputTime) {},
 				),
 				Entry("Valid inputTime",
-					func(datum *commontypes.InputTime) {
+					func(datum *dataTypesCommon.InputTime) {
 						datum.InputTime = pointer.FromString(test.RandomTime().Format(time.RFC3339Nano))
 					},
 				),
 				Entry("invalid inputTime",
-					func(datum *commontypes.InputTime) {
+					func(datum *dataTypesCommon.InputTime) {
 						datum.InputTime = pointer.FromString("invalid")
 					},
 					errorsTest.WithPointerSource(structureValidator.ErrorValueStringAsTimeNotValid("invalid", time.RFC3339Nano), "/inputTime"),
@@ -74,7 +74,7 @@ var _ = Describe("InputTime", func() {
 
 		Context("Normalize", func() {
 			DescribeTable("normalizes the datum",
-				func(mutator func(datum *commontypes.InputTime)) {
+				func(mutator func(datum *dataTypesCommon.InputTime)) {
 					for _, origin := range structure.Origins() {
 						datum := NewInputTime()
 						mutator(datum)
@@ -88,7 +88,7 @@ var _ = Describe("InputTime", func() {
 					}
 				},
 				Entry("does not modify the datum",
-					func(datum *commontypes.InputTime) {},
+					func(datum *dataTypesCommon.InputTime) {},
 				),
 			)
 		})

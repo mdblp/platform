@@ -1,4 +1,4 @@
-package commontypes
+package common
 
 import (
 	"time"

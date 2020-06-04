@@ -1,26 +1,26 @@
-package commontypes_test
+package test
 
 import (
 	"time"
 
-	commontypes "github.com/tidepool-org/platform/data/types/common"
+	dataTypesCommon "github.com/tidepool-org/platform/data/types/common"
 	"github.com/tidepool-org/platform/test"
 
 	"github.com/tidepool-org/platform/pointer"
 )
 
-func NewInputTime() *commontypes.InputTime {
-	datum := commontypes.NewInputTime()
+func NewInputTime() *dataTypesCommon.InputTime {
+	datum := dataTypesCommon.NewInputTime()
 	timeReference := test.RandomTime()
 	datum.InputTime = pointer.FromString(timeReference.Format(time.RFC3339Nano))
 	return datum
 }
 
-func CloneInputTime(datum *commontypes.InputTime) *commontypes.InputTime {
+func CloneInputTime(datum *dataTypesCommon.InputTime) *dataTypesCommon.InputTime {
 	if datum == nil {
 		return nil
 	}
-	clone := commontypes.NewInputTime()
+	clone := dataTypesCommon.NewInputTime()
 	clone.InputTime = pointer.CloneString(datum.InputTime)
 	return clone
 }

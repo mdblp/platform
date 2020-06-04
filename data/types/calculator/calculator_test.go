@@ -20,7 +20,7 @@ import (
 	"github.com/tidepool-org/platform/data/types/bolus/normal"
 	dataTypesBolusNormalTest "github.com/tidepool-org/platform/data/types/bolus/normal/test"
 	"github.com/tidepool-org/platform/data/types/calculator"
-	commontypesTest "github.com/tidepool-org/platform/data/types/common/test"
+	dataTypesCommonTest "github.com/tidepool-org/platform/data/types/common/test"
 	mealTest "github.com/tidepool-org/platform/data/types/food/test"
 	dataTypesTest "github.com/tidepool-org/platform/data/types/test"
 	errorsTest "github.com/tidepool-org/platform/errors/test"
@@ -49,7 +49,7 @@ func NewCalculator(units *string) *calculator.Calculator {
 	datum.Recommended = NewRecommended()
 	datum.Units = units
 	datum.CarbUnits = pointer.FromString(test.RandomStringFromArray(calculator.CarbUnits()))
-	datum.InputTime = commontypesTest.NewInputTime()
+	datum.InputTime = dataTypesCommonTest.NewInputTime()
 	datum.InputMeal = mealTest.NewMeal()
 	return datum
 }
@@ -110,7 +110,7 @@ func CloneCalculator(datum *calculator.Calculator) *calculator.Calculator {
 	clone.Recommended = CloneRecommended(datum.Recommended)
 	clone.Units = pointer.CloneString(datum.Units)
 	clone.CarbUnits = pointer.CloneString(datum.CarbUnits)
-	clone.InputTime = commontypesTest.CloneInputTime(datum.InputTime)
+	clone.InputTime = dataTypesCommonTest.CloneInputTime(datum.InputTime)
 	clone.InputMeal = mealTest.CloneMeal(datum.InputMeal)
 	return clone
 }
