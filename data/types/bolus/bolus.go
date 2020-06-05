@@ -79,11 +79,14 @@ func (b *Bolus) Normalize(normalizer data.Normalizer) {
 	if b.InsulinFormulation != nil {
 		b.InsulinFormulation.Normalize(normalizer.WithReference("insulinFormulation"))
 	}
-	if b.InsulinOnBoard != nil {
-		b.InsulinOnBoard.Normalize(normalizer)
-	}
 	if b.Prescriptor != nil {
 		b.Prescriptor.Normalize(normalizer)
+	}
+	if b.InsulinOnBoard != nil {
+		b.InsulinOnBoard.Normalize(normalizer)
+		if b.Prescriptor != nil && *b.Prescriptor.Prescriptor == prescriptor.ManualPrescriptor {
+			b.InsulinOnBoard = nil
+		}
 	}
 }
 

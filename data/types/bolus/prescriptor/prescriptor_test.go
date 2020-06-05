@@ -31,7 +31,7 @@ func ClonePrescriptor(datum *prescriptor.Prescriptor) *prescriptor.Prescriptor {
 }
 
 var _ = Describe("Prescriptor", func() {
-	Context("Addition of two digits", func() {
+	Context("Object Creation", func() {
 
 		It("Manual Prescriptor is expected", func() {
 			Expect(prescriptor.ManualPrescriptor).To(Equal("manual"))
