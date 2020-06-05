@@ -116,11 +116,10 @@ func (f *Food) Validate(validator structure.Validator) {
 	if f.Meal != nil && *f.Meal == MealRescueCarbs {
 		if f.Prescriptor != nil {
 			validator.String("prescriptor", f.Prescriptor).OneOf(Presciptors()...)
-		}
-
-		if *f.Prescriptor == HybridPrescriptor && f.PrescribedNutrition == nil {
-			// Prescribed Nutrition is mandatory
-			validator.WithReference("prescribedNutrition").ReportError(structureValidator.ErrorValueNotExists())
+			if *f.Prescriptor == HybridPrescriptor && f.PrescribedNutrition == nil {
+				// Prescribed Nutrition is mandatory
+				validator.WithReference("prescribedNutrition").ReportError(structureValidator.ErrorValueNotExists())
+			}
 		}
 		if f.PrescribedNutrition != nil {
 			f.PrescribedNutrition.Validate(validator.WithReference("nutrition"))

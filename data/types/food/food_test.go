@@ -349,6 +349,14 @@ var _ = Describe("Food", func() {
 					},
 					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueNotExists(), "/prescribedNutrition", NewMeta()),
 				),
+				Entry("meal rescuecarbs; prescriptor is missing and prescribedNutrition exists",
+					func(datum *food.Food) {
+						datum.Meal = pointer.FromString("rescuecarbs")
+						datum.MealOther = nil
+						datum.Prescriptor = nil
+						datum.PrescribedNutrition = NewNutrition()
+					},
+				),
 				Entry("name missing",
 					func(datum *food.Food) { datum.Name = nil },
 				),
