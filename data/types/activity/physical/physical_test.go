@@ -1,6 +1,8 @@
 package physical_test
 
 import (
+	"time"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
@@ -130,6 +132,7 @@ var _ = Describe("Physical", func() {
 			Expect(datum.Step).To(BeNil())
 			Expect(datum.EventType).To(BeNil())
 			Expect(datum.EventID).To(BeNil())
+			Expect(datum.InputTime.InputTime).To(BeNil())
 		})
 	})
 
@@ -1294,6 +1297,17 @@ var _ = Describe("Physical", func() {
 						datum.EventID = nil
 					},
 					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueNotExists(), "/eventId", NewMeta()),
+				),
+				Entry("Valid inputTime",
+					func(datum *physical.Physical) {
+						datum.InputTime.InputTime = pointer.FromString(test.RandomTime().Format(time.RFC3339Nano))
+					},
+				),
+				Entry("InputTime invalid",
+					func(datum *physical.Physical) {
+						datum.InputTime.InputTime = pointer.FromString("invalid")
+					},
+					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueStringAsTimeNotValid("invalid", time.RFC3339Nano), "/inputTime", NewMeta()),
 				),
 				Entry("multiple errors",
 					func(datum *physical.Physical) {

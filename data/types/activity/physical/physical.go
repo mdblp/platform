@@ -194,26 +194,27 @@ func Events() []string {
 type Physical struct {
 	types.Base `bson:",inline"`
 
-	ActivityType      *string                   `json:"activityType,omitempty" bson:"activityType,omitempty"`
-	ActivityTypeOther *string                   `json:"activityTypeOther,omitempty" bson:"activityTypeOther,omitempty"`
-	Aggregate         *bool                     `json:"aggregate,omitempty" bson:"aggregate,omitempty"`
-	Distance          *Distance                 `json:"distance,omitempty" bson:"distance,omitempty"`
-	Duration          *dataTypesCommon.Duration `json:"duration,omitempty" bson:"duration,omitempty"`
-	ElevationChange   *ElevationChange          `json:"elevationChange,omitempty" bson:"elevationChange,omitempty"`
-	Energy            *Energy                   `json:"energy,omitempty" bson:"energy,omitempty"`
-	Flight            *Flight                   `json:"flight,omitempty" bson:"flight,omitempty"`
-	Lap               *Lap                      `json:"lap,omitempty" bson:"lap,omitempty"`
-	Name              *string                   `json:"name,omitempty" bson:"name,omitempty"`
-	ReportedIntensity *string                   `json:"reportedIntensity,omitempty" bson:"reportedIntensity,omitempty"`
-	Step              *Step                     `json:"step,omitempty" bson:"step,omitempty"`
-	EventID           *string                   `json:"eventId,omitempty" bson:"eventId,omitempty"`
-	EventType         *string                   `json:"eventType,omitempty" bson:"eventType,omitempty"`
-	// inputTime
+	ActivityType      *string                    `json:"activityType,omitempty" bson:"activityType,omitempty"`
+	ActivityTypeOther *string                    `json:"activityTypeOther,omitempty" bson:"activityTypeOther,omitempty"`
+	Aggregate         *bool                      `json:"aggregate,omitempty" bson:"aggregate,omitempty"`
+	Distance          *Distance                  `json:"distance,omitempty" bson:"distance,omitempty"`
+	Duration          *dataTypesCommon.Duration  `json:"duration,omitempty" bson:"duration,omitempty"`
+	ElevationChange   *ElevationChange           `json:"elevationChange,omitempty" bson:"elevationChange,omitempty"`
+	Energy            *Energy                    `json:"energy,omitempty" bson:"energy,omitempty"`
+	Flight            *Flight                    `json:"flight,omitempty" bson:"flight,omitempty"`
+	Lap               *Lap                       `json:"lap,omitempty" bson:"lap,omitempty"`
+	Name              *string                    `json:"name,omitempty" bson:"name,omitempty"`
+	ReportedIntensity *string                    `json:"reportedIntensity,omitempty" bson:"reportedIntensity,omitempty"`
+	Step              *Step                      `json:"step,omitempty" bson:"step,omitempty"`
+	EventID           *string                    `json:"eventId,omitempty" bson:"eventId,omitempty"`
+	EventType         *string                    `json:"eventType,omitempty" bson:"eventType,omitempty"`
+	InputTime         *dataTypesCommon.InputTime `bson:",inline"`
 }
 
 func New() *Physical {
 	return &Physical{
-		Base: types.New(Type),
+		Base:      types.New(Type),
+		InputTime: dataTypesCommon.NewInputTime(),
 	}
 }
 
@@ -238,6 +239,7 @@ func (p *Physical) Parse(parser structure.ObjectParser) {
 	p.Step = ParseStep(parser.WithReferenceObjectParser("step"))
 	p.EventID = parser.String("eventId")
 	p.EventType = parser.String("eventType")
+	p.InputTime.Parse(parser)
 }
 
 func (p *Physical) Validate(validator structure.Validator) {
@@ -284,6 +286,7 @@ func (p *Physical) Validate(validator structure.Validator) {
 	if p.EventType != nil {
 		validator.String("eventId", p.EventID).Exists()
 	}
+	p.InputTime.Validate(validator)
 }
 
 // IsValid returns true if there is no error in the validator
@@ -319,4 +322,5 @@ func (p *Physical) Normalize(normalizer data.Normalizer) {
 	if p.Step != nil {
 		p.Step.Normalize(normalizer.WithReference("step"))
 	}
+	p.InputTime.Normalize(normalizer.WithReference("inputTime"))
 }
