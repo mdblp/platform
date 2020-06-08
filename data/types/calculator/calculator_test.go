@@ -1283,12 +1283,6 @@ var _ = Describe("Calculator", func() {
 						datum.InputTime.InputTime = pointer.FromString(test.RandomTime().Format(time.RFC3339Nano))
 					},
 				),
-				Entry("No inputTime",
-					pointer.FromString("mg/dl"),
-					func(datum *calculator.Calculator, units *string) {
-						datum.InputTime = nil
-					},
-				),
 				Entry("InputTime invalid",
 					pointer.FromString("mg/dl"),
 					func(datum *calculator.Calculator, units *string) {

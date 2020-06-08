@@ -13,15 +13,6 @@ type InputTime struct {
 	InputTime *string `json:"inputTime,omitempty" bson:"inputTime,omitempty"`
 }
 
-func ParseInputTime(parser structure.ObjectParser) *InputTime {
-	if !parser.Exists() {
-		return nil
-	}
-	datum := NewInputTime()
-	parser.Parse(datum)
-	return datum
-}
-
 func NewInputTime() *InputTime {
 	return &InputTime{}
 }

@@ -123,9 +123,7 @@ func (c *Calculator) Validate(validator structure.Validator) {
 	if c.CarbUnits != nil {
 		validator.String("carbUnits", c.CarbUnits).OneOf(CarbUnits()...)
 	}
-	if c.InputTime != nil {
-		c.InputTime.Validate(validator)
-	}
+	c.InputTime.Validate(validator)
 	if c.InputMeal != nil {
 		c.InputMeal.Validate(validator)
 	}
@@ -179,9 +177,7 @@ func (c *Calculator) Normalize(normalizer data.Normalizer) {
 		c.Units = dataBloodGlucose.NormalizeUnits(c.Units)
 	}
 
-	if c.InputTime != nil {
-		c.InputTime.Normalize(normalizer.WithReference("inputTime"))
-	}
+	c.InputTime.Normalize(normalizer.WithReference("inputTime"))
 	if c.InputMeal != nil {
 		c.InputMeal.Normalize(normalizer.WithReference("inputMeal"))
 	}
