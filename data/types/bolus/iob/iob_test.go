@@ -7,28 +7,13 @@ import (
 
 	dataNormalizer "github.com/tidepool-org/platform/data/normalizer"
 	"github.com/tidepool-org/platform/data/types/bolus/iob"
+	dataTypesBolusIobTest "github.com/tidepool-org/platform/data/types/bolus/iob/test"
 	dataTypesTest "github.com/tidepool-org/platform/data/types/test"
 	errorsTest "github.com/tidepool-org/platform/errors/test"
 	"github.com/tidepool-org/platform/pointer"
 	"github.com/tidepool-org/platform/structure"
 	structureValidator "github.com/tidepool-org/platform/structure/validator"
-	"github.com/tidepool-org/platform/test"
 )
-
-func NewIob() *iob.Iob {
-	datum := iob.NewIob()
-	datum.InsulinOnBoard = pointer.FromFloat64(test.RandomFloat64FromRange(iob.InsulinOnBoardMinimum, iob.InsulinOnBoardMaximum))
-	return datum
-}
-
-func CloneIob(datum *iob.Iob) *iob.Iob {
-	if datum == nil {
-		return nil
-	}
-	clone := iob.NewIob()
-	clone.InsulinOnBoard = pointer.CloneFloat64(datum.InsulinOnBoard)
-	return clone
-}
 
 var _ = Describe("Iob", func() {
 
@@ -54,7 +39,7 @@ var _ = Describe("Iob", func() {
 		Context("Validate", func() {
 			DescribeTable("validates the datum",
 				func(mutator func(datum *iob.Iob), expectedErrors ...error) {
-					datum := NewIob()
+					datum := dataTypesBolusIobTest.NewIob()
 					mutator(datum)
 					dataTypesTest.ValidateWithExpectedOrigins(datum, structure.Origins(), expectedErrors...)
 				},
@@ -85,9 +70,9 @@ var _ = Describe("Iob", func() {
 			DescribeTable("normalizes the datum",
 				func(mutator func(datum *iob.Iob)) {
 					for _, origin := range structure.Origins() {
-						datum := NewIob()
+						datum := dataTypesBolusIobTest.NewIob()
 						mutator(datum)
-						expectedDatum := CloneIob(datum)
+						expectedDatum := dataTypesBolusIobTest.CloneIob(datum)
 						normalizer := dataNormalizer.New()
 						Expect(normalizer).ToNot(BeNil())
 						datum.Normalize(normalizer.WithOrigin(origin))

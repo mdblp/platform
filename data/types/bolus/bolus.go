@@ -3,7 +3,7 @@ package bolus
 import (
 	"github.com/tidepool-org/platform/data"
 	"github.com/tidepool-org/platform/data/types"
-	iob "github.com/tidepool-org/platform/data/types/bolus/iob"
+	"github.com/tidepool-org/platform/data/types/bolus/iob"
 	"github.com/tidepool-org/platform/data/types/bolus/prescriptor"
 	"github.com/tidepool-org/platform/data/types/insulin"
 	"github.com/tidepool-org/platform/errors"
@@ -83,9 +83,10 @@ func (b *Bolus) Normalize(normalizer data.Normalizer) {
 		b.Prescriptor.Normalize(normalizer)
 	}
 	if b.InsulinOnBoard != nil {
-		b.InsulinOnBoard.Normalize(normalizer)
 		if b.Prescriptor != nil && *b.Prescriptor.Prescriptor == prescriptor.ManualPrescriptor {
 			b.InsulinOnBoard = nil
+		} else {
+			b.InsulinOnBoard.Normalize(normalizer)
 		}
 	}
 }

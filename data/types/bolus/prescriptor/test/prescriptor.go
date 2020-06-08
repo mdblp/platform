@@ -17,6 +17,6 @@ func ClonePrescriptor(datum *prescriptor.Prescriptor) *prescriptor.Prescriptor {
 		return nil
 	}
 	clone := prescriptor.NewPrescriptor()
-	clone.Prescriptor = pointer.FromString(*datum.Prescriptor)
+	clone.Prescriptor = pointer.CloneString(datum.Prescriptor)
 	return clone
 }

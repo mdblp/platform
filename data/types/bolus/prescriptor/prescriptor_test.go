@@ -7,28 +7,13 @@ import (
 
 	dataNormalizer "github.com/tidepool-org/platform/data/normalizer"
 	"github.com/tidepool-org/platform/data/types/bolus/prescriptor"
+	dataTypesBolusPrescriptorTest "github.com/tidepool-org/platform/data/types/bolus/prescriptor/test"
 	dataTypesTest "github.com/tidepool-org/platform/data/types/test"
 	errorsTest "github.com/tidepool-org/platform/errors/test"
 	"github.com/tidepool-org/platform/pointer"
 	"github.com/tidepool-org/platform/structure"
 	structureValidator "github.com/tidepool-org/platform/structure/validator"
-	"github.com/tidepool-org/platform/test"
 )
-
-func NewPrescriptor() *prescriptor.Prescriptor {
-	datum := prescriptor.NewPrescriptor()
-	datum.Prescriptor = pointer.FromString(test.RandomStringFromArray(prescriptor.Presciptors()))
-	return datum
-}
-
-func ClonePrescriptor(datum *prescriptor.Prescriptor) *prescriptor.Prescriptor {
-	if datum == nil {
-		return nil
-	}
-	clone := prescriptor.NewPrescriptor()
-	clone.Prescriptor = pointer.CloneString(datum.Prescriptor)
-	return clone
-}
 
 var _ = Describe("Prescriptor", func() {
 	Context("Object Creation", func() {
@@ -60,14 +45,14 @@ var _ = Describe("Prescriptor", func() {
 		Context("Validate", func() {
 			DescribeTable("validates the datum",
 				func(mutator func(datum *prescriptor.Prescriptor), expectedErrors ...error) {
-					datum := NewPrescriptor()
+					datum := dataTypesBolusPrescriptorTest.NewPrescriptor()
 					mutator(datum)
 					dataTypesTest.ValidateWithExpectedOrigins(datum, structure.Origins(), expectedErrors...)
 				},
 				Entry("succeeds",
 					func(datum *prescriptor.Prescriptor) {},
 				),
-				Entry("Valid value",
+				Entry("Prescriptor is nil",
 					func(datum *prescriptor.Prescriptor) {
 						datum.Prescriptor = nil
 					},
@@ -85,9 +70,9 @@ var _ = Describe("Prescriptor", func() {
 			DescribeTable("normalizes the datum",
 				func(mutator func(datum *prescriptor.Prescriptor)) {
 					for _, origin := range structure.Origins() {
-						datum := NewPrescriptor()
+						datum := dataTypesBolusPrescriptorTest.NewPrescriptor()
 						mutator(datum)
-						expectedDatum := ClonePrescriptor(datum)
+						expectedDatum := dataTypesBolusPrescriptorTest.ClonePrescriptor(datum)
 						normalizer := dataNormalizer.New()
 						Expect(normalizer).ToNot(BeNil())
 						datum.Normalize(normalizer.WithOrigin(origin))
