@@ -64,16 +64,14 @@ func NewDeviceDatum(parser structure.ObjectParser) data.Datum {
 		return dataTypesDeviceParameter.New()
 	case dataTypesDeviceMode.ConfidentialMode:
 		if eventType != nil {
-			return dataTypesDeviceMode.New(dataTypesDeviceMode.ConfidentialMode)
-		} else {
-			return dataTypesDeviceMode.NewWithEvent(dataTypesDeviceMode.ConfidentialMode, *eventType)
+			return dataTypesDeviceMode.NewWithEvent(dataTypesDeviceMode.ConfidentialMode, eventType)
 		}
+		return dataTypesDeviceMode.New(dataTypesDeviceMode.ConfidentialMode)
 	case dataTypesDeviceMode.ZenMode:
 		if eventType != nil {
-			return dataTypesDeviceMode.NewWithEvent(dataTypesDeviceMode.ZenMode, *eventType)
-		} else {
-			return dataTypesDeviceMode.New(dataTypesDeviceMode.ZenMode)
+			return dataTypesDeviceMode.NewWithEvent(dataTypesDeviceMode.ZenMode, eventType)
 		}
+		return dataTypesDeviceMode.New(dataTypesDeviceMode.ZenMode)
 	}
 	parser.WithReferenceErrorReporter("subType").ReportError(structureValidator.ErrorValueStringNotOneOf(*value, subTypes))
 	return nil

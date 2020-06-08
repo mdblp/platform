@@ -5,6 +5,7 @@ import (
 	commontypes "github.com/tidepool-org/platform/data/types/common"
 	"github.com/tidepool-org/platform/data/types/device"
 	"github.com/tidepool-org/platform/structure"
+	structureValidator "github.com/tidepool-org/platform/structure/validator"
 )
 
 const (
@@ -31,7 +32,7 @@ func New(subType string) *Mode {
 	}
 }
 
-func NewWithEvent(subType string, deviceEvent string) *Mode {
+func NewWithEvent(subType string, deviceEvent *string) *Mode {
 	return &Mode{
 		Device: device.NewWithEvent(subType, deviceEvent),
 	}
@@ -53,13 +54,15 @@ func (m *Mode) Validate(validator structure.Validator) {
 	}
 
 	m.Device.Validate(validator)
-
-	if m.SubType != "" {
-		validator.String("subType", &m.SubType).OneOf(Modes()...)
+	validator.String("subType", &m.SubType).OneOf(Modes()...)
+	if m.EventType != nil {
+		validator.String("eventType", m.EventType).Exists()
 	}
 	validator.String("eventId", m.EventID).Exists().NotEmpty()
 	if m.Duration != nil {
 		m.Duration.Validate(validator.WithReference("duration"))
+	} else {
+		validator.WithReference("duration").ReportError(structureValidator.ErrorValueNotExists())
 	}
 }
 

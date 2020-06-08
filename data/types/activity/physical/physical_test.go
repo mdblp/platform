@@ -8,7 +8,7 @@ import (
 	dataNormalizer "github.com/tidepool-org/platform/data/normalizer"
 	"github.com/tidepool-org/platform/data/types"
 	"github.com/tidepool-org/platform/data/types/activity/physical"
-	commontypesTest "github.com/tidepool-org/platform/data/types/common/test"
+	dataTypesCommonTest "github.com/tidepool-org/platform/data/types/common/test"
 	dataTypesTest "github.com/tidepool-org/platform/data/types/test"
 	errorsTest "github.com/tidepool-org/platform/errors/test"
 	"github.com/tidepool-org/platform/pointer"
@@ -33,7 +33,7 @@ func NewPhysical() *physical.Physical {
 	}
 	datum.Aggregate = pointer.FromBool(test.RandomBool())
 	datum.Distance = NewDistance()
-	datum.Duration = commontypesTest.NewDuration()
+	datum.Duration = dataTypesCommonTest.NewDuration()
 	datum.ElevationChange = NewElevationChange()
 	datum.Energy = NewEnergy()
 	datum.Flight = NewFlight()
@@ -54,7 +54,7 @@ func ClonePhysical(datum *physical.Physical) *physical.Physical {
 	clone.ActivityTypeOther = pointer.CloneString(datum.ActivityTypeOther)
 	clone.Aggregate = pointer.CloneBool(datum.Aggregate)
 	clone.Distance = CloneDistance(datum.Distance)
-	clone.Duration = commontypesTest.CloneDuration(datum.Duration)
+	clone.Duration = dataTypesCommonTest.CloneDuration(datum.Duration)
 	clone.ElevationChange = CloneElevationChange(datum.ElevationChange)
 	clone.Energy = CloneEnergy(datum.Energy)
 	clone.Flight = CloneFlight(datum.Flight)
@@ -1187,7 +1187,7 @@ var _ = Describe("Physical", func() {
 					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueNotExists(), "/duration/units", NewMeta()),
 				),
 				Entry("duration valid",
-					func(datum *physical.Physical) { datum.Duration = commontypesTest.NewDuration() },
+					func(datum *physical.Physical) { datum.Duration = dataTypesCommonTest.NewDuration() },
 				),
 				Entry("elevation change missing",
 					func(datum *physical.Physical) { datum.ElevationChange = nil },

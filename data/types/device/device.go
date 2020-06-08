@@ -3,6 +3,7 @@ package device
 import (
 	"github.com/tidepool-org/platform/data/types"
 	"github.com/tidepool-org/platform/errors"
+	"github.com/tidepool-org/platform/pointer"
 	"github.com/tidepool-org/platform/structure"
 )
 
@@ -22,8 +23,9 @@ func Events() []string {
 type Device struct {
 	types.Base `bson:",inline"`
 
-	SubType   string `json:"subType,omitempty" bson:"subType,omitempty"`
-	EventType string `json:"eventType,omitempty" bson:"eventType,omitempty"`
+	SubType   string  `json:"subType,omitempty" bson:"subType,omitempty"`
+	EventType *string `json:"eventType,omitempty" bson:"eventType,omitempty"`
+	// EventType *string `json:"eventType,omitempty" bson:"eventType,omitempty"`
 }
 
 type Meta struct {
@@ -38,12 +40,10 @@ func New(subType string) Device {
 	}
 }
 
-func NewWithEvent(subType string, eventType string) Device {
-	return Device{
-		Base:      types.New(Type),
-		SubType:   subType,
-		EventType: eventType,
-	}
+func NewWithEvent(subType string, eventType *string) Device {
+	device := New(subType)
+	device.EventType = pointer.CloneString(eventType)
+	return device
 }
 
 func (d *Device) Meta() interface{} {
@@ -62,8 +62,8 @@ func (d *Device) Validate(validator structure.Validator) {
 
 	validator.String("subType", &d.SubType).Exists().NotEmpty()
 
-	if d.EventType != "" {
-		validator.String("eventType", &d.EventType).OneOf(Events()...)
+	if d.EventType != nil {
+		validator.String("eventType", d.EventType).OneOf(Events()...)
 	}
 }
 

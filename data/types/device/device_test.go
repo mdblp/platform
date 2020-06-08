@@ -26,7 +26,7 @@ var _ = Describe("Device", func() {
 			datum := device.New(subType)
 			Expect(datum.Type).To(Equal("deviceEvent"))
 			Expect(datum.SubType).To(Equal(subType))
-			Expect(datum.EventType).To(BeEmpty())
+			Expect(datum.EventType).To(BeNil())
 		})
 	})
 
@@ -81,12 +81,12 @@ var _ = Describe("Device", func() {
 				),
 				Entry("EventType valid",
 					func(datum *device.Device) {
-						datum.EventType = test.RandomStringFromArray(device.Events())
+						datum.EventType = pointer.FromString(test.RandomStringFromArray(device.Events()))
 					},
 				),
 				Entry("EventType invalid",
 					func(datum *device.Device) {
-						datum.EventType = "invalid"
+						datum.EventType = pointer.FromString("invalid")
 					},
 					errorsTest.WithPointerSource(structureValidator.ErrorValueStringNotOneOf("invalid", device.Events()), "/eventType"),
 				),

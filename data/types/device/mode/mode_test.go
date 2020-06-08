@@ -5,6 +5,7 @@ import (
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
 
+	dataTypesCommonTest "github.com/tidepool-org/platform/data/types/common/test"
 	"github.com/tidepool-org/platform/data/types/device"
 	"github.com/tidepool-org/platform/data/types/device/mode"
 	dataTypesDeviceTest "github.com/tidepool-org/platform/data/types/device/test"
@@ -23,10 +24,11 @@ func NewMeta() interface{} {
 }
 
 func NewMode() *mode.Mode {
-	datum := mode.New("zen")
+	datum := mode.NewWithEvent(mode.ZenMode, pointer.FromString(device.StartEvent))
 	datum.Device = *dataTypesDeviceTest.NewDevice()
-	datum.SubType = "zen"
+	datum.SubType = mode.ZenMode
 	datum.EventID = pointer.FromString("123456789")
+	datum.Duration = dataTypesCommonTest.NewDuration()
 	return datum
 }
 
@@ -34,8 +36,10 @@ func CloneMode(datum *mode.Mode) *mode.Mode {
 	if datum == nil {
 		return nil
 	}
-	clone := mode.New(datum.SubType)
+	clone := mode.NewWithEvent(datum.SubType, datum.EventType)
 	clone.Device = *dataTypesDeviceTest.CloneDevice(&datum.Device)
+	clone.EventID = pointer.FromString("123456789")
+	clone.Duration = dataTypesCommonTest.CloneDuration(datum.Duration)
 	return clone
 }
 
@@ -89,6 +93,7 @@ var _ = Describe("Change", func() {
 				Entry("sub type missing",
 					func(datum *mode.Mode) { datum.SubType = "" },
 					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueEmpty(), "/subType", &device.Meta{Type: "deviceEvent"}),
+					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueStringNotOneOf("", []string{"confidential", "zen"}), "/subType", &device.Meta{Type: "deviceEvent", SubType: ""}),
 				),
 				Entry("sub type invalid",
 					func(datum *mode.Mode) { datum.SubType = "invalidSubType" },
