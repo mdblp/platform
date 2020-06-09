@@ -3,6 +3,7 @@ package factory
 import (
 	"github.com/tidepool-org/platform/data"
 	"github.com/tidepool-org/platform/data/types/bolus"
+	dataTypesBolusBiphasic "github.com/tidepool-org/platform/data/types/bolus/biphasic"
 	dataTypesBolusCombination "github.com/tidepool-org/platform/data/types/bolus/combination"
 	dataTypesBolusExtended "github.com/tidepool-org/platform/data/types/bolus/extended"
 	dataTypesBolusNormal "github.com/tidepool-org/platform/data/types/bolus/normal"
@@ -14,6 +15,7 @@ var subTypes = []string{
 	dataTypesBolusCombination.SubType,
 	dataTypesBolusExtended.SubType,
 	dataTypesBolusNormal.SubType,
+	dataTypesBolusBiphasic.SubType,
 }
 
 func NewBolusDatum(parser structure.ObjectParser) data.Datum {
@@ -42,6 +44,8 @@ func NewBolusDatum(parser structure.ObjectParser) data.Datum {
 		return dataTypesBolusExtended.New()
 	case dataTypesBolusNormal.SubType:
 		return dataTypesBolusNormal.New()
+	case dataTypesBolusBiphasic.SubType:
+		return dataTypesBolusBiphasic.New()
 	}
 
 	parser.WithReferenceErrorReporter("subType").ReportError(structureValidator.ErrorValueStringNotOneOf(*value, subTypes))
