@@ -8,6 +8,8 @@ Here we document the data types that have to be created or udpated with new fiel
 - deviceEvent - Zen mode
 - deviceEvent - Private Mode
 
+_Note_: the examples below focused on the new fields. All the other fields (such as time, timezone, timezoneOffset) are not impacted by those changes and will not reauire updates.
+
 ## wizard 
 
 The wizard object comes with an optional `recommended` structure that can be leveraged for our purpose. This structure is composed of 3 optional floating point value fields:
@@ -90,7 +92,6 @@ Here we are introducing 2 new fields in the food object:
     }
   },
   "prescriptor": "hybrid",
-  "meal": "rescuecarbs",
   "deviceId": "IdOfTheDevice",
   "deviceTime": "2020-05-12T06:50:08",
   "time": "2020-05-12T06:50:08.000Z",

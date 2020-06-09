@@ -3,6 +3,7 @@ package food
 import (
 	"github.com/tidepool-org/platform/data"
 	"github.com/tidepool-org/platform/data/types"
+	"github.com/tidepool-org/platform/data/types/common"
 	"github.com/tidepool-org/platform/structure"
 	structureValidator "github.com/tidepool-org/platform/structure/validator"
 )
@@ -20,9 +21,6 @@ const (
 	MealSnack              = "snack"
 	MealRescueCarbs        = "rescuecarbs"
 	NameLengthMaximum      = 100
-	ManualPrescriptor      = "manual"
-	AutoPrescriptor        = "auto"
-	HybridPrescriptor      = "hybrid"
 )
 
 func Meals() []string {
@@ -36,32 +34,25 @@ func Meals() []string {
 	}
 }
 
-func Presciptors() []string {
-	return []string{
-		AutoPrescriptor,
-		ManualPrescriptor,
-		HybridPrescriptor,
-	}
-}
-
 type Food struct {
 	types.Base `bson:",inline"`
 
-	Amount              *Amount          `json:"amount,omitempty" bson:"amount,omitempty"`
-	Brand               *string          `json:"brand,omitempty" bson:"brand,omitempty"`
-	Code                *string          `json:"code,omitempty" bson:"code,omitempty"`
-	Ingredients         *IngredientArray `json:"ingredients,omitempty" bson:"ingredients,omitempty"`
-	Meal                *string          `json:"meal,omitempty" bson:"meal,omitempty"`
-	MealOther           *string          `json:"mealOther,omitempty" bson:"mealOther,omitempty"`
-	Name                *string          `json:"name,omitempty" bson:"name,omitempty"`
-	Nutrition           *Nutrition       `json:"nutrition,omitempty" bson:"nutrition,omitempty"`
-	PrescribedNutrition *Nutrition       `json:"prescribedNutrition,omitempty" bson:"prescribedNutrition,omitempty"`
-	Prescriptor         *string          `json:"prescriptor,omitempty" bson:"prescriptor,omitempty"`
+	Amount              *Amount             `json:"amount,omitempty" bson:"amount,omitempty"`
+	Brand               *string             `json:"brand,omitempty" bson:"brand,omitempty"`
+	Code                *string             `json:"code,omitempty" bson:"code,omitempty"`
+	Ingredients         *IngredientArray    `json:"ingredients,omitempty" bson:"ingredients,omitempty"`
+	Meal                *string             `json:"meal,omitempty" bson:"meal,omitempty"`
+	MealOther           *string             `json:"mealOther,omitempty" bson:"mealOther,omitempty"`
+	Name                *string             `json:"name,omitempty" bson:"name,omitempty"`
+	Nutrition           *Nutrition          `json:"nutrition,omitempty" bson:"nutrition,omitempty"`
+	PrescribedNutrition *Nutrition          `json:"prescribedNutrition,omitempty" bson:"prescribedNutrition,omitempty"`
+	Prescriptor         *common.Prescriptor `bson:",inline"`
 }
 
 func New() *Food {
 	return &Food{
-		Base: types.New(Type),
+		Base:        types.New(Type),
+		Prescriptor: common.NewPrescriptor(),
 	}
 }
 
@@ -81,7 +72,7 @@ func (f *Food) Parse(parser structure.ObjectParser) {
 	f.Name = parser.String("name")
 	f.Nutrition = ParseNutrition(parser.WithReferenceObjectParser("nutrition"))
 	f.PrescribedNutrition = ParseNutrition(parser.WithReferenceObjectParser("prescribedNutrition"))
-	f.Prescriptor = parser.String("prescriptor")
+	f.Prescriptor.Parse(parser)
 }
 
 func (f *Food) Validate(validator structure.Validator) {
@@ -115,8 +106,8 @@ func (f *Food) Validate(validator structure.Validator) {
 	}
 	if f.Meal != nil && *f.Meal == MealRescueCarbs {
 		if f.Prescriptor != nil {
-			validator.String("prescriptor", f.Prescriptor).OneOf(Presciptors()...)
-			if *f.Prescriptor == HybridPrescriptor && f.PrescribedNutrition == nil {
+			f.Prescriptor.Validate(validator)
+			if *f.Prescriptor.Prescriptor == common.HybridPrescriptor && f.PrescribedNutrition == nil {
 				// Prescribed Nutrition is mandatory
 				validator.WithReference("prescribedNutrition").ReportError(structureValidator.ErrorValueNotExists())
 			}
