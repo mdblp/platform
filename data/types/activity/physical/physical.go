@@ -3,7 +3,7 @@ package physical
 import (
 	"github.com/tidepool-org/platform/data"
 	"github.com/tidepool-org/platform/data/types"
-	dataTypesCommon "github.com/tidepool-org/platform/data/types/common"
+	"github.com/tidepool-org/platform/data/types/common"
 	"github.com/tidepool-org/platform/structure"
 )
 
@@ -90,8 +90,6 @@ const (
 	ReportedIntensityHigh                     = "high"
 	ReportedIntensityLow                      = "low"
 	ReportedIntensityMedium                   = "medium"
-	StartEvent                                = "start"
-	StopEvent                                 = "stop"
 )
 
 // Note: ActivityTypes from Apple HealthKit HKWorkoutActivityType
@@ -184,37 +182,31 @@ func ReportedIntensities() []string {
 	}
 }
 
-func Events() []string {
-	return []string{
-		StartEvent,
-		StopEvent,
-	}
-}
-
 type Physical struct {
 	types.Base `bson:",inline"`
 
-	ActivityType      *string                    `json:"activityType,omitempty" bson:"activityType,omitempty"`
-	ActivityTypeOther *string                    `json:"activityTypeOther,omitempty" bson:"activityTypeOther,omitempty"`
-	Aggregate         *bool                      `json:"aggregate,omitempty" bson:"aggregate,omitempty"`
-	Distance          *Distance                  `json:"distance,omitempty" bson:"distance,omitempty"`
-	Duration          *dataTypesCommon.Duration  `json:"duration,omitempty" bson:"duration,omitempty"`
-	ElevationChange   *ElevationChange           `json:"elevationChange,omitempty" bson:"elevationChange,omitempty"`
-	Energy            *Energy                    `json:"energy,omitempty" bson:"energy,omitempty"`
-	Flight            *Flight                    `json:"flight,omitempty" bson:"flight,omitempty"`
-	Lap               *Lap                       `json:"lap,omitempty" bson:"lap,omitempty"`
-	Name              *string                    `json:"name,omitempty" bson:"name,omitempty"`
-	ReportedIntensity *string                    `json:"reportedIntensity,omitempty" bson:"reportedIntensity,omitempty"`
-	Step              *Step                      `json:"step,omitempty" bson:"step,omitempty"`
-	EventID           *string                    `json:"eventId,omitempty" bson:"eventId,omitempty"`
-	EventType         *string                    `json:"eventType,omitempty" bson:"eventType,omitempty"`
-	InputTime         *dataTypesCommon.InputTime `bson:",inline"`
+	ActivityType      *string                   `json:"activityType,omitempty" bson:"activityType,omitempty"`
+	ActivityTypeOther *string                   `json:"activityTypeOther,omitempty" bson:"activityTypeOther,omitempty"`
+	Aggregate         *bool                     `json:"aggregate,omitempty" bson:"aggregate,omitempty"`
+	Distance          *Distance                 `json:"distance,omitempty" bson:"distance,omitempty"`
+	Duration          *dataTypesCommon.Duration `json:"duration,omitempty" bson:"duration,omitempty"`
+	ElevationChange   *ElevationChange          `json:"elevationChange,omitempty" bson:"elevationChange,omitempty"`
+	Energy            *Energy                   `json:"energy,omitempty" bson:"energy,omitempty"`
+	Flight            *Flight                   `json:"flight,omitempty" bson:"flight,omitempty"`
+	Lap               *Lap                      `json:"lap,omitempty" bson:"lap,omitempty"`
+	Name              *string                   `json:"name,omitempty" bson:"name,omitempty"`
+	ReportedIntensity *string                   `json:"reportedIntensity,omitempty" bson:"reportedIntensity,omitempty"`
+	Step              *Step                     `json:"step,omitempty" bson:"step,omitempty"`
+	EventID           *string                   `json:"eventId,omitempty" bson:"eventId,omitempty"`
+	EventType         *common.EventType         `bson:",inline"`
+	InputTime         *common.InputTime         `bson:",inline"`
 }
 
 func New() *Physical {
 	return &Physical{
 		Base:      types.New(Type),
-		InputTime: dataTypesCommon.NewInputTime(),
+		EventType: common.NewEventType(),
+		InputTime: common.NewInputTime(),
 	}
 }
 
@@ -238,7 +230,7 @@ func (p *Physical) Parse(parser structure.ObjectParser) {
 	p.ReportedIntensity = parser.String("reportedIntensity")
 	p.Step = ParseStep(parser.WithReferenceObjectParser("step"))
 	p.EventID = parser.String("eventId")
-	p.EventType = parser.String("eventType")
+	p.EventType.Parse(parser)
 	p.InputTime.Parse(parser)
 }
 
@@ -282,8 +274,8 @@ func (p *Physical) Validate(validator structure.Validator) {
 	if p.Step != nil {
 		p.Step.Validate(validator.WithReference("step"))
 	}
-	validator.String("eventType", p.EventType).OneOf(Events()...)
-	if p.EventType != nil {
+	p.EventType.Validate(validator)
+	if p.EventType.EventType != nil {
 		validator.String("eventId", p.EventID).Exists()
 	}
 	p.InputTime.Validate(validator)

@@ -10,6 +10,7 @@ import (
 	dataNormalizer "github.com/tidepool-org/platform/data/normalizer"
 	"github.com/tidepool-org/platform/data/types"
 	"github.com/tidepool-org/platform/data/types/activity/physical"
+	"github.com/tidepool-org/platform/data/types/common"
 	dataTypesCommonTest "github.com/tidepool-org/platform/data/types/common/test"
 	dataTypesTest "github.com/tidepool-org/platform/data/types/test"
 	errorsTest "github.com/tidepool-org/platform/errors/test"
@@ -43,7 +44,6 @@ func NewPhysical() *physical.Physical {
 	datum.Name = pointer.FromString(test.RandomStringFromRange(1, 100))
 	datum.ReportedIntensity = pointer.FromString(test.RandomStringFromArray(physical.ReportedIntensities()))
 	datum.Step = NewStep()
-	datum.EventType = pointer.FromString(test.RandomStringFromArray(physical.Events()))
 	datum.EventID = pointer.FromString("123456789")
 	return datum
 }
@@ -66,7 +66,8 @@ func ClonePhysical(datum *physical.Physical) *physical.Physical {
 	clone.Name = pointer.CloneString(datum.Name)
 	clone.ReportedIntensity = pointer.CloneString(datum.ReportedIntensity)
 	clone.Step = CloneStep(datum.Step)
-	clone.EventType = pointer.CloneString(datum.EventType)
+	clone.EventType = dataTypesCommonTest.CloneEventType(datum.EventType)
+	clone.InputTime = dataTypesCommonTest.CloneInputTime(datum.InputTime)
 	clone.EventID = pointer.CloneString(datum.EventID)
 	return clone
 }
@@ -110,7 +111,7 @@ var _ = Describe("Physical", func() {
 	})
 
 	It("Events returns expected", func() {
-		Expect(physical.Events()).To(Equal([]string{"start", "stop"}))
+		Expect(common.Events()).To(Equal([]string{"start", "stop"}))
 	})
 
 	Context("New", func() {
@@ -130,7 +131,7 @@ var _ = Describe("Physical", func() {
 			Expect(datum.Name).To(BeNil())
 			Expect(datum.ReportedIntensity).To(BeNil())
 			Expect(datum.Step).To(BeNil())
-			Expect(datum.EventType).To(BeNil())
+			Expect(datum.EventType.EventType).To(BeNil())
 			Expect(datum.EventID).To(BeNil())
 			Expect(datum.InputTime.InputTime).To(BeNil())
 		})
@@ -1294,9 +1295,17 @@ var _ = Describe("Physical", func() {
 				),
 				Entry("EventType exists, EventID missing",
 					func(datum *physical.Physical) {
+						datum.EventType = dataTypesCommonTest.NewEventType()
 						datum.EventID = nil
 					},
 					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueNotExists(), "/eventId", NewMeta()),
+				),
+				Entry("EventType invalid",
+					func(datum *physical.Physical) {
+						// datum.EventType = dataTypesCommonTest.NewEventType()
+						datum.EventType.EventType = pointer.FromString("invalid")
+					},
+					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueStringNotOneOf("invalid", common.Events()), "/eventType", NewMeta()),
 				),
 				Entry("Valid inputTime",
 					func(datum *physical.Physical) {
@@ -1321,6 +1330,8 @@ var _ = Describe("Physical", func() {
 						datum.Lap.Count = nil
 						datum.Name = pointer.FromString("")
 						datum.ReportedIntensity = pointer.FromString("invalid")
+						datum.EventType.EventType = pointer.FromString("invalid")
+						datum.InputTime.InputTime = pointer.FromString("invalid")
 						datum.Step.Count = nil
 					},
 					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueNotEqualTo("invalidType", "physicalActivity"), "/type", &types.Meta{Type: "invalidType"}),
@@ -1334,6 +1345,8 @@ var _ = Describe("Physical", func() {
 					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueEmpty(), "/name", &types.Meta{Type: "invalidType"}),
 					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueStringNotOneOf("invalid", []string{"high", "low", "medium"}), "/reportedIntensity", &types.Meta{Type: "invalidType"}),
 					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueNotExists(), "/step/count", &types.Meta{Type: "invalidType"}),
+					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueStringNotOneOf("invalid", common.Events()), "/eventType", &types.Meta{Type: "invalidType"}),
+					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueStringAsTimeNotValid("invalid", time.RFC3339Nano), "/inputTime", &types.Meta{Type: "invalidType"}),
 				),
 			)
 		})
