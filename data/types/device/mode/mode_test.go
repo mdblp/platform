@@ -26,6 +26,7 @@ func NewMeta() interface{} {
 func NewMode() *mode.Mode {
 	datum := mode.NewWithEvent(mode.ZenMode, pointer.FromString(device.StartEvent))
 	datum.Device = *dataTypesDeviceTest.NewDevice()
+	datum.EventType = pointer.FromString(device.StartEvent)
 	datum.SubType = mode.ZenMode
 	datum.EventID = pointer.FromString("123456789")
 	datum.Duration = dataTypesCommonTest.NewDuration()
@@ -38,6 +39,7 @@ func CloneMode(datum *mode.Mode) *mode.Mode {
 	}
 	clone := mode.NewWithEvent(datum.SubType, datum.EventType)
 	clone.Device = *dataTypesDeviceTest.CloneDevice(&datum.Device)
+	clone.EventType = pointer.FromString(*datum.EventType)
 	clone.EventID = pointer.FromString("123456789")
 	clone.Duration = dataTypesCommonTest.CloneDuration(datum.Duration)
 	return clone

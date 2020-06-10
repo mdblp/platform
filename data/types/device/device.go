@@ -25,7 +25,6 @@ type Device struct {
 
 	SubType   string  `json:"subType,omitempty" bson:"subType,omitempty"`
 	EventType *string `json:"eventType,omitempty" bson:"eventType,omitempty"`
-	// EventType *string `json:"eventType,omitempty" bson:"eventType,omitempty"`
 }
 
 type Meta struct {
