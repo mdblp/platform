@@ -8,7 +8,7 @@ Here we document the data types that have to be created or udpated with new fiel
 - deviceEvent - Zen mode
 - deviceEvent - Private Mode
 
-_Note_: the examples below focused on the new fields. All the other fields (such as time, timezone, timezoneOffset) are not impacted by those changes and will not reauire updates.
+_Note_: the examples below focused on the new fields. All the other fields (such as time, timezone, timezoneOffset) are not impacted by those changes and will not require updates.
 
 ## wizard 
 
