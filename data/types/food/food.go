@@ -145,7 +145,9 @@ func (f *Food) Normalize(normalizer data.Normalizer) {
 	if f.Nutrition != nil {
 		f.Nutrition.Normalize(normalizer.WithReference("nutrition"))
 	}
-	if f.PrescribedNutrition != nil {
+	if f.Prescriptor != nil && *f.Prescriptor.Prescriptor == common.HybridPrescriptor && f.PrescribedNutrition != nil {
 		f.PrescribedNutrition.Normalize(normalizer.WithReference("nutrition"))
+	} else {
+		f.PrescribedNutrition = nil
 	}
 }

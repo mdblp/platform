@@ -454,11 +454,12 @@ var _ = Describe("Food", func() {
 				),
 			)
 
-			DescribeTable("normalizes the datum for rescueCarbs",
+			DescribeTable("normalizes the datum for rescueCarbs, hybrid prescription",
 				func(mutator func(datum *food.Food)) {
 					for _, origin := range structure.Origins() {
 						datum := NewFood(3)
 						datum.Meal = pointer.FromString(food.MealRescueCarbs)
+						datum.Prescriptor.Prescriptor = pointer.FromString(common.HybridPrescriptor)
 						mutator(datum)
 						expectedDatum := CloneFood(datum)
 						normalizer := dataNormalizer.New()
@@ -497,6 +498,53 @@ var _ = Describe("Food", func() {
 					func(datum *food.Food) { datum.Nutrition = nil },
 				),
 			)
+
+			DescribeTable("normalizes the datum for rescueCarbs, other prescriptor",
+				func(mutator func(datum *food.Food)) {
+					for _, origin := range structure.Origins() {
+						datum := NewFood(3)
+						datum.Meal = pointer.FromString(food.MealRescueCarbs)
+						datum.Prescriptor.Prescriptor = pointer.FromString(test.RandomStringFromArray([]string{common.ManualPrescriptor, common.AutoPrescriptor}))
+						mutator(datum)
+						expectedDatum := CloneFood(datum)
+						expectedDatum.PrescribedNutrition = nil
+						normalizer := dataNormalizer.New()
+						Expect(normalizer).ToNot(BeNil())
+						datum.Normalize(normalizer.WithOrigin(origin))
+						Expect(normalizer.Error()).To(BeNil())
+						Expect(normalizer.Data()).To(BeEmpty())
+						Expect(datum).To(Equal(expectedDatum))
+					}
+				},
+				Entry("does not modify the datum",
+					func(datum *food.Food) {},
+				),
+				Entry("does not modify the datum; amount missing",
+					func(datum *food.Food) { datum.Amount = nil },
+				),
+				Entry("does not modify the datum; brand missing",
+					func(datum *food.Food) { datum.Brand = nil },
+				),
+				Entry("does not modify the datum; code missing",
+					func(datum *food.Food) { datum.Code = nil },
+				),
+				Entry("does not modify the datum; ingredients missing",
+					func(datum *food.Food) { datum.Ingredients = nil },
+				),
+				Entry("does not modify the datum; meal missing",
+					func(datum *food.Food) { datum.Meal = nil },
+				),
+				Entry("does not modify the datum; meal other missing",
+					func(datum *food.Food) { datum.MealOther = nil },
+				),
+				Entry("does not modify the datum; name missing",
+					func(datum *food.Food) { datum.Name = nil },
+				),
+				Entry("does not modify the datum; nutrition missing",
+					func(datum *food.Food) { datum.Nutrition = nil },
+				),
+			)
+
 		})
 	})
 })

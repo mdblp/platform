@@ -69,9 +69,9 @@ As of now we don't have the information of the origin of the rescueCarbs value, 
 
 Here we are introducing 2 new fields in the food object:
 - `prescribedNutrition`: same structure as nutrition. It's an optional field. It gives the value that has been recommended by the system. 
-- `prescriptor`: is the origin of the `rescuecarbs` object. This field is optional in most of the cases. 
+- `prescriptor`: is the origin of the `rescuecarbs` object. This field is mandatory in one case, `hybrid`: 
     - range of values: `auto | manual | hybrid`
-    - `auto`: nutrition and prescribedNutrition are equal
+    - `auto`: prescribedNutrition is ignored
     - `manual`: prescribedNutrition is ignored
     - `hybrid`: nutrition and prescribedNutrition are __not equal__, `prescribedNutrition` is mandatory in that case. 
 
