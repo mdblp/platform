@@ -3,7 +3,7 @@ package dexcom
 import (
 	"strconv"
 
-	commontypes "github.com/tidepool-org/platform/data/types/common"
+	dataTypesCommon "github.com/tidepool-org/platform/data/types/common"
 	dataTypesFood "github.com/tidepool-org/platform/data/types/food"
 	dataTypesInsulin "github.com/tidepool-org/platform/data/types/insulin"
 	"github.com/tidepool-org/platform/structure"
@@ -24,8 +24,8 @@ const (
 	EventSubTypeExerciseMedium       = "medium"
 	EventSubTypeExerciseHeavy        = "heavy"
 	EventUnitExerciseMinutes         = "minutes"
-	EventValueExerciseMinutesMaximum = commontypes.DurationValueMinutesMaximum
-	EventValueExerciseMinutesMinimum = commontypes.DurationValueMinutesMinimum
+	EventValueExerciseMinutesMaximum = dataTypesCommon.DurationValueMinutesMaximum
+	EventValueExerciseMinutesMinimum = dataTypesCommon.DurationValueMinutesMinimum
 
 	EventSubTypeHealthAlcohol      = "alcohol"
 	EventSubTypeHealthCycle        = "cycle"
