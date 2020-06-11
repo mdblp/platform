@@ -5,6 +5,7 @@ import (
 	"github.com/tidepool-org/platform/data/types"
 	"github.com/tidepool-org/platform/data/types/common"
 	"github.com/tidepool-org/platform/structure"
+	structureValidator "github.com/tidepool-org/platform/structure/validator"
 )
 
 const (
@@ -277,6 +278,9 @@ func (p *Physical) Validate(validator structure.Validator) {
 	p.EventType.Validate(validator)
 	if p.EventType.EventType != nil {
 		validator.String("eventId", p.EventID).Exists()
+		if p.Duration == nil {
+			validator.WithReference("duration").ReportError(structureValidator.ErrorValueNotExists())
+		}
 	}
 	p.InputTime.Validate(validator)
 }

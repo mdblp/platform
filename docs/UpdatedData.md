@@ -180,7 +180,7 @@ __Note #2__: the `"part":2` object is not mandatory. The system can decide to ca
 
 We need additional fields to get the time at which the physical activity is created, and the last time it was updated by the patient:
 - `inputTime` is a UTC string timestamp that defines at what time the patient has entered the physical activity. This field is optional. It takes the same format as `time` field.
-- `eventType`: type of event, either `start` or `end`
+- `eventType`: type of event, either `start` or `end`. This field is optional, but when provided it makes eventID and duration mandatory.
   - `start` defines the beginning of the event. The `duration` is the estimated one. The `time` field gives the actual start time of the event.
   - `stop` gives the end of the event. The `duration` is the actual duration. The `time` field gives the actual end time of the event. 
 - `eventId`: unique ID provided by the client that is used to link stop and start events.

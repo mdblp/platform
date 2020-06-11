@@ -1300,6 +1300,13 @@ var _ = Describe("Physical", func() {
 					},
 					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueNotExists(), "/eventId", NewMeta()),
 				),
+				Entry("EventType exists, EventID exists, duration missing",
+					func(datum *physical.Physical) {
+						datum.EventType = dataTypesCommonTest.NewEventType()
+						datum.Duration = nil
+					},
+					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueNotExists(), "/duration", NewMeta()),
+				),
 				Entry("EventType invalid",
 					func(datum *physical.Physical) {
 						// datum.EventType = dataTypesCommonTest.NewEventType()
