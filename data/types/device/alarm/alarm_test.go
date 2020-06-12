@@ -8,6 +8,7 @@ import (
 	"github.com/tidepool-org/platform/data"
 	dataNormalizer "github.com/tidepool-org/platform/data/normalizer"
 	dataTest "github.com/tidepool-org/platform/data/test"
+	"github.com/tidepool-org/platform/data/types"
 	"github.com/tidepool-org/platform/data/types/device"
 	"github.com/tidepool-org/platform/data/types/device/alarm"
 	dataTypesDeviceStatus "github.com/tidepool-org/platform/data/types/device/status"
@@ -52,10 +53,13 @@ func NewAlarmWithStatusID() *alarm.Alarm {
 
 func NewAlarmFromHandset() *alarm.Alarm {
 	datum := NewAlarm()
+	datum.EventID = pointer.FromString("ID123456789")
 	datum.AlarmType = pointer.FromString(alarm.AlarmTypeHandset)
 	datum.AlarmLevel = pointer.FromString(test.RandomStringFromArray(alarm.AlarmLevels()))
 	datum.AlarmCode = pointer.FromString("code123")
 	datum.AlarmLabel = pointer.FromString("label")
+	datum.AckStatus = pointer.FromString(test.RandomStringFromArray(alarm.AckStatuses()))
+	datum.UpdateTime = pointer.CloneString(datum.Time)
 	return datum
 }
 
@@ -325,16 +329,52 @@ var _ = Describe("Change", func() {
 					func(datum *alarm.Alarm) {
 						datum.AlarmLevel = nil
 					},
+					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueNotExists(), "/alarmLevel", NewMeta()),
 				),
 				Entry("alarm code is missing",
 					func(datum *alarm.Alarm) {
 						datum.AlarmCode = nil
 					},
+					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueNotExists(), "/alarmCode", NewMeta()),
 				),
 				Entry("alarm label is missing",
 					func(datum *alarm.Alarm) {
 						datum.AlarmLabel = nil
 					},
+					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueNotExists(), "/alarmLabel", NewMeta()),
+				),
+				Entry("ackStatus is missing",
+					func(datum *alarm.Alarm) {
+						datum.AckStatus = nil
+					},
+					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueNotExists(), "/ackStatus", NewMeta()),
+				),
+				Entry("updateTime is missing",
+					func(datum *alarm.Alarm) {
+						datum.UpdateTime = nil
+					},
+					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueNotExists(), "/updateTime", NewMeta()),
+				),
+				Entry("Mulitple missing",
+					func(datum *alarm.Alarm) {
+						datum.AlarmLevel = nil
+						datum.AlarmCode = nil
+						datum.AlarmLabel = nil
+						datum.AckStatus = nil
+						datum.UpdateTime = nil
+					},
+					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueNotExists(), "/alarmLevel", NewMeta()),
+					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueNotExists(), "/alarmCode", NewMeta()),
+					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueNotExists(), "/alarmLabel", NewMeta()),
+					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueNotExists(), "/ackStatus", NewMeta()),
+					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueNotExists(), "/updateTime", NewMeta()),
+				),
+				Entry("updateTime is invalid",
+					func(datum *alarm.Alarm) {
+						datum.UpdateTime = pointer.FromString("invalid")
+					},
+					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueStringAsTimeNotValid("invalid", types.TimeFormat), "/updateTime", NewMeta()),
+					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueNotExists(), "/updateTime", NewMeta()),
 				),
 			)
 		})

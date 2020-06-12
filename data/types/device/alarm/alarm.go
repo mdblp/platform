@@ -2,6 +2,7 @@ package alarm
 
 import (
 	"github.com/tidepool-org/platform/data"
+	"github.com/tidepool-org/platform/data/types"
 	"github.com/tidepool-org/platform/data/types/device"
 	dataTypesDeviceStatus "github.com/tidepool-org/platform/data/types/device/status"
 	"github.com/tidepool-org/platform/structure"
@@ -23,6 +24,9 @@ const (
 	AlarmTypeHandset    = "handset"
 	IsAnAlarm           = "alarm"
 	IsAnAlert           = "alert"
+	NewAck              = "new"
+	Acknowledged        = "acknowledged"
+	Outdated            = "outdated"
 )
 
 func AlarmTypes() []string {
@@ -47,15 +51,26 @@ func AlarmLevels() []string {
 	}
 }
 
+func AckStatuses() []string {
+	return []string{
+		NewAck,
+		Acknowledged,
+		Outdated,
+	}
+}
+
 type Alarm struct {
 	device.Device `bson:",inline"`
 
 	AlarmType  *string     `json:"alarmType,omitempty" bson:"alarmType,omitempty"`
 	Status     *data.Datum `json:"-" bson:"-"`
 	StatusID   *string     `json:"status,omitempty" bson:"status,omitempty"`
+	EventID    *string     `json:"eventId,omitempty" bson:"eventId,omitempty"`
 	AlarmLevel *string     `json:"alarmLevel,omitempty" bson:"alarmLevel,omitempty"`
 	AlarmCode  *string     `json:"alarmCode,omitempty" bson:"alarmCode,omitempty"`
 	AlarmLabel *string     `json:"alarmLabel,omitempty" bson:"alarmLabel,omitempty"`
+	AckStatus  *string     `json:"ackStatus,omitempty" bson:"ackStatus,omitempty"`
+	UpdateTime *string     `json:"updateTime,omitempty" bson:"updateTime,omitempty"`
 }
 
 func New() *Alarm {
@@ -73,9 +88,12 @@ func (a *Alarm) Parse(parser structure.ObjectParser) {
 
 	a.AlarmType = parser.String("alarmType")
 	a.Status = dataTypesDeviceStatus.ParseStatusDatum(parser.WithReferenceObjectParser("status"))
+	a.EventID = parser.String("eventId")
 	a.AlarmLevel = parser.String("alarmLevel")
 	a.AlarmCode = parser.String("alarmCode")
 	a.AlarmLabel = parser.String("alarmLabel")
+	a.AckStatus = parser.String("ackStatus")
+	a.UpdateTime = parser.String("updateTime")
 }
 
 func (a *Alarm) Validate(validator structure.Validator) {
@@ -102,8 +120,14 @@ func (a *Alarm) Validate(validator structure.Validator) {
 		}
 		validator.String("statusId", a.StatusID).Using(data.IDValidator)
 	}
-	if a.AlarmLevel != nil {
+	validator.String("ackStatus", a.AckStatus).OneOf(AckStatuses()...)
+	if a.EventID != nil {
 		validator.String("alarmLevel", a.AlarmLevel).Exists().OneOf(AlarmLevels()...)
+		validator.String("alarmCode", a.AlarmCode).Exists()
+		validator.String("alarmLabel", a.AlarmLabel).Exists()
+		validator.String("ackStatus", a.AckStatus).Exists()
+		timeValidator := validator.String("updateTime", a.UpdateTime)
+		timeValidator.AsTime(types.TimeFormat).Exists()
 	}
 }
 
