@@ -176,6 +176,23 @@ __Note #2__: the `"part":2` object is not mandatory. The system can decide to ca
 }
 ```
 
+## Pen bolus
+
+A `pen` bolus is a normal bolus administered manually with insulin pen or syringe. The subType associated to this type of bolus is `pen`. It contains a single field compared to other boluses. 
+- `normal` is similar to what is defined in `normal` bolus. 
+
+```json
+{
+  "time": "2020-05-12T12:00:00.000Z",
+  "timezoneOffset": 120,
+  "deviceTime": "2020-05-12T12:00:08",
+  "deviceId": "IdOfTheDevice",
+  "type": "bolus",
+  "subType": "pen",
+  "normal": 5
+}
+```
+
 ## physical activity
 
 We need additional fields to get the time at which the physical activity is created, and the last time it was updated by the patient:
