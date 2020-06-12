@@ -10,6 +10,7 @@ import (
 	dataTypesBolusBiphasicTest "github.com/tidepool-org/platform/data/types/bolus/biphasic/test"
 	dataTypesTest "github.com/tidepool-org/platform/data/types/test"
 	errorsTest "github.com/tidepool-org/platform/errors/test"
+	"github.com/tidepool-org/platform/pointer"
 	"github.com/tidepool-org/platform/structure"
 	structureValidator "github.com/tidepool-org/platform/structure/validator"
 )
@@ -66,6 +67,37 @@ var _ = Describe("Normal", func() {
 						datum.Type = "invalidType"
 					},
 					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueNotEqualTo("invalidType", "bolus"), "/type", &bolus.Meta{Type: "invalidType", SubType: "biphasic"}),
+				),
+				Entry("Part invalid",
+					func(datum *biphasic.Biphasic) {
+						datum.Part = pointer.FromString("invalid")
+					},
+					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueStringNotOneOf("invalid", biphasic.Parts()), "/part", NewMeta()),
+				),
+				Entry("linked bolus missing",
+					func(datum *biphasic.Biphasic) {
+						datum.LinkedBolus = nil
+					},
+				),
+				Entry("Part missing",
+					func(datum *biphasic.Biphasic) {
+						datum.Part = nil
+					},
+					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueNotExists(), "/part", NewMeta()),
+				),
+				Entry("EventID missing",
+					func(datum *biphasic.Biphasic) {
+						datum.EventID = nil
+					},
+					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueNotExists(), "/eventId", NewMeta()),
+				),
+				Entry("Multiple errors",
+					func(datum *biphasic.Biphasic) {
+						datum.Part = nil
+						datum.EventID = nil
+					},
+					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueNotExists(), "/part", NewMeta()),
+					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueNotExists(), "/eventId", NewMeta()),
 				),
 			)
 		})

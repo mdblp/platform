@@ -8,7 +8,16 @@ import (
 
 const (
 	SubType = normal.BiphasicSubType
+	Part1   = "1"
+	Part2   = "2"
 )
+
+func Parts() []string {
+	return []string{
+		Part1,
+		Part2,
+	}
+}
 
 type Biphasic struct {
 	normal.Normal `bson:",inline"`
@@ -45,8 +54,11 @@ func (b *Biphasic) Validate(validator structure.Validator) {
 	if b.SubType != "" {
 		validator.String("subType", &b.SubType).EqualTo(SubType)
 	}
-
-	b.LinkedBolus.Validate(validator)
+	validator.String("part", b.Part).Exists().NotEmpty().OneOf(Parts()...)
+	validator.String("eventId", b.EventID).Exists().NotEmpty()
+	if b.LinkedBolus != nil {
+		b.LinkedBolus.Validate(validator)
+	}
 }
 
 // IsValid returns true if there is no error in the validator
