@@ -186,27 +186,25 @@ func ReportedIntensities() []string {
 type Physical struct {
 	types.Base `bson:",inline"`
 
-	ActivityType      *string                   `json:"activityType,omitempty" bson:"activityType,omitempty"`
-	ActivityTypeOther *string                   `json:"activityTypeOther,omitempty" bson:"activityTypeOther,omitempty"`
-	Aggregate         *bool                     `json:"aggregate,omitempty" bson:"aggregate,omitempty"`
-	Distance          *Distance                 `json:"distance,omitempty" bson:"distance,omitempty"`
-	Duration          *dataTypesCommon.Duration `json:"duration,omitempty" bson:"duration,omitempty"`
-	ElevationChange   *ElevationChange          `json:"elevationChange,omitempty" bson:"elevationChange,omitempty"`
-	Energy            *Energy                   `json:"energy,omitempty" bson:"energy,omitempty"`
-	Flight            *Flight                   `json:"flight,omitempty" bson:"flight,omitempty"`
-	Lap               *Lap                      `json:"lap,omitempty" bson:"lap,omitempty"`
-	Name              *string                   `json:"name,omitempty" bson:"name,omitempty"`
-	ReportedIntensity *string                   `json:"reportedIntensity,omitempty" bson:"reportedIntensity,omitempty"`
-	Step              *Step                     `json:"step,omitempty" bson:"step,omitempty"`
-	EventID           *string                   `json:"eventId,omitempty" bson:"eventId,omitempty"`
-	EventType         *common.EventType         `bson:",inline"`
-	InputTime         *common.InputTime         `bson:",inline"`
+	ActivityType      *string           `json:"activityType,omitempty" bson:"activityType,omitempty"`
+	ActivityTypeOther *string           `json:"activityTypeOther,omitempty" bson:"activityTypeOther,omitempty"`
+	Aggregate         *bool             `json:"aggregate,omitempty" bson:"aggregate,omitempty"`
+	Distance          *Distance         `json:"distance,omitempty" bson:"distance,omitempty"`
+	Duration          *common.Duration  `json:"duration,omitempty" bson:"duration,omitempty"`
+	ElevationChange   *ElevationChange  `json:"elevationChange,omitempty" bson:"elevationChange,omitempty"`
+	Energy            *Energy           `json:"energy,omitempty" bson:"energy,omitempty"`
+	Flight            *Flight           `json:"flight,omitempty" bson:"flight,omitempty"`
+	Lap               *Lap              `json:"lap,omitempty" bson:"lap,omitempty"`
+	Name              *string           `json:"name,omitempty" bson:"name,omitempty"`
+	ReportedIntensity *string           `json:"reportedIntensity,omitempty" bson:"reportedIntensity,omitempty"`
+	Step              *Step             `json:"step,omitempty" bson:"step,omitempty"`
+	EventID           *string           `json:"eventId,omitempty" bson:"eventId,omitempty"`
+	InputTime         *common.InputTime `bson:",inline"`
 }
 
 func New() *Physical {
 	return &Physical{
 		Base:      types.New(Type),
-		EventType: common.NewEventType(),
 		InputTime: common.NewInputTime(),
 	}
 }
@@ -222,7 +220,7 @@ func (p *Physical) Parse(parser structure.ObjectParser) {
 	p.ActivityTypeOther = parser.String("activityTypeOther")
 	p.Aggregate = parser.Bool("aggregate")
 	p.Distance = ParseDistance(parser.WithReferenceObjectParser("distance"))
-	p.Duration = dataTypesCommon.ParseDuration(parser.WithReferenceObjectParser("duration"))
+	p.Duration = common.ParseDuration(parser.WithReferenceObjectParser("duration"))
 	p.ElevationChange = ParseElevationChange(parser.WithReferenceObjectParser("elevationChange"))
 	p.Energy = ParseEnergy(parser.WithReferenceObjectParser("energy"))
 	p.Flight = ParseFlight(parser.WithReferenceObjectParser("flight"))
@@ -231,7 +229,6 @@ func (p *Physical) Parse(parser structure.ObjectParser) {
 	p.ReportedIntensity = parser.String("reportedIntensity")
 	p.Step = ParseStep(parser.WithReferenceObjectParser("step"))
 	p.EventID = parser.String("eventId")
-	p.EventType.Parse(parser)
 	p.InputTime.Parse(parser)
 }
 
@@ -275,12 +272,9 @@ func (p *Physical) Validate(validator structure.Validator) {
 	if p.Step != nil {
 		p.Step.Validate(validator.WithReference("step"))
 	}
-	p.EventType.Validate(validator)
-	if p.EventType.EventType != nil {
-		validator.String("eventId", p.EventID).Exists()
-		if p.Duration == nil {
-			validator.WithReference("duration").ReportError(structureValidator.ErrorValueNotExists())
-		}
+	validator.String("eventId", p.EventID)
+	if p.EventID != nil && p.Duration == nil {
+		validator.WithReference("duration").ReportError(structureValidator.ErrorValueNotExists())
 	}
 	p.InputTime.Validate(validator)
 }

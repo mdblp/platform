@@ -66,7 +66,6 @@ func ClonePhysical(datum *physical.Physical) *physical.Physical {
 	clone.Name = pointer.CloneString(datum.Name)
 	clone.ReportedIntensity = pointer.CloneString(datum.ReportedIntensity)
 	clone.Step = CloneStep(datum.Step)
-	clone.EventType = dataTypesCommonTest.CloneEventType(datum.EventType)
 	clone.InputTime = dataTypesCommonTest.CloneInputTime(datum.InputTime)
 	clone.EventID = pointer.CloneString(datum.EventID)
 	return clone
@@ -131,7 +130,6 @@ var _ = Describe("Physical", func() {
 			Expect(datum.Name).To(BeNil())
 			Expect(datum.ReportedIntensity).To(BeNil())
 			Expect(datum.Step).To(BeNil())
-			Expect(datum.EventType.EventType).To(BeNil())
 			Expect(datum.EventID).To(BeNil())
 			Expect(datum.InputTime.InputTime).To(BeNil())
 		})
@@ -1191,8 +1189,11 @@ var _ = Describe("Physical", func() {
 				Entry("distance valid",
 					func(datum *physical.Physical) { datum.Distance = NewDistance() },
 				),
-				Entry("duration missing",
-					func(datum *physical.Physical) { datum.Duration = nil },
+				Entry("eventID missing, duration missing",
+					func(datum *physical.Physical) {
+						datum.EventID = nil
+						datum.Duration = nil
+					},
 				),
 				Entry("duration invalid",
 					func(datum *physical.Physical) {
@@ -1293,26 +1294,11 @@ var _ = Describe("Physical", func() {
 				Entry("step valid",
 					func(datum *physical.Physical) { datum.Step = NewStep() },
 				),
-				Entry("EventType exists, EventID missing",
+				Entry("EventID exists, duration missing",
 					func(datum *physical.Physical) {
-						datum.EventType = dataTypesCommonTest.NewEventType()
-						datum.EventID = nil
-					},
-					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueNotExists(), "/eventId", NewMeta()),
-				),
-				Entry("EventType exists, EventID exists, duration missing",
-					func(datum *physical.Physical) {
-						datum.EventType = dataTypesCommonTest.NewEventType()
 						datum.Duration = nil
 					},
 					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueNotExists(), "/duration", NewMeta()),
-				),
-				Entry("EventType invalid",
-					func(datum *physical.Physical) {
-						// datum.EventType = dataTypesCommonTest.NewEventType()
-						datum.EventType.EventType = pointer.FromString("invalid")
-					},
-					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueStringNotOneOf("invalid", common.Events()), "/eventType", NewMeta()),
 				),
 				Entry("Valid inputTime",
 					func(datum *physical.Physical) {
@@ -1337,7 +1323,6 @@ var _ = Describe("Physical", func() {
 						datum.Lap.Count = nil
 						datum.Name = pointer.FromString("")
 						datum.ReportedIntensity = pointer.FromString("invalid")
-						datum.EventType.EventType = pointer.FromString("invalid")
 						datum.InputTime.InputTime = pointer.FromString("invalid")
 						datum.Step.Count = nil
 					},
@@ -1352,7 +1337,6 @@ var _ = Describe("Physical", func() {
 					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueEmpty(), "/name", &types.Meta{Type: "invalidType"}),
 					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueStringNotOneOf("invalid", []string{"high", "low", "medium"}), "/reportedIntensity", &types.Meta{Type: "invalidType"}),
 					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueNotExists(), "/step/count", &types.Meta{Type: "invalidType"}),
-					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueStringNotOneOf("invalid", common.Events()), "/eventType", &types.Meta{Type: "invalidType"}),
 					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueStringAsTimeNotValid("invalid", time.RFC3339Nano), "/inputTime", &types.Meta{Type: "invalidType"}),
 				),
 			)
