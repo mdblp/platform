@@ -33,7 +33,7 @@ func NewAlarm() *alarm.Alarm {
 	datum := alarm.New()
 	datum.Device = *dataTypesDeviceTest.NewDevice()
 	datum.SubType = "alarm"
-	datum.AlarmType = pointer.FromString(test.RandomStringFromArray(alarm.AlarmTypes()))
+	datum.AlarmType = pointer.FromString(test.RandomStringFromArray(alarm.LegacyAlarmTypes()))
 	return datum
 }
 
@@ -134,6 +134,10 @@ var _ = Describe("Change", func() {
 
 	It("isAnAlert is expected", func() {
 		Expect(alarm.IsAnAlert).To(Equal("alert"))
+	})
+
+	It("Legacy AlarmTypes returns expected", func() {
+		Expect(alarm.LegacyAlarmTypes()).To(Equal([]string{"auto_off", "low_insulin", "low_power", "no_delivery", "no_insulin", "no_power", "occlusion", "other", "over_limit"}))
 	})
 
 	It("AlarmTypes returns expected", func() {
@@ -319,6 +323,12 @@ var _ = Describe("Change", func() {
 				Entry("succeeds",
 					func(datum *alarm.Alarm) {},
 				),
+				Entry("EventId is missing",
+					func(datum *alarm.Alarm) {
+						datum.EventID = nil
+					},
+					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueNotExists(), "/eventID", NewMeta()),
+				),
 				Entry("invalid alarm level",
 					func(datum *alarm.Alarm) {
 						datum.AlarmLevel = pointer.FromString("invalid")
@@ -357,12 +367,14 @@ var _ = Describe("Change", func() {
 				),
 				Entry("Mulitple missing",
 					func(datum *alarm.Alarm) {
+						datum.EventID = nil
 						datum.AlarmLevel = nil
 						datum.AlarmCode = nil
 						datum.AlarmLabel = nil
 						datum.AckStatus = nil
 						datum.UpdateTime = nil
 					},
+					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueNotExists(), "/eventID", NewMeta()),
 					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueNotExists(), "/alarmLevel", NewMeta()),
 					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueNotExists(), "/alarmCode", NewMeta()),
 					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueNotExists(), "/alarmLabel", NewMeta()),

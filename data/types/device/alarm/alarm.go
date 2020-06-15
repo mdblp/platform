@@ -29,7 +29,7 @@ const (
 	Outdated            = "outdated"
 )
 
-func AlarmTypes() []string {
+func LegacyAlarmTypes() []string {
 	return []string{
 		AlarmTypeAutoOff,
 		AlarmTypeLowInsulin,
@@ -40,8 +40,11 @@ func AlarmTypes() []string {
 		AlarmTypeOcclusion,
 		AlarmTypeOther,
 		AlarmTypeOverLimit,
-		AlarmTypeHandset,
 	}
+}
+
+func AlarmTypes() []string {
+	return append(LegacyAlarmTypes(), AlarmTypeHandset)
 }
 
 func AlarmLevels() []string {
@@ -120,14 +123,23 @@ func (a *Alarm) Validate(validator structure.Validator) {
 		}
 		validator.String("statusId", a.StatusID).Using(data.IDValidator)
 	}
-	validator.String("ackStatus", a.AckStatus).OneOf(AckStatuses()...)
-	if a.EventID != nil {
-		validator.String("alarmLevel", a.AlarmLevel).Exists().OneOf(AlarmLevels()...)
-		validator.String("alarmCode", a.AlarmCode).Exists()
-		validator.String("alarmLabel", a.AlarmLabel).Exists()
-		validator.String("ackStatus", a.AckStatus).Exists()
-		timeValidator := validator.String("updateTime", a.UpdateTime)
-		timeValidator.AsTime(types.TimeFormat).Exists()
+	if a.AlarmType != nil {
+		if *a.AlarmType == AlarmTypeHandset {
+			validator.String("eventID", a.EventID).Exists()
+			validator.String("alarmLevel", a.AlarmLevel).Exists().OneOf(AlarmLevels()...)
+			validator.String("alarmCode", a.AlarmCode).Exists()
+			validator.String("alarmLabel", a.AlarmLabel).Exists()
+			validator.String("ackStatus", a.AckStatus).Exists()
+			timeValidator := validator.String("updateTime", a.UpdateTime)
+			timeValidator.AsTime(types.TimeFormat).Exists()
+		} else {
+			validator.String("ackStatus", a.AckStatus).OneOf(AckStatuses()...)
+			validator.String("alarmCode", a.AlarmCode)
+			validator.String("alarmLabel", a.AlarmLabel)
+			validator.String("ackStatus", a.AckStatus)
+			timeValidator := validator.String("updateTime", a.UpdateTime)
+			timeValidator.AsTime(types.TimeFormat)
+		}
 	}
 }
 
