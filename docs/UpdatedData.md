@@ -180,9 +180,9 @@ __Note #2__: the `"part":2` object is not mandatory. The system can decide to ca
 
 We need additional fields to get the time at which the physical activity is created, and the last time it was updated by the patient:
 - `inputTime` is a UTC string timestamp that defines at what time the patient has entered or modified the physical activity. This field is optional. It takes the same format as `time` field.
-- `eventId`: unique ID provided by the client that is used to link stop and start events. Iw we receive several objects with the same ID, the most recent one will be the effective one while the other objects will be considered as history of changes. The duration is __mandatory__ when this field is provided.
+- `eventId`: unique ID provided by the client that is used to link stop and start events. If we receive several objects with the same ID, the most recent one will be the effective one while the other objects will be considered as history of changes. The duration is __mandatory__ when this field is provided.
 
-In the below example, The 2 objects are sent in 2 separate reauests. The first object coming with the first request indicates that the physical activity is entered on the handset at 8:00am. It starts at 8:50am for 60 minutes. The second object that is received later on as part of a second request says that the duration of the same activity has been changed to 50 minutes. This last information was entered at 10:00am. This second object will become the effctive one while first one can be considered as the history of changes. The link between both is done through the common `eventId`. 
+In the below example, The 2 objects are sent in 2 separate requests. The first object coming with the first request indicates that the physical activity is entered on the handset at 8:00am. It starts at 8:50am for 60 minutes. The second object that is received later on as part of a second request says that the duration of the same activity has been changed to 50 minutes. This last information was entered at 10:00am. This second object will become the effective one while first one can be considered as the history of changes. The link between both is done through the common `eventId`. 
 
 ```json
 {
