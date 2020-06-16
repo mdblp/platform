@@ -386,7 +386,6 @@ var _ = Describe("Change", func() {
 						datum.UpdateTime = pointer.FromString("invalid")
 					},
 					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueStringAsTimeNotValid("invalid", types.TimeFormat), "/updateTime", NewMeta()),
-					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueNotExists(), "/updateTime", NewMeta()),
 				),
 			)
 		})

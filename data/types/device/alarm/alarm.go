@@ -123,23 +123,23 @@ func (a *Alarm) Validate(validator structure.Validator) {
 		}
 		validator.String("statusId", a.StatusID).Using(data.IDValidator)
 	}
-	if a.AlarmType != nil {
-		if *a.AlarmType == AlarmTypeHandset {
-			validator.String("eventID", a.EventID).Exists()
-			validator.String("alarmLevel", a.AlarmLevel).Exists().OneOf(AlarmLevels()...)
-			validator.String("alarmCode", a.AlarmCode).Exists()
-			validator.String("alarmLabel", a.AlarmLabel).Exists()
-			validator.String("ackStatus", a.AckStatus).Exists()
-			timeValidator := validator.String("updateTime", a.UpdateTime)
-			timeValidator.AsTime(types.TimeFormat).Exists()
-		} else {
-			validator.String("ackStatus", a.AckStatus).OneOf(AckStatuses()...)
-			validator.String("alarmCode", a.AlarmCode)
-			validator.String("alarmLabel", a.AlarmLabel)
-			validator.String("ackStatus", a.AckStatus)
-			timeValidator := validator.String("updateTime", a.UpdateTime)
-			timeValidator.AsTime(types.TimeFormat)
-		}
+
+	alarmLevelValidator := validator.String("alarmLevel", a.AlarmLevel)
+	alarmLevelValidator.OneOf(AlarmLevels()...)
+
+	ackStatusValidator := validator.String("ackStatus", a.AckStatus)
+	ackStatusValidator.OneOf(AckStatuses()...)
+
+	timeValidator := validator.String("updateTime", a.UpdateTime)
+	timeValidator.AsTime(types.TimeFormat)
+
+	if a.AlarmType != nil && *a.AlarmType == AlarmTypeHandset {
+		validator.String("eventID", a.EventID).Exists()
+		alarmLevelValidator.Exists()
+		validator.String("alarmCode", a.AlarmCode).Exists()
+		validator.String("alarmLabel", a.AlarmLabel).Exists()
+		ackStatusValidator.Exists()
+		timeValidator.Exists()
 	}
 }
 
