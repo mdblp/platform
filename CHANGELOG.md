@@ -6,6 +6,10 @@ The Tidepool platform API
 - PT-1287 Integrate Tidepool master for platform
 - PT-1301 Add declaration time to wizard object
 - PT-1282 Update meal information
+- PT-1295 Store Additional fields for Bolus object
+- PT-1293 Store rescueCarbs recommendation
+- PT-1298 Store Zen mode object
+- PT-1314 Add Confidential mode in database and Update related APIs
 - PT-1296 Store Biphasic bolus
 
 ## 0.7.2 - 2020-05-14 

@@ -7,7 +7,9 @@ import (
 )
 
 const (
-	Type = "deviceEvent"
+	Type       = "deviceEvent"
+	StartEvent = "start"
+	StopEvent  = "stop"
 )
 
 type Device struct {

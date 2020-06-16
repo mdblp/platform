@@ -8,6 +8,8 @@ Here we document the data types that have to be created or udpated with new fiel
 - deviceEvent - Zen mode
 - deviceEvent - Private Mode
 
+_Note_: the examples below focused on the new fields. All the other fields (such as time, timezone, timezoneOffset) are not impacted by those changes and will not require updates.
+
 ## wizard 
 
 The wizard object comes with an optional `recommended` structure that can be leveraged for our purpose. This structure is composed of 3 optional floating point value fields:
@@ -67,9 +69,9 @@ As of now we don't have the information of the origin of the rescueCarbs value, 
 
 Here we are introducing 2 new fields in the food object:
 - `prescribedNutrition`: same structure as nutrition. It's an optional field. It gives the value that has been recommended by the system. 
-- `prescriptor`: is the origin of the `rescuecarbs` object. This field is optional in most of the cases. 
+- `prescriptor`: is the origin of the `rescuecarbs` object. This field is mandatory in one case, `hybrid`: 
     - range of values: `auto | manual | hybrid`
-    - `auto`: nutrition and prescribedNutrition are equal
+    - `auto`: prescribedNutrition is ignored
     - `manual`: prescribedNutrition is ignored
     - `hybrid`: nutrition and prescribedNutrition are __not equal__, `prescribedNutrition` is mandatory in that case. 
 
@@ -90,7 +92,6 @@ Here we are introducing 2 new fields in the food object:
     }
   },
   "prescriptor": "hybrid",
-  "meal": "rescuecarbs",
   "deviceId": "IdOfTheDevice",
   "deviceTime": "2020-05-12T06:50:08",
   "time": "2020-05-12T06:50:08.000Z",
@@ -256,17 +257,13 @@ For a given alarm that has been acknowledged by the patient, we will receive 2 d
 Leveraging the `deviceEvent` type and creating 2 new subTypes with the same structure: `zen` and `confidential`.
 
 - `subType`: `zen | confidential`
-- `duration`: is a structured object that gives the duration of the event. 
-- `eventType`: `start | stop` is the type of event for the given event.
-  - `start`: event created by the system. The `duration` attached to this object is the expected duration of the event.
-  - `stop`: the event is stopped. The `duration` attached to this object is the actual duration of the event.
-- `eventId`: unique ID provided by the client that is used to link stop and start events.
+- `duration`: is a structured object that gives the duration of the event. __This field is mandatory__.
+- `eventId`: unique ID provided by the client that is used to link stop and start events. __This ID is mandatory__.
 
 ```json
 {
   "type": "deviceEvent",
   "subType": "zen",
-  "eventType": "start", 
   "eventId": "Zen123456789",
   "duration": { 
     "value": 3,
@@ -280,7 +277,6 @@ Leveraging the `deviceEvent` type and creating 2 new subTypes with the same stru
 {
   "type": "deviceEvent",
   "subType": "confidential",
-  "eventType": "start", 
   "eventId": "Conf123456789",
   "duration": { 
     "value": 180,
