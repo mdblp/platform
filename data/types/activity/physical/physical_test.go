@@ -10,7 +10,6 @@ import (
 	dataNormalizer "github.com/tidepool-org/platform/data/normalizer"
 	"github.com/tidepool-org/platform/data/types"
 	"github.com/tidepool-org/platform/data/types/activity/physical"
-	"github.com/tidepool-org/platform/data/types/common"
 	dataTypesCommonTest "github.com/tidepool-org/platform/data/types/common/test"
 	dataTypesTest "github.com/tidepool-org/platform/data/types/test"
 	errorsTest "github.com/tidepool-org/platform/errors/test"
@@ -107,10 +106,6 @@ var _ = Describe("Physical", func() {
 
 	It("ReportedIntensities returns expected", func() {
 		Expect(physical.ReportedIntensities()).To(Equal([]string{"high", "low", "medium"}))
-	})
-
-	It("Events returns expected", func() {
-		Expect(common.Events()).To(Equal([]string{"start", "stop"}))
 	})
 
 	Context("New", func() {
