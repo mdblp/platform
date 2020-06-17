@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	SubType = "pen" // TODO: Rename Type to "bolus/normal"; remove SubType
+	SubType = "pen"
 
 	NormalMaximum = 100.0
 	NormalMinimum = 0.0

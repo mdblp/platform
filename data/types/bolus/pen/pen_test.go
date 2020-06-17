@@ -29,6 +29,14 @@ var _ = Describe("Pen", func() {
 		Expect(pen.SubType).To(Equal("pen"))
 	})
 
+	It("NormalMaximum is expected", func() {
+		Expect(pen.NormalMaximum).To(Equal(100.0))
+	})
+
+	It("NormalMinimum is expected", func() {
+		Expect(pen.NormalMinimum).To(Equal(0.0))
+	})
+
 	Context("New", func() {
 		It("returns the expected datum with all values initialized", func() {
 			datum := pen.New()
