@@ -76,10 +76,13 @@ func CloneAlarm(datum *alarm.Alarm) *alarm.Alarm {
 			clone.Status = data.DatumAsPointer(dataTypesDeviceStatusTest.CloneStatus(status))
 		}
 	}
+	clone.EventID = pointer.CloneString(datum.EventID)
 	clone.StatusID = pointer.CloneString(datum.StatusID)
 	clone.AlarmLevel = pointer.CloneString(datum.AlarmLevel)
 	clone.AlarmCode = pointer.CloneString(datum.AlarmCode)
 	clone.AlarmLabel = pointer.CloneString(datum.AlarmLabel)
+	clone.AckStatus = pointer.CloneString(datum.AckStatus)
+	clone.UpdateTime = pointer.CloneString(datum.UpdateTime)
 	return clone
 }
 
@@ -329,6 +332,17 @@ var _ = Describe("Change", func() {
 					},
 					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueNotExists(), "/eventID", NewMeta()),
 				),
+				Entry("EventId length out of range",
+					func(datum *alarm.Alarm) {
+						datum.EventID = pointer.FromString(test.RandomStringFromRange(65, 65))
+					},
+					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorLengthNotLessThanOrEqualTo(65, 64), "/eventID", NewMeta()),
+				),
+				Entry("EventId length in range",
+					func(datum *alarm.Alarm) {
+						datum.EventID = pointer.FromString(test.RandomStringFromRange(64, 64))
+					},
+				),
 				Entry("invalid alarm level",
 					func(datum *alarm.Alarm) {
 						datum.AlarmLevel = pointer.FromString("invalid")
@@ -347,11 +361,33 @@ var _ = Describe("Change", func() {
 					},
 					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueNotExists(), "/alarmCode", NewMeta()),
 				),
+				Entry("Alarm Code length out of range",
+					func(datum *alarm.Alarm) {
+						datum.AlarmCode = pointer.FromString(test.RandomStringFromRange(65, 65))
+					},
+					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorLengthNotLessThanOrEqualTo(65, 64), "/alarmCode", NewMeta()),
+				),
+				Entry("Alarm code length in range",
+					func(datum *alarm.Alarm) {
+						datum.AlarmCode = pointer.FromString(test.RandomStringFromRange(64, 64))
+					},
+				),
 				Entry("alarm label is missing",
 					func(datum *alarm.Alarm) {
 						datum.AlarmLabel = nil
 					},
 					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueNotExists(), "/alarmLabel", NewMeta()),
+				),
+				Entry("Alarm label out of range",
+					func(datum *alarm.Alarm) {
+						datum.AlarmLabel = pointer.FromString(test.RandomStringFromRange(257, 257))
+					},
+					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorLengthNotLessThanOrEqualTo(257, 256), "/alarmLabel", NewMeta()),
+				),
+				Entry("Alarm label in range",
+					func(datum *alarm.Alarm) {
+						datum.AlarmLabel = pointer.FromString(test.RandomStringFromRange(256, 256))
+					},
 				),
 				Entry("ackStatus is missing",
 					func(datum *alarm.Alarm) {
@@ -405,6 +441,34 @@ var _ = Describe("Change", func() {
 			It("normalizes the datum and replaces status with status id", func() {
 				datumStatus := dataTypesDeviceStatusTest.NewStatus()
 				datum := NewAlarmWithStatusID()
+				datum.Status = data.DatumAsPointer(datumStatus)
+				expectedDatum := CloneAlarm(datum)
+				normalizer := dataNormalizer.New()
+				Expect(normalizer).ToNot(BeNil())
+				datum.Normalize(normalizer)
+				Expect(normalizer.Error()).To(BeNil())
+				Expect(normalizer.Data()).To(Equal([]data.Datum{datumStatus}))
+				expectedDatum.Status = nil
+				expectedDatum.StatusID = pointer.FromString(*datumStatus.ID)
+				Expect(datum).To(Equal(expectedDatum))
+			})
+
+			It("does not modify datum if handset and status missing", func() {
+				datum := NewAlarmFromHandset()
+				datum.StatusID = pointer.FromString(dataTest.RandomID())
+				expectedDatum := CloneAlarm(datum)
+				normalizer := dataNormalizer.New()
+				Expect(normalizer).ToNot(BeNil())
+				datum.Normalize(normalizer)
+				Expect(normalizer.Error()).To(BeNil())
+				Expect(normalizer.Data()).To(BeEmpty())
+				Expect(datum).To(Equal(expectedDatum))
+			})
+
+			It("normalizes the datum if handset and replaces status with status id", func() {
+				datumStatus := dataTypesDeviceStatusTest.NewStatus()
+				datum := NewAlarmFromHandset()
+				datum.StatusID = pointer.FromString(dataTest.RandomID())
 				datum.Status = data.DatumAsPointer(datumStatus)
 				expectedDatum := CloneAlarm(datum)
 				normalizer := dataNormalizer.New()

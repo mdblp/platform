@@ -12,21 +12,24 @@ import (
 const (
 	SubType = "alarm" // TODO: Rename Type to "device/alarm"; remove SubType
 
-	AlarmTypeAutoOff    = "auto_off"
-	AlarmTypeLowInsulin = "low_insulin"
-	AlarmTypeLowPower   = "low_power"
-	AlarmTypeNoDelivery = "no_delivery"
-	AlarmTypeNoInsulin  = "no_insulin"
-	AlarmTypeNoPower    = "no_power"
-	AlarmTypeOcclusion  = "occlusion"
-	AlarmTypeOther      = "other"
-	AlarmTypeOverLimit  = "over_limit"
-	AlarmTypeHandset    = "handset"
-	IsAnAlarm           = "alarm"
-	IsAnAlert           = "alert"
-	NewAck              = "new"
-	Acknowledged        = "acknowledged"
-	Outdated            = "outdated"
+	AlarmTypeAutoOff        = "auto_off"
+	AlarmTypeLowInsulin     = "low_insulin"
+	AlarmTypeLowPower       = "low_power"
+	AlarmTypeNoDelivery     = "no_delivery"
+	AlarmTypeNoInsulin      = "no_insulin"
+	AlarmTypeNoPower        = "no_power"
+	AlarmTypeOcclusion      = "occlusion"
+	AlarmTypeOther          = "other"
+	AlarmTypeOverLimit      = "over_limit"
+	AlarmTypeHandset        = "handset"
+	IsAnAlarm               = "alarm"
+	IsAnAlert               = "alert"
+	NewAck                  = "new"
+	Acknowledged            = "acknowledged"
+	Outdated                = "outdated"
+	AlarmCodeMaximumLength  = 64
+	EventIDMaximumLength    = 64
+	AlarmLabelMaximumLength = 256
 )
 
 func LegacyAlarmTypes() []string {
@@ -134,10 +137,10 @@ func (a *Alarm) Validate(validator structure.Validator) {
 	timeValidator.AsTime(types.TimeFormat)
 
 	if a.AlarmType != nil && *a.AlarmType == AlarmTypeHandset {
-		validator.String("eventID", a.EventID).Exists()
+		validator.String("eventID", a.EventID).Exists().LengthLessThanOrEqualTo(EventIDMaximumLength)
 		alarmLevelValidator.Exists()
-		validator.String("alarmCode", a.AlarmCode).Exists()
-		validator.String("alarmLabel", a.AlarmLabel).Exists()
+		validator.String("alarmCode", a.AlarmCode).Exists().LengthLessThanOrEqualTo(AlarmCodeMaximumLength)
+		validator.String("alarmLabel", a.AlarmLabel).Exists().LengthLessThanOrEqualTo(AlarmLabelMaximumLength)
 		ackStatusValidator.Exists()
 		timeValidator.Exists()
 	}
