@@ -72,4 +72,7 @@ func (b *Biphasic) Normalize(normalizer data.Normalizer) {
 	}
 
 	b.Bolus.Normalize(normalizer)
+	if b.LinkedBolus != nil {
+		b.LinkedBolus.Normalize(normalizer)
+	}
 }
