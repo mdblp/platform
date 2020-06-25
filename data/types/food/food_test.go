@@ -355,7 +355,7 @@ var _ = Describe("Food", func() {
 					func(datum *food.Food) {
 						datum.Meal = pointer.FromString("rescuecarbs")
 						datum.MealOther = nil
-						datum.Prescriptor = nil
+						datum.Prescriptor = common.NewPrescriptor()
 						datum.PrescribedNutrition = NewNutrition()
 					},
 				),
