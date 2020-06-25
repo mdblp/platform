@@ -13,6 +13,7 @@ The Tidepool platform API
 - PT-1303 Store additional fields in physical activity
 - PT-1379 Add a way to represent pen bolus structure in Backloops
 - PT-1296 Store Biphasic bolus
+- PT-1312 Add fields to Alarm objects
 
 ## 0.7.2 - 2020-05-14 
 ### Changed
