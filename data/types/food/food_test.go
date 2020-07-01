@@ -510,7 +510,7 @@ var _ = Describe("Food", func() {
 				),
 			)
 
-			DescribeTable("normalizes the datum for rescueCarbs and any other prescriptor; PrescribedNutrition is changed to nil ",
+			DescribeTable("normalizes the datum for rescueCarbs and any other prescriptor; PrescribedNutrition is changed to nil",
 				func(mutator func(datum *food.Food)) {
 					for _, origin := range structure.Origins() {
 						datum := NewFood(3)
