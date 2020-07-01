@@ -455,9 +455,14 @@ var _ = Describe("Food", func() {
 				Entry("does not modify the datum; nutrition missing",
 					func(datum *food.Food) { datum.Nutrition = nil },
 				),
-				Entry("does not crash when prescriptor is not set",
+				Entry("does not crash when prescriptor is set",
 					func(datum *food.Food) {
-						datum.Prescriptor = common.NewPrescriptor()
+						datum.Prescriptor = dataTypesCommonTest.NewPrescriptor()
+					},
+				),
+				Entry("does not crash when prescribedNutrition is set",
+					func(datum *food.Food) {
+						datum.PrescribedNutrition = NewNutrition()
 					},
 				),
 			)
@@ -557,6 +562,11 @@ var _ = Describe("Food", func() {
 				Entry("modify the datum; prescribedNutrition is reset to nil",
 					func(datum *food.Food) {
 						datum.PrescribedNutrition = NewNutrition()
+					},
+				),
+				Entry("does not crash when prescriptor is not set",
+					func(datum *food.Food) {
+						datum.Prescriptor = common.NewPrescriptor()
 					},
 				),
 			)
