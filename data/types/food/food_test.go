@@ -566,7 +566,7 @@ var _ = Describe("Food", func() {
 				),
 				Entry("does not crash when prescriptor is not set",
 					func(datum *food.Food) {
-						datum.Prescriptor = common.NewPrescriptor()
+						datum.Prescriptor.Prescriptor = nil
 					},
 				),
 			)
