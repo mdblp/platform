@@ -256,6 +256,7 @@ func (b *Base) Normalize(normalizer data.Normalizer) {
 			parsedTime, err = time.Parse(ParsingTimeFormat, *b.Time)
 		}
 		if err == nil {
+			checkTimeZoneName := true
 			utcTimeString := parsedTime.UTC().Format(TimeFormat)
 			_, offset := parsedTime.Zone()
 			// Time field is not well formatted in UTC
@@ -273,6 +274,8 @@ func (b *Base) Normalize(normalizer data.Normalizer) {
 					if err == nil {
 						_, offset := parsedTime.UTC().In(zoneLoc).Zone()
 						b.TimeZoneOffset = pointer.FromInt(offset / 60)
+						// Offset is processed from timezone no need to check it again
+						checkTimeZoneName = false
 					}
 				}
 				if b.TimeZoneOffset == nil {
@@ -280,10 +283,11 @@ func (b *Base) Normalize(normalizer data.Normalizer) {
 				}
 			}
 			offsetZone := time.FixedZone("offsetZone", *b.TimeZoneOffset*60)
-			// For TimeZoneName we only check that :
+			etcTimezone := timeZone.GetEtcZone(*b.TimeZoneOffset)
+			// For TimeZoneName we check that :
 			// the current timezone offset is valid for the TimeZoneName passed in
-			// if not TimeZoneName is reset to nil
-			if b.TimeZoneName != nil {
+			// if not TimeZoneName is set to Etc/GMT{- offsetInHour} (Sign is inverted for Etc areas)
+			if checkTimeZoneName && b.TimeZoneName != nil {
 				tzCompareFormat := "15:04:05 -0700"
 				currentZoneName := *b.TimeZoneName
 				zoneLoc, err := time.LoadLocation(currentZoneName)
@@ -291,11 +295,13 @@ func (b *Base) Normalize(normalizer data.Normalizer) {
 					localZoneTime := parsedTime.In(zoneLoc)
 					localOffsetTime := parsedTime.In(offsetZone)
 					if localZoneTime.Format(tzCompareFormat) != localOffsetTime.Format(tzCompareFormat) {
-						b.TimeZoneName = nil
+						b.TimeZoneName = pointer.FromString(etcTimezone)
 					}
 				} else {
-					b.TimeZoneName = nil
+					b.TimeZoneName = pointer.FromString(etcTimezone)
 				}
+			} else if checkTimeZoneName {
+				b.TimeZoneName = pointer.FromString(etcTimezone)
 			}
 			// Setting DeviceTime to Time in offset zone (with the correct format)
 			b.DeviceTime = pointer.FromString(parsedTime.UTC().In(offsetZone).Format(DeviceTimeFormat))
