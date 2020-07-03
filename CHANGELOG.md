@@ -1,6 +1,10 @@
 # Platform 
 The Tidepool platform API
 
+## Unreleased
+### Changed
+- PT-1403 Add a timezone based on timezoneOffset on data upload.
+
 ## 0.8.2 2020-07-09 
 ### Fixed 
 - PT-1413 Biphasic Bolus: normal and exepctedNormal fields are not stored in DB
