@@ -153,13 +153,6 @@ __Note #2__: the `"part":2` object is not mandatory. The system can decide to ca
   "part": 1,
   "normal": 3.5,
   "expectedNormal": 4.0, 
-  "linkedBolus": {
-    "normal": 3.5,
-    "duration": { 
-    	  "value": 60,
-    	  "units": "minutes"
-    }
-  },
   "prescriptor": "system"
 }
 {
