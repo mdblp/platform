@@ -1,6 +1,10 @@
 # Platform 
 The Tidepool platform API
 
+## Unreleased
+### Changed 
+- PT-1332 Remove external gateway calls in platform
+
 ## 0.8.2 2020-07-09 
 ### Fixed 
 - PT-1413 Biphasic Bolus: normal and exepctedNormal fields are not stored in DB
