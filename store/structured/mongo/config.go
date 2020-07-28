@@ -15,22 +15,27 @@ import (
 
 //Config describe parameters need to make a connection to a Mongo database
 type Config struct {
-	Scheme           string        `json:"scheme"`
-	Addresses        []string      `json:"addresses"`
-	TLS              bool          `json:"tls"`
-	Database         string        `json:"database"`
-	CollectionPrefix string        `json:"collectionPrefix"`
-	Username         *string       `json:"-"`
-	Password         *string       `json:"-"`
-	Timeout          time.Duration `json:"timeout"`
-	OptParams        *string       `json:"optParams"`
+	Scheme                 string                 `json:"scheme"`
+	Addresses              []string               `json:"addresses"`
+	TLS                    bool                   `json:"tls"`
+	Database               string                 `json:"database"`
+	CollectionPrefix       string                 `json:"collectionPrefix"`
+	Username               *string                `json:"-"`
+	Password               *string                `json:"-"`
+	Timeout                time.Duration          `json:"timeout"`
+	OptParams              *string                `json:"optParams"`
+	WaitConnectionInterval time.Duration          `json:"waitConnectionInterval"`
+	MaxConnectionAttempts  int64                  `json:"maxConnectionAttempts"`
+	Indexes                map[string][]mgo.Index `json:"indexes"`
 }
 
 //NewConfig creates and returns an incomplete Config object
 func NewConfig() *Config {
 	return &Config{
-		TLS:     true,
-		Timeout: 60 * time.Second,
+		TLS:                    true,
+		Timeout:                60 * time.Second,
+		WaitConnectionInterval: 5 * time.Second,
+		MaxConnectionAttempts:  0,
 	}
 }
 
@@ -100,6 +105,20 @@ func (c *Config) Load(configReporter config.Reporter) error {
 			return errors.New("timeout is invalid")
 		}
 		c.Timeout = time.Duration(timeout) * time.Second
+	}
+	if waitConnectionInterval, err := configReporter.Get("wait_connection_interval"); err == nil {
+		interval, err := strconv.ParseInt(waitConnectionInterval, 10, 0)
+		if err != nil {
+			return errors.New("wait_connection_interval is invalid")
+		}
+		c.WaitConnectionInterval = time.Duration(interval) * time.Second
+	}
+	if maxConnectionAttempts, err := configReporter.Get("max_connection_attempts"); err == nil {
+		max, err := strconv.ParseInt(maxConnectionAttempts, 10, 0)
+		if err != nil {
+			return errors.New("max_connection_attempts is invalid")
+		}
+		c.MaxConnectionAttempts = max
 	}
 
 	return nil
