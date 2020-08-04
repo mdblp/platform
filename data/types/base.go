@@ -376,7 +376,7 @@ func (b *Base) normalizeTimeData() {
 	etcTimezone := timeZone.GetEtcZone(*b.TimeZoneOffset)
 	// For TimeZoneName we check that :
 	//		the current timezone offset is valid for the TimeZoneName passed in
-	// if timezoneOffset/TimeZoneName is uncoherent or TimeZoneName is not set:
+	// if timezoneOffset/TimeZoneName is not coherent or TimeZoneName is not set:
 	//		we set it  to Etc/GMT{- offsetInHour} (Sign is inverted for Etc areas)
 	if checkTimeZoneName && b.TimeZoneName != nil {
 		currentZoneName := *b.TimeZoneName
