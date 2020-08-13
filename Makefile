@@ -261,9 +261,11 @@ endif
 docker:
 ifdef DOCKER
 	@echo $(DOCKER_PASSWORD) | docker login --username "$(DOCKER_USERNAME)" --password-stdin $(DOCKER_REGISTRY)
-	@echo $(PCT_DOCKER_PASSWORD) | docker login --username "$(PCT_DOCKER_USERNAME)" --password-stdin $(PCT_DOCKER_REGISTRY)
 	@cd $(ROOT_DIRECTORY) && for DOCKER_FILE in $(shell ls -1 Dockerfile.*); do $(MAKE) docker-build DOCKER_FILE="$${DOCKER_FILE}"; done
 	@cd $(ROOT_DIRECTORY) && for DOCKER_FILE in $(shell ls -1 Dockerfile.*); do $(MAKE) docker-push DOCKER_FILE="$${DOCKER_FILE}"; done
+ifdef PCT_DOCKER_REPOSITORY
+	@echo $(PCT_DOCKER_PASSWORD) | docker login --username "$(PCT_DOCKER_USERNAME)" --password-stdin $(PCT_DOCKER_REGISTRY)
+endif
 endif
 
 docker-build:
