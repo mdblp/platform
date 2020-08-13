@@ -40,7 +40,9 @@ else ifdef TRAVIS_TAG
 endif
 ifdef DOCKER_FILE
 	DOCKER_REPOSITORY:="${DOCKER_REGISTRY}/$(REPOSITORY_NAME)-$(patsubst .%,%,$(suffix $(DOCKER_FILE)))"
+ifdef PCT_DOCKER_REGISTRY
 	PCT_DOCKER_REPOSITORY:="${PCT_DOCKER_REGISTRY}/$(REPOSITORY_NAME)-$(patsubst .%,%,$(suffix $(DOCKER_FILE)))"
+endif
 endif
 
 default: test
