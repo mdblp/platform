@@ -43,19 +43,10 @@ func NewStore(config *Config, logger log.Logger) (*Store, error) {
 	}
 	logger = logger.WithFields(loggerFields)
 
-	dialInfo, err := mgo.ParseURL(config.AsConnectionString())
+	_, err := mgo.ParseURL(config.AsConnectionString())
 	if err != nil {
 		return nil, errors.Wrap(err, "URL is unparseable")
 	}
-
-	// override the DialServer is we are using TLS because we don't have the proper CA certs installed.
-	if config.TLS {
-		dialInfo.DialServer = func(serverAddr *mgo.ServerAddr) (net.Conn, error) {
-			return tls.Dial("tcp", serverAddr.String(), &tls.Config{InsecureSkipVerify: true}) // TODO: Secure this connection
-		}
-	}
-
-	dialInfo.Timeout = config.Timeout
 
 	store := &Store{
 		Config:  config,
@@ -63,25 +54,40 @@ func NewStore(config *Config, logger log.Logger) (*Store, error) {
 		logger:  logger,
 	}
 
-	store.Start(dialInfo)
+	store.Start()
 	return store, nil
 }
+func (s *Store) getDialInfo() (*mgo.DialInfo, error) {
+	dialInfo, err := mgo.ParseURL(s.Config.AsConnectionString())
+	if err != nil {
+		return nil, err
+	}
 
-func (s *Store) Start(dialInfo *mgo.DialInfo) {
+	if s.Config.TLS {
+		dialInfo.DialServer = func(serverAddr *mgo.ServerAddr) (net.Conn, error) {
+			return tls.Dial("tcp", serverAddr.String(), &tls.Config{InsecureSkipVerify: true}) // TODO: Secure this connection
+		}
+	}
+	dialInfo.Timeout = s.Config.Timeout
+	return dialInfo, nil
+}
+
+func (s *Store) Start() {
 	if s.Session() == nil && s.closingChannel == nil {
 		s.initializeGroup.Add(1)
-		go s.connectionRoutine(dialInfo)
+		go s.connectionRoutine()
 	} else if s.Session() != nil {
 		close(s.closingChannel)
 		s.closingChannel = nil
 	}
 }
 
-func (s *Store) connectionRoutine(dialInfo *mgo.DialInfo) {
-	err := s.initializeSession(dialInfo)
+func (s *Store) connectionRoutine() {
+	err := s.initializeSession()
 	var attempts int64
 	if err != nil {
-		s.closingChannel = make(chan bool)
+		s.logger.Errorf("Unable to open inital store session : %v", err)
+		s.closingChannel = make(chan bool, 1)
 		for {
 			timer := time.After(s.Config.WaitConnectionInterval)
 			select {
@@ -91,20 +97,21 @@ func (s *Store) connectionRoutine(dialInfo *mgo.DialInfo) {
 				s.initializeGroup.Done()
 				return
 			case <-timer:
-				err := s.initializeSession(dialInfo)
+				err := s.initializeSession()
 				if err == nil {
+					s.logger.Debug("Store session opened succesfully")
 					s.closingChannel <- true
-					return
-				}
-				if s.Config.MaxConnectionAttempts > 0 && s.Config.MaxConnectionAttempts > attempts {
-					s.closingChannel <- true
-					panic(err)
-				}
-				if s.Config.MaxConnectionAttempts > 0 {
-					attempts++
+				} else {
+					if s.Config.MaxConnectionAttempts > 0 && s.Config.MaxConnectionAttempts > attempts {
+						s.logger.Errorf("Unable to open store session, maximum connection attempts reached : %v", err)
+						s.closingChannel <- true
+						panic(err)
+					} else if s.Config.MaxConnectionAttempts > 0 {
+						s.logger.Errorf("Unable to open store session : %v", err)
+						attempts++
+					}
 				}
 			}
-
 		}
 	} else {
 		s.createIndexesFromConfig()
@@ -134,7 +141,12 @@ func (s *Store) WaitUntilStarted() {
 	s.initializeGroup.Wait()
 }
 
-func (s *Store) initializeSession(dialInfo *mgo.DialInfo) error {
+func (s *Store) initializeSession() error {
+	dialInfo, err := s.getDialInfo()
+	if err != nil {
+		return errors.Wrap(err, "URL is unparseable")
+	}
+
 	s.logger.WithField("config", s.Config).Debug("Dialing Mongo database")
 	session, err := mgo.DialWithInfo(dialInfo)
 	if err != nil {
@@ -155,7 +167,6 @@ func (s *Store) initializeSession(dialInfo *mgo.DialInfo) error {
 	}
 
 	s.logger.Debug("Setting Mongo consistency mode to Strong")
-
 	session.SetMode(mgo.Strong, true)
 	s.sessionMux.Lock()
 	s.session = session

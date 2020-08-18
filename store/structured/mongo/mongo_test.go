@@ -1,6 +1,8 @@
 package mongo_test
 
 import (
+	"time"
+
 	mgo "github.com/globalsign/mgo"
 	"github.com/globalsign/mgo/bson"
 	. "github.com/onsi/ginkgo"
@@ -57,30 +59,23 @@ var _ = Describe("Mongo", func() {
 				Expect(store).To(BeNil())
 			})
 
-			// It("returns an error if the addresses are not reachable", func() {
-			// 	config.Addresses = []string{"127.0.0.0", "127.0.0.0"}
-			// 	var err error
-			// 	store, err = storeStructuredMongo.NewStore(config, logger)
-			// 	Expect(err).To(MatchError("unable to dial database; no reachable servers"))
-			// 	Expect(store).To(BeNil())
-			// })
+			It("returns no error if the server is not reachable and initialize session once it is", func() {
+				config.Addresses = []string{"127.0.0.0"}
+				config.WaitConnectionInterval = 1 * time.Second
+				config.Timeout = 2 * time.Second
+				var err error
 
-			// It("returns an error if the username or password is invalid", func() {
-			// 	config.Username = pointer.FromString("username")
-			// 	config.Password = pointer.FromString("password")
-			// 	var err error
-			// 	store, err = storeStructuredMongo.NewStore(config, logger)
-			// 	Expect(err).To(MatchError("unable to dial database; server returned error on SASL authentication step: Authentication failed."))
-			// 	Expect(store).To(BeNil())
-			// })
+				store, err = storeStructuredMongo.NewStore(config, logger)
+				Expect(err).To(BeNil())
+				Expect(store).ToNot(BeNil())
+				Expect(store.Session()).To(BeNil())
+				time.Sleep(3 * time.Second)
+				Expect(store.Session()).To(BeNil())
 
-			// It("returns an error if TLS is specified on a server that does not support it", func() {
-			// 	config.TLS = true
-			// 	var err error
-			// 	store, err = storeStructuredMongo.NewStore(config, logger)
-			// 	Expect(err).To(MatchError("unable to dial database; no reachable servers"))
-			// 	Expect(store).To(BeNil())
-			// })
+				store.Config.Addresses = []string{"127.0.0.1:27017"}
+				store.WaitUntilStarted()
+				Expect(store.Session()).ToNot(BeNil())
+			})
 
 			It("returns no error if successful", func() {
 				var err error
