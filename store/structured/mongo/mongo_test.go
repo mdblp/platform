@@ -45,7 +45,7 @@ var _ = Describe("Mongo", func() {
 			})
 
 			It("returns an error if the config is invalid", func() {
-				config.Addresses = nil
+				config.SetAddresses(nil)
 				var err error
 				store, err = storeStructuredMongo.NewStore(config, logger)
 				Expect(err).To(MatchError("config is invalid; addresses is missing"))
@@ -60,7 +60,7 @@ var _ = Describe("Mongo", func() {
 			})
 
 			It("returns no error if the server is not reachable and initialize session once it is", func() {
-				config.Addresses = []string{"127.0.0.0"}
+				config.SetAddresses([]string{"127.0.0.0"})
 				config.WaitConnectionInterval = 1 * time.Second
 				config.Timeout = 2 * time.Second
 				var err error
@@ -72,7 +72,7 @@ var _ = Describe("Mongo", func() {
 				time.Sleep(3 * time.Second)
 				Expect(store.Session()).To(BeNil())
 
-				store.Config.Addresses = []string{"127.0.0.1:27017"}
+				config.SetAddresses([]string{"127.0.0.1:27017"})
 				store.WaitUntilStarted()
 				Expect(store.Session()).ToNot(BeNil())
 			})
