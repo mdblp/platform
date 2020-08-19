@@ -83,7 +83,7 @@ var _ = Describe("Mongo", func() {
 
 		It("returns an error if base config is invalid", func() {
 			var err error
-			mongoConfig.Config.Addresses = nil
+			mongoConfig.Config.SetAddresses(nil)
 			mongoStore, err = permissionStoreMongo.NewStore(mongoConfig, logTest.NewLogger())
 			Expect(err).To(MatchError("config is invalid; addresses is missing"))
 			Expect(mongoStore).To(BeNil())
