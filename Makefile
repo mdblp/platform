@@ -39,7 +39,7 @@ else ifdef TRAVIS_TAG
 	DOCKER:=true
 endif
 
-ifdef DOCKER_FILE
+ifdef DOCKER
 	DOCKER_REPOSITORY:="${DOCKER_REGISTRY}/$(REPOSITORY_NAME)-$(patsubst .%,%,$(suffix $(DOCKER_FILE)))"
 ifdef OPS_DOCKER_REGISTRY
 	OPS_DOCKER_REPOSITORY:="${OPS_DOCKER_REGISTRY}/$(REPOSITORY_NAME)-$(patsubst .%,%,$(suffix $(DOCKER_FILE)))"
