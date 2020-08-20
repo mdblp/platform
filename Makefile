@@ -38,6 +38,7 @@ endif
 else ifdef TRAVIS_TAG
 	DOCKER:=true
 endif
+
 ifdef DOCKER_FILE
 	DOCKER_REPOSITORY:="${DOCKER_REGISTRY}/$(REPOSITORY_NAME)-$(patsubst .%,%,$(suffix $(DOCKER_FILE)))"
 ifdef OPS_DOCKER_REGISTRY
@@ -262,11 +263,12 @@ docker:
 ifdef DOCKER
 	@echo "Login to Docker Default registry..."
 	@echo $(DOCKER_PASSWORD) | docker login --username "$(DOCKER_USERNAME)" --password-stdin $(DOCKER_REGISTRY)
-	@cd $(ROOT_DIRECTORY) && for DOCKER_FILE in $(shell ls -1 Dockerfile.*); do $(MAKE) docker-build DOCKER_FILE="$${DOCKER_FILE}"; done
+	@echo "OPS_DOCKER_REPOSITORY = $(OPS_DOCKER_REPOSITORY)"
 ifdef OPS_DOCKER_REPOSITORY
 	@echo "Login to Docker Ops registry..."
 	@echo $(OPS_DOCKER_PASSWORD) | docker -D login --username "$(OPS_DOCKER_USERNAME)" --password-stdin $(OPS_DOCKER_REGISTRY)
 endif
+	@cd $(ROOT_DIRECTORY) && for DOCKER_FILE in $(shell ls -1 Dockerfile.*); do $(MAKE) docker-build DOCKER_FILE="$${DOCKER_FILE}"; done
 	@cd $(ROOT_DIRECTORY) && for DOCKER_FILE in $(shell ls -1 Dockerfile.*); do $(MAKE) docker-push DOCKER_FILE="$${DOCKER_FILE}"; done
 endif
 
