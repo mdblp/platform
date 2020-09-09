@@ -1,6 +1,6 @@
 # Platform 
 The Tidepool platform API
-## Unreleased
+## 0.10.0 2020-09-09
 ### Changed 
 - PT-1435 latform services should be able to start without MongoDb
 
