@@ -8,9 +8,8 @@ chmod +x artifact_go.sh
 
 export ARTIFACT_GO_VERSION='1.11.4'
 
-# make sure build.sh can be executed 
 chmod 755 build.sh
-# Disable binary deployment in artifact_go.sh 
+# Disable binary deployment in artifact_go.sh as it is done by the Make command
 export ARTIFACT_DEPLOY=false
 export ARTIFACT_BUILD=true
 export BUILD_OPENAPI_DOC=false
