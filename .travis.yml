@@ -59,7 +59,6 @@ services:
   - docker
 
 script:
-  # - make ci-generate ci-build ci-test ci-deploy
   - ./artifact.sh
 cache:
   directories:
