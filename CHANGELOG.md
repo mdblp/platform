@@ -4,7 +4,9 @@ The Tidepool platform API
 ## Unreleased
 ### Fixed 
 - YLP-233 Parameters are not uploaded correctly for DBLHU systems
-
+### Engineering
+- YLP-198 Review Platform project security scan
+ 
 ## 0.10.1 2020-09-17
 ### Fixed
 - PT-1516 Max connection attempts to MongoDb doesn't behave as expected
