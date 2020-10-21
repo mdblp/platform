@@ -3,7 +3,7 @@
 if [ -f artifact_go.sh ]; then
   rm -f artifact_go.sh
 fi
-wget -q -O artifact_go.sh 'https://raw.githubusercontent.com/mdblp/tools/feature/add-platform-project/artifact/artifact_go.sh'
+wget -q -O artifact_go.sh 'https://raw.githubusercontent.com/mdblp/tools/dblp/artifact/artifact_go.sh'
 chmod +x artifact_go.sh
 chmod +x build.sh
 
