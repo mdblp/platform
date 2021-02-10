@@ -114,13 +114,14 @@ func (s *Standard) initializePermissionClient() error {
 
 	cfg := platform.NewConfig()
 	cfg.UserAgent = s.UserAgent()
-	if err := cfg.Load(s.ConfigReporter().WithScopes("permission", "client")); err != nil {
+	reporter := s.ConfigReporter().WithScopes("permission", "client")
+	if err := cfg.Load(reporter); err != nil {
 		return errors.Wrap(err, "unable to load permission client config")
 	}
 
 	s.Logger().Debug("Creating permission client")
-
-	clnt, err := permissionClient.New(cfg, platform.AuthorizeAsService)
+	permissionType := reporter.GetWithDefault("type", "gatekeeper")
+	clnt, err := permissionClient.New(cfg, platform.AuthorizeAsService, permissionType)
 	if err != nil {
 		return errors.Wrap(err, "unable to create permission client")
 	}
