@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	dataService "github.com/tidepool-org/platform/data/service"
-	"github.com/tidepool-org/platform/permission"
 	"github.com/tidepool-org/platform/request"
 	"github.com/tidepool-org/platform/service"
 )
@@ -31,9 +30,10 @@ type dataSetsDeleteParams struct {
 // @Failure 500 {object} service.Error "Unable to perform the operation"
 // @Router /v1/datasets/:dataSetID [delete]
 func DataSetsDelete(dataServiceContext dataService.Context) {
-	ctx := dataServiceContext.Request().Context()
+	req := dataServiceContext.Request()
+	ctx := req.Context()
 
-	dataSetID := dataServiceContext.Request().PathParam("dataSetId")
+	dataSetID := req.PathParam("dataSetId")
 	if dataSetID == "" {
 		dataServiceContext.RespondWithError(ErrorDataSetIDMissing())
 		return
@@ -56,33 +56,24 @@ func DataSetsDelete(dataServiceContext dataService.Context) {
 		return
 	}
 
-	if details := request.DetailsFromContext(ctx); !details.IsService() {
-		authUserID := details.UserID()
-
-		var permissions permission.Permissions
-		permissions, err = dataServiceContext.PermissionClient().GetUserPermissions(ctx, authUserID, *targetUserID)
-		if err != nil {
-			if request.IsErrorUnauthorized(err) {
-				dataServiceContext.RespondWithError(service.ErrorUnauthorized())
-			} else {
-				dataServiceContext.RespondWithInternalServerFailure("Unable to get user permissions", err)
-			}
-			return
+	permissions, err := dataServiceContext.PermissionClient().GetUserPermissions(req, *targetUserID)
+	if err != nil {
+		if request.IsErrorUnauthorized(err) {
+			dataServiceContext.RespondWithError(service.ErrorUnauthorized())
+		} else {
+			dataServiceContext.RespondWithInternalServerFailure("Unable to get user permissions", err)
 		}
-		if _, ok := permissions[permission.Owner]; !ok {
-			if _, ok = permissions[permission.Custodian]; !ok {
-				if _, ok = permissions[permission.Write]; !ok || dataSet.ByUser == nil || authUserID != *dataSet.ByUser {
-					dataServiceContext.RespondWithError(service.ErrorUnauthorized())
-					return
-				}
-			}
-		}
+		return
+	}
+	if !permissions {
+		dataServiceContext.RespondWithError(service.ErrorUnauthorized())
+		return
 	}
 
 	// Read delete options (remove dataset entry ?):
 	var jsonParams map[string]interface{}
 	doPurge := false
-	if err := dataServiceContext.Request().DecodeJsonPayload(&jsonParams); err != nil {
+	if err := req.DecodeJsonPayload(&jsonParams); err != nil {
 		jsonParams = nil
 	} else {
 		purge, havePurgeOption := jsonParams["purge"]

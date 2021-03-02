@@ -1,11 +1,11 @@
 package client
 
 import (
-	"context"
-	"fmt"
+	"strings"
+
+	"github.com/ant0ine/go-json-rest/rest"
 
 	"github.com/tidepool-org/platform/errors"
-	"github.com/tidepool-org/platform/permission"
 	"github.com/tidepool-org/platform/platform"
 	"github.com/tidepool-org/platform/request"
 )
@@ -22,91 +22,100 @@ type httpClientConfig struct {
 }
 
 type CoastguardRequestBody struct {
-	Service       string `json:"service"`
-	RequestUserID string `json:"requestUserId"`
-	TargetUserID  string `json:"targetUserId"`
+	Input struct {
+		Request struct {
+			Headers  map[string]string `json:"headers"`
+			Host     string            `json:"host"`
+			Method   string            `json:"method"`
+			Path     string            `json:"path"`
+			Query    string            `json:"query"`
+			Fragment string            `json:"fragment"`
+			Protocol string            `json:"protocol"`
+			Service  string            `json:"service"`
+		} `json:"request"`
+		Data struct {
+			TargetUserID string `json:"targetUserId"`
+		} `json:"data"`
+	} `json:"input"`
 }
+
 type CoastguardResponseBody struct {
 	Authorized bool   `json:"authorized"`
 	Route      string `json:"route"`
 }
 
 var (
-	permissionClientTypes = map[string]httpClientConfig{
-		"gatekeeper": {
-			clientType: "gatekeeper",
-			urlPrefix:  "access",
-			httpMethod: "GET",
-		},
-		"coastguard": {
-			clientType: "coastguard",
-			urlPrefix:  "v1/data/backloops/platform",
-			httpMethod: "POST",
-		},
+	permissionClientCoastguard = httpClientConfig{
+		clientType: "coastguard",
+		urlPrefix:  "v1/data/backloops/access",
+		httpMethod: "POST",
 	}
 )
 
-func New(config *platform.Config, authorizeAs platform.AuthorizeAs, permissionType string) (*Client, error) {
-	clnt, err := platform.NewClient(config, authorizeAs)
+func New(config *platform.Config) (*Client, error) {
+	clnt, err := platform.NewClient(config, platform.AuthorizeAsService)
 	if err != nil {
 		return nil, err
 	}
-	permsClientConfig, ok := permissionClientTypes[permissionType]
-	if !ok {
-		return nil, fmt.Errorf("unknown permission client type: %s", permissionType)
-	}
 	return &Client{
 		client:                 clnt,
-		permissionClientConfig: permsClientConfig,
+		permissionClientConfig: permissionClientCoastguard,
 	}, nil
 }
 
-func (c *Client) GetUserPermissions(ctx context.Context, requestUserID string, targetUserID string) (permission.Permissions, error) {
-
+func (c *Client) GetUserPermissions(req *rest.Request, targetUserID string) (bool, error) {
+	ctx := req.Context()
 	if ctx == nil {
-		return nil, errors.New("context is missing")
+		return false, errors.New("context is missing")
 	}
+	details := request.DetailsFromContext(ctx)
+	if details == nil {
+		return false, request.ErrorUnauthenticated()
+	}
+	if details.IsService() {
+		return true, nil
+	}
+	requestUserID := details.UserID()
 	if requestUserID == "" {
-		return nil, errors.New("request user id is missing")
+		return false, errors.New("request user id is missing")
 	}
 	if targetUserID == "" {
-		return nil, errors.New("target user id is missing")
+		return false, errors.New("target user id is missing")
 	}
-	result := permission.Permissions{}
 
 	if requestUserID == targetUserID {
-		result[permission.Owner] = permission.Permission{}
-		return permission.FixOwnerPermissions(result), nil
+		return true, nil
 	}
 
 	authConfig := c.permissionClientConfig
-	if authConfig.clientType == "gatekeeper" {
-		url := c.client.ConstructURL(authConfig.urlPrefix, targetUserID, requestUserID)
-		result := permission.Permissions{}
-		if err := c.client.RequestData(ctx, authConfig.httpMethod, url, nil, nil, &result); err != nil {
-			if request.IsErrorResourceNotFound(err) {
-				return nil, request.ErrorUnauthorized()
-			}
-			return nil, err
-		}
-		return permission.FixOwnerPermissions(result), nil
-	}
+	if authConfig.clientType == "coastguard" {
+		urlParts := strings.Split(authConfig.urlPrefix, "/")
+		url := c.client.ConstructURL(urlParts...)
 
-	if c.permissionClientConfig.clientType == "coastguard" {
-		url := c.client.ConstructURL(authConfig.urlPrefix)
 		coastguardResponse := CoastguardResponseBody{}
-		requestBody := CoastguardRequestBody{
-			Service:       "platform",
-			RequestUserID: requestUserID,
-			TargetUserID:  targetUserID,
-		}
+		requestBody := formatRequest(req, targetUserID)
 		if err := c.client.RequestData(ctx, authConfig.httpMethod, url, nil, &requestBody, &coastguardResponse); err != nil {
-			return nil, err
+			return false, err
 		}
-		if coastguardResponse.Authorized {
-			result[permission.Read] = permission.Permission{}
-		}
-		return permission.FixOwnerPermissions(result), nil
+		return coastguardResponse.Authorized, nil
 	}
-	return permission.FixOwnerPermissions(result), nil
+	return false, nil
+}
+
+func formatRequest(req *rest.Request, targetUserID string) CoastguardRequestBody {
+	var opaReq CoastguardRequestBody
+	url := *req.URL
+	headers := make(map[string]string)
+	for k := range req.Header {
+		headers[strings.ToLower(k)] = req.Header.Get(k)
+	}
+	opaReq.Input.Request.Headers = headers
+	opaReq.Input.Request.Method = req.Method
+	opaReq.Input.Request.Protocol = req.Proto
+	opaReq.Input.Request.Host = req.Host
+	opaReq.Input.Request.Path = url.Path
+	opaReq.Input.Request.Query = url.RawQuery
+	opaReq.Input.Request.Service = "platform"
+	opaReq.Input.Data.TargetUserID = targetUserID
+	return opaReq
 }

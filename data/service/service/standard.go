@@ -120,8 +120,7 @@ func (s *Standard) initializePermissionClient() error {
 	}
 
 	s.Logger().Debug("Creating permission client")
-	permissionType := reporter.GetWithDefault("type", "gatekeeper")
-	clnt, err := permissionClient.New(cfg, platform.AuthorizeAsService, permissionType)
+	clnt, err := permissionClient.New(cfg)
 	if err != nil {
 		return errors.Wrap(err, "unable to create permission client")
 	}
