@@ -1,25 +1,22 @@
 os: linux
 
-dist: focal
+dist: xenial
 
 language: go
 
-sudo: false
-
 go:
-  - 1.11.4
+  - 1.15.8
 
 go_import_path: github.com/tidepool-org/platform
+
+env:
+  global: 
+    - GO111MODULE=on
 
 before_install:
   # MongoDb 4.2 docker container
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin $DOCKER_REGISTRY
   - docker container run -d -p 27017:27017 mongo:4.2 
-  # - npm install -g snyk
-
-addons:
-  code_climate:
-    repo_token: 91ded9b66924acbe830541ab3593daf535f05f7c6db91b5cbd2d26dcf37da0b8
 
 deploy:
   # Control deployment by setting a value for `on`. Setting the `branch`
@@ -36,11 +33,10 @@ deploy:
     # Name of the S3 bucket to which your site should be uploaded.
     bucket: $AWS_BUCKET
     # Prevent Travis from deleting your built site so it can be uploaded.
-    skip_cleanup: true
     # Path of the source directory containing your built site.
     local_dir: deploy
     # Path to a directory containing your built site.
-    upload-dir: deploy
+    upload_dir: deploy
     # Set the Cache-Control header.
     cache_control: "max-age=21600"
     # Deploy SOUP list
@@ -51,9 +47,8 @@ deploy:
     secret_access_key: $AWS_SECRET_ACCESS_KEY
     region: $AWS_DEFAULT_REGION
     bucket: com.diabeloop.backloops.docs
-    skip_cleanup: true
     local_dir: soup
-    upload-dir: soup
+    upload_dir: soup
     cache_control: "max-age=21600"
 
 services:

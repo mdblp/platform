@@ -55,27 +55,27 @@ bindir:
 
 CompileDaemon:
 ifeq ($(shell which CompileDaemon),)
-	cd vendor/github.com/githubnemo/CompileDaemon && go install .
+	go installgithub.com/githubnemo/CompileDaemon
 endif
 
 esc:
 ifeq ($(shell which esc),)
-	cd vendor/github.com/mjibson/esc && go install .
+	go install github.com/mjibson/esc
 endif
 
 ginkgo:
 ifeq ($(shell which ginkgo),)
-	cd vendor/github.com/onsi/ginkgo/ginkgo && go install .
+	go install github.com/onsi/ginkgo/ginkgo
 endif
 
 goimports:
 ifeq ($(shell which goimports),)
-	cd vendor/golang.org/x/tools/cmd/goimports && go install .
-endif
+	go install golang.org/x/tools/cmd/goimports
+endif	
 
 golint:
 ifeq ($(shell which golint),)
-	cd vendor/golang.org/x/lint/golint && go install .
+	go install golang.org/x/lint/golint
 endif
 
 buildable: export GOBIN = ${BIN_DIRECTORY}
