@@ -49,7 +49,7 @@ var _ = Describe("Client", func() {
 		})
 	})
 
-	Context("with server and new coastguard client", func() {
+	Context("with server and coastguard client", func() {
 		var server *Server
 		var requestHandlers []http.HandlerFunc
 		var responseHeaders http.Header
@@ -77,7 +77,6 @@ var _ = Describe("Client", func() {
 			client, err = permissionClient.New(config)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(client).ToNot(BeNil())
-			ctx = request.NewContextWithDetails(ctx, details)
 		})
 
 		AfterEach(func() {
