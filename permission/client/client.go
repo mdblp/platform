@@ -40,8 +40,10 @@ type CoastguardRequestBody struct {
 }
 
 type CoastguardResponseBody struct {
-	Authorized bool   `json:"authorized"`
-	Route      string `json:"route"`
+	Result struct {
+		Authorized bool   `json:"authorized"`
+		Route      string `json:"route"`
+	} `json:"result"`
 }
 
 var (
@@ -97,7 +99,7 @@ func (c *Client) GetUserPermissions(req *rest.Request, targetUserID string) (boo
 		if err := c.client.RequestData(ctx, authConfig.httpMethod, url, nil, &requestBody, &coastguardResponse); err != nil {
 			return false, err
 		}
-		return coastguardResponse.Authorized, nil
+		return coastguardResponse.Result.Authorized, nil
 	}
 	return false, nil
 }

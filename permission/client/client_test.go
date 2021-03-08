@@ -200,7 +200,7 @@ var _ = Describe("Client", func() {
 
 				Context("with a successful response with authorization set to false", func() {
 					BeforeEach(func() {
-						requestHandlers = append(requestHandlers, RespondWith(http.StatusOK, `{"authorized": false, "route": "test"}`, responseHeaders))
+						requestHandlers = append(requestHandlers, RespondWith(http.StatusOK, `{"result":{"authorized": false, "route": "test"}}`, responseHeaders))
 					})
 
 					It("returns successfully with expected refused authorization", func() {
@@ -212,7 +212,7 @@ var _ = Describe("Client", func() {
 
 				Context("with a successful response with authorization set to true", func() {
 					BeforeEach(func() {
-						requestHandlers = append(requestHandlers, RespondWith(http.StatusOK, `{"authorized": true, "route": "test"}`, responseHeaders))
+						requestHandlers = append(requestHandlers, RespondWith(http.StatusOK, `{"result":{"authorized": true, "route": "test"}}`, responseHeaders))
 					})
 
 					It("returns successfully with expected accepted authorization", func() {
