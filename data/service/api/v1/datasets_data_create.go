@@ -14,6 +14,8 @@ import (
 	structureValidator "github.com/tidepool-org/platform/structure/validator"
 )
 
+type EmptyBody struct{}
+
 // DataSetsDataCreate godoc
 // @Summary Add data to a DataSets
 // @ID platform-data-api-DataSetsDataCreate
@@ -25,7 +27,7 @@ import (
 // @Security TidepoolServiceSecret
 // @Security TidepoolAuthorization
 // @Security TidepoolRestrictedToken
-// @Success 200 "Operation is a success"
+// @Success 200 {object} EmptyBody "Operation is a success"
 // @Failure 400 {object} service.Error "Data set id is missing"
 // @Failure 403 {object} service.Error "Auth token is not authorized for requested action"
 // @Failure 404 {object} service.Error "Data set with specified id not found"

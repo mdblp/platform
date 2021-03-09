@@ -17,7 +17,7 @@ import (
 // @Param dataSetId path string true "dataSet ID"
 // @Security TidepoolSessionToken
 // @Security TidepoolServiceSecret
-// @Success 200 "Operation is a success"
+// @Success 200 {object} EmptyBody "Operation is a success"
 // @Failure 400 {object} service.Error "dataSet ID is missing"
 // @Failure 403 {object} service.Error "Forbiden: caller is not a service"
 // @Failure 409 {object} service.Error "Data set with specified id is closed"
