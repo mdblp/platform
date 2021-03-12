@@ -71,8 +71,10 @@ pipeline {
                             mkdir -p ./ci-doc
                             mv ./soup/platform/*-soup.md ./ci-doc/
                             mv ./docs/api/v1/data/* ./ci-doc/
-                        """              
-                        stash name: "doc", includes: "ci-doc/*"
+                        """
+                        dir("ci-doc") {
+                            stash name: "doc", includes: "*", allowEmtpy: true
+                        }
                     }
                 }
                 
