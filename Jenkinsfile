@@ -76,7 +76,8 @@ pipeline {
                             ./buildDoc.sh
                             mkdir -p ./ci-doc
                             mv ./soup/platform/platform-0.0.0-soup.md ./ci-doc/platform-${version}-soup.md
-                            mv ./docs/api/v1/data/swagger.json ./ci-doc/platform-${version}-swagger.json"
+                            mv ./docs/api/v1/data/swagger.json ./ci-doc/platform-${version}-swagger.json
+
                             cp ./ci-doc/platform-${version}-swagger.json ./ci-doc/platform-latest-swagger.json
                         """
                         dir("ci-doc") {
