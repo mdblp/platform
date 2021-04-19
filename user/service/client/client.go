@@ -128,6 +128,13 @@ func (c *Client) Delete(ctx context.Context, id string, deleet *user.Delete, con
 		logger.WithError(err).Error("Unable to destroy all provider sessions")
 	}
 
+	permissionSession := c.PermissionStore().NewPermissionsSession()
+	defer permissionSession.Close()
+
+	if err = permissionSession.DestroyPermissionsForUserByID(ctx, id); err != nil {
+		logger.WithError(err).Error("Unable to destroy all permissions")
+	}
+
 	confirmationSession := c.ConfirmationStore().NewConfirmationSession()
 	defer confirmationSession.Close()
 

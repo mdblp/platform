@@ -6,6 +6,7 @@ import (
 	dataNormalizer "github.com/tidepool-org/platform/data/normalizer"
 	dataService "github.com/tidepool-org/platform/data/service"
 	"github.com/tidepool-org/platform/data/types/upload"
+	"github.com/tidepool-org/platform/permission"
 	"github.com/tidepool-org/platform/pointer"
 	"github.com/tidepool-org/platform/request"
 	"github.com/tidepool-org/platform/service"
@@ -32,31 +33,32 @@ import (
 // @Failure 500 {object} service.Error "Unable to perform the operation"
 // @Router /v1/users/:userId/datasets [post]
 func UsersDataSetsCreate(dataServiceContext dataService.Context) {
-	req := dataServiceContext.Request()
-	ctx := req.Context()
+	ctx := dataServiceContext.Request().Context()
 
-	targetUserID := req.PathParam("userId")
+	targetUserID := dataServiceContext.Request().PathParam("userId")
 	if targetUserID == "" {
 		dataServiceContext.RespondWithError(ErrorUserIDMissing())
 		return
 	}
 
-	permissions, err := dataServiceContext.PermissionClient().GetUserPermissions(req, targetUserID)
-	if err != nil {
-		if request.IsErrorUnauthorized(err) {
-			dataServiceContext.RespondWithError(service.ErrorUnauthorized())
-		} else {
-			dataServiceContext.RespondWithInternalServerFailure("Unable to get user permissions", err)
+	if details := request.DetailsFromContext(ctx); !details.IsService() {
+		permissions, err := dataServiceContext.PermissionClient().GetUserPermissions(ctx, details.UserID(), targetUserID)
+		if err != nil {
+			if request.IsErrorUnauthorized(err) {
+				dataServiceContext.RespondWithError(service.ErrorUnauthorized())
+			} else {
+				dataServiceContext.RespondWithInternalServerFailure("Unable to get user permissions", err)
+			}
+			return
 		}
-		return
-	}
-	if !permissions {
-		dataServiceContext.RespondWithError(service.ErrorUnauthorized())
-		return
+		if _, ok := permissions[permission.Write]; !ok {
+			dataServiceContext.RespondWithError(service.ErrorUnauthorized())
+			return
+		}
 	}
 
 	var rawDatum map[string]interface{}
-	if err := req.DecodeJsonPayload(&rawDatum); err != nil {
+	if err := dataServiceContext.Request().DecodeJsonPayload(&rawDatum); err != nil {
 		dataServiceContext.RespondWithError(service.ErrorJSONMalformed())
 		return
 	}
@@ -71,13 +73,13 @@ func UsersDataSetsCreate(dataServiceContext dataService.Context) {
 	}
 
 	if err := parser.Error(); err != nil {
-		request.MustNewResponder(dataServiceContext.Response(), req).Error(http.StatusBadRequest, err)
+		request.MustNewResponder(dataServiceContext.Response(), dataServiceContext.Request()).Error(http.StatusBadRequest, err)
 		return
 	}
 
 	dataSet.Validate(validator)
 	if err := validator.Error(); err != nil {
-		request.MustNewResponder(dataServiceContext.Response(), req).Error(http.StatusBadRequest, err)
+		request.MustNewResponder(dataServiceContext.Response(), dataServiceContext.Request()).Error(http.StatusBadRequest, err)
 		return
 	}
 
@@ -86,7 +88,7 @@ func UsersDataSetsCreate(dataServiceContext dataService.Context) {
 	dataSet.Normalize(normalizer)
 
 	if err := normalizer.Error(); err != nil {
-		request.MustNewResponder(dataServiceContext.Response(), req).Error(http.StatusBadRequest, err)
+		request.MustNewResponder(dataServiceContext.Response(), dataServiceContext.Request()).Error(http.StatusBadRequest, err)
 		return
 	}
 

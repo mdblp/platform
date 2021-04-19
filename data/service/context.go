@@ -4,6 +4,7 @@ import (
 	"github.com/tidepool-org/platform/auth"
 	dataClient "github.com/tidepool-org/platform/data/client"
 	"github.com/tidepool-org/platform/data/deduplicator"
+	dataSource "github.com/tidepool-org/platform/data/source"
 	dataStoreDEPRECATED "github.com/tidepool-org/platform/data/storeDEPRECATED"
 	"github.com/tidepool-org/platform/permission"
 	"github.com/tidepool-org/platform/service"
@@ -22,6 +23,7 @@ type Context interface {
 	SyncTaskSession() syncTaskStore.SyncTaskSession
 
 	DataClient() dataClient.Client
+	DataSourceClient() dataSource.Client
 }
 
 type HandlerFunc func(context Context)
