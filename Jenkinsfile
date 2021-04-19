@@ -69,23 +69,7 @@ pipeline {
         
         stage('Documentation') {
             steps {
-                script {
-                    builderImage.inside("") {
-                        sh """
-                            SERVICE=data make ci-soups
-                            ./buildDoc.sh
-                            mkdir -p ./ci-doc
-                            mv ./soup/platform/platform-0.0.0-soup.md ./ci-doc/platform-${version}-soup.md
-                            mv ./docs/api/v1/data/swagger.json ./ci-doc/platform-${version}-swagger.json
-
-                            cp ./ci-doc/platform-${version}-swagger.json ./ci-doc/platform-latest-swagger.json
-                        """
-                        dir("ci-doc") {
-                            stash name: "doc", includes: "*", allowEmtpy: true
-                        }
-                    }
-                }
-                
+                echo "Skipping documentation"                
             }
         }
         stage('Publish') {
