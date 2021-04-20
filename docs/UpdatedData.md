@@ -284,7 +284,7 @@ Leveraging the `deviceEvent` type and creating 2 new subTypes with the same stru
   "deviceTime": "2018-02-01T00:00:00",
   "time": "2020-05-12T08:50:08.000Z",
   "inputTime": "2020-05-12T08:40:00.000Z",
-  "timezoneOffset": 60
+  "timezone": "Europe/Paris"
 }
 {
   "type": "deviceEvent",
@@ -298,7 +298,7 @@ Leveraging the `deviceEvent` type and creating 2 new subTypes with the same stru
   "deviceTime": "2018-02-01T00:00:00",
   "time": "2020-05-12T08:50:08.000Z",
   "inputTime": "2020-05-12T08:40:00.000Z",
-  "timezoneOffset": 60
+  "timezone": "Europe/Paris"
 }
 {
   "type": "deviceEvent",
@@ -312,6 +312,6 @@ Leveraging the `deviceEvent` type and creating 2 new subTypes with the same stru
   "deviceTime": "2018-02-01T00:00:00",
   "time": "2020-05-12T08:50:08.000Z",
   "inputTime": "2020-05-12T08:40:00.000Z",
-  "timezoneOffset": 60
+  "timezone": "Europe/Paris"
 }
 ```
