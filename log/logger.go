@@ -147,7 +147,7 @@ func (l *logger) log(level Level, message string) {
 	fields := Fields{
 		"caller": errors.GetCaller(2),
 		"level":  level,
-		"time":   time.Now().Truncate(time.Microsecond).Format(time.RFC3339Nano),
+		"time":   time.Now().Truncate(time.Microsecond).Format("2006-01-02T15:04:05.999999999"),
 	}
 
 	if message != "" {
