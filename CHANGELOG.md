@@ -1,7 +1,7 @@
 # Platform 
 The Tidepool platform API
 
-## 0.12.1-RC1 - 2021-05-14
+## 0.12.1 - 2021-06-14
 ### Fixed
 - YLP-817 Make Service logs compatible with Coreye ELK filtering
 
