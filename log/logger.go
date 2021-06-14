@@ -175,12 +175,12 @@ func addPrefix(fields ...Fields) Fields {
 		for key, value := range inner {
 			if key != "" {
 				if value != nil {
-					prefixedKey := "dbl_" + key
+					prefixedKey := PREFIX + key
 					// Asses if the value is a stringify object (as a map)
 					if rec, ok := value.(map[string]interface{}); ok {
 						mapValue := make(map[string]interface{})
 						for key, val := range rec {
-							mapValue["dbl_"+key] = val
+							mapValue[PREFIX+key] = val
 						}
 						joined[prefixedKey] = mapValue
 					} else {
