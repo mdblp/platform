@@ -154,7 +154,7 @@ func (l *logger) log(level Level, message string) {
 		fields["message"] = message
 	}
 
-	if err := l.serializer.Serialize(joinFields(l.fields, fields)); err != nil {
+	if err := l.serializer.Serialize(addPrefix(joinFields(l.fields, fields))); err != nil {
 		fmt.Fprintf(os.Stderr, "ERROR: Failure to serialize log fields: %s", err)
 	}
 }
@@ -164,6 +164,32 @@ func joinLevelRanks(levelRanks ...LevelRanks) LevelRanks {
 	for _, inner := range levelRanks {
 		for level, rank := range inner {
 			joined[level] = rank
+		}
+	}
+	return joined
+}
+
+func addPrefix(fields ...Fields) Fields {
+	joined := Fields{}
+	for _, inner := range fields {
+		for key, value := range inner {
+			if key != "" {
+				if value != nil {
+					prefixedKey := "dbl_" + key
+					// Asses if the value is a stringify object (as a map)
+					if rec, ok := value.(map[string]interface{}); ok {
+						mapValue := make(map[string]interface{})
+						for key, val := range rec {
+							mapValue["dbl_"+key] = val
+						}
+						joined[prefixedKey] = mapValue
+					} else {
+						joined[prefixedKey] = value
+					}
+				} else {
+					delete(joined, key)
+				}
+			}
 		}
 	}
 	return joined

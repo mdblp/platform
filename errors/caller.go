@@ -9,10 +9,10 @@ import (
 )
 
 type Caller struct {
-	Package  string `json:"package,omitempty" bson:"package,omitempty"`
-	Function string `json:"function,omitempty" bson:"function,omitempty"`
-	File     string `json:"file,omitempty" bson:"file,omitempty"`
-	Line     int    `json:"line,omitempty" bson:"line,omitempty"`
+	Package  string `json:"dbl_package,omitempty" bson:"package,omitempty"`
+	Function string `json:"dbl_function,omitempty" bson:"function,omitempty"`
+	File     string `json:"dbl_file,omitempty" bson:"file,omitempty"`
+	Line     int    `json:"dbl_line,omitempty" bson:"line,omitempty"`
 }
 
 func GetCaller(frame int) *Caller {
