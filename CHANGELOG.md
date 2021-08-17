@@ -1,7 +1,7 @@
 # Platform 
 The Tidepool platform API
 
-## Unreleased
+## 0.12.2 - 2021-08-16
 ### Fixed
 - YLP-421 Revert workaround wrong bolus values sent by HU handsets
 
