@@ -1,7 +1,7 @@
 # Platform 
 The Tidepool platform API
 
-## Unreleased
+## 0.13.0 - 2021-09-09
 ### Changed
 - YLP-945 Update glycemia unit conversion in platform data
 
