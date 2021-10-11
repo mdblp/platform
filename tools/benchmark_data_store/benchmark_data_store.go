@@ -9,11 +9,14 @@ import (
 	"math/rand"
 	"strconv"
 	"time"
+	"os"
 
 	mgo "github.com/globalsign/mgo"
 	"github.com/globalsign/mgo/bson"
 	"github.com/urfave/cli"
+	logrus "github.com/sirupsen/logrus"
 
+	"github.com/mdblp/go-common/clients/mongo"
 	"github.com/tidepool-org/platform/application"
 	"github.com/tidepool-org/platform/data"
 	dataStoreDEPRECATED "github.com/tidepool-org/platform/data/storeDEPRECATED"
@@ -50,6 +53,9 @@ type Benchmark struct {
 }
 
 type Benchmarks []*Benchmark
+
+
+var logrusLogger = logrus.New()
 
 func main() {
 	application.RunAndExit(NewTool())
@@ -171,8 +177,19 @@ func (t *Tool) terminateConfig() {
 
 func (t *Tool) initializeStore() error {
 	t.Logger().Debug("Creating store")
+	// Temporary hack
+	logrusLogger.Out = os.Stdout
+	logrusLogger.SetFormatter(&logrus.TextFormatter{
+		DisableColors: false,
+		FullTimestamp: true,
+	})
+	// report method name
+	logrusLogger.SetReportCaller(true)
+	var mongoDbReadConfig = &mongo.Config{}
+	mongoDbReadConfig.FromEnv()
+	mongoDbReadConfig.Database = "data_read"
 
-	store, err := dataStoreDEPRECATEDMongo.NewStore(t.config, t.Logger())
+	store, err := dataStoreDEPRECATEDMongo.NewStore(t.config, mongoDbReadConfig, t.Logger(), logrusLogger)
 	if err != nil {
 		return errors.Wrap(err, "unable to create store")
 	}

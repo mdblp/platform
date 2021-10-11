@@ -3,10 +3,13 @@ package mongo
 import (
 	"context"
 	"time"
-
+	
+	logrus "github.com/sirupsen/logrus"
 	mgo "github.com/globalsign/mgo"
 	"github.com/globalsign/mgo/bson"
 
+	goComMgo "github.com/mdblp/go-common/clients/mongo"
+	"github.com/tidepool-org/platform/data/schema"
 	"github.com/tidepool-org/platform/data"
 	"github.com/tidepool-org/platform/data/storeDEPRECATED"
 	"github.com/tidepool-org/platform/data/types/upload"
@@ -30,7 +33,12 @@ var (
 	}
 )
 
-func NewStore(cfg *storeStructuredMongo.Config, lgr log.Logger) (*Store, error) {
+type Store struct {
+	*storeStructuredMongo.Store
+	BucketStore *MongoStoreBucketClient
+}
+
+func NewStore(cfg *storeStructuredMongo.Config, config *goComMgo.Config, lgr log.Logger, lg *logrus.Logger ) (*Store, error) {
 	if cfg != nil {
 		cfg.Indexes = deviceDataIndexes
 	}
@@ -39,23 +47,42 @@ func NewStore(cfg *storeStructuredMongo.Config, lgr log.Logger) (*Store, error) 
 		return nil, err
 	}
 
+/* 	if config!= nil {
+		config.Indexes = map[string][]mongoo.IndexModel{
+			"hotDailyCbg": {
+				{
+					Keys: bson.D{{ Key: "userId", Value: 1}},
+					Options: mongoOptions.Index().
+						SetName("UserId").
+						SetBackground(true).
+						SetUnique(true),
+				},
+			},
+		}
+	} */
+ 
+	bucketStore, err := NewMongoStoreBucketClient(config, lg)
+	if err != nil {
+		return nil, err
+	}
+
+	bucketStore.Start()
 	return &Store{
 		Store: baseStore,
+		BucketStore: bucketStore,
 	}, nil
-}
-
-type Store struct {
-	*storeStructuredMongo.Store
 }
 
 func (s *Store) NewDataSession() storeDEPRECATED.DataSession {
 	return &DataSession{
 		Session: s.Store.NewSession("deviceData"),
+		BucketStore: s.BucketStore,
 	}
 }
 
 type DataSession struct {
 	*storeStructuredMongo.Session
+	BucketStore *MongoStoreBucketClient
 }
 
 func (d *DataSession) GetDataSetsForUserByID(ctx context.Context, userID string, filter *storeDEPRECATED.Filter, pagination *page.Pagination) ([]*upload.Upload, error) {
@@ -315,6 +342,7 @@ func (d *DataSession) DeleteDataSet(ctx context.Context, dataSet *upload.Upload,
 	return nil
 }
 
+// Create data
 func (d *DataSession) CreateDataSetData(ctx context.Context, dataSet *upload.Upload, dataSetData []data.Datum) error {
 	if ctx == nil {
 		return errors.New("context is missing")
@@ -345,11 +373,25 @@ func (d *DataSession) CreateDataSetData(ctx context.Context, dataSet *upload.Upl
 		insertData[index] = datum
 	}
 
+	// TODO: Add Cbg in bucket
+	// mapping
+	var s = &schema.Sample{}
+	s.Value = 80.6
+	s.Units = "mmo/l"
+	s.TimeStamp = time.Now() 
+	s.Timezone = "UTC"	
+	s.TimezoneOffset = 2
+	err := d.BucketStore.Upsert(ctx, "123456789", s)
+
+	if err != nil {
+		return errors.Wrap(err, "unable to create cbg data in bucket")
+	}
+
 	bulk := d.C().Bulk()
 	bulk.Unordered()
 	bulk.Insert(insertData...)
 
-	_, err := bulk.Run()
+	_, err = bulk.Run()
 
 	loggerFields := log.Fields{"dataSetId": dataSet.UploadID, "dataCount": len(dataSetData), "duration": time.Since(now) / time.Microsecond}
 	log.LoggerFromContext(ctx).WithFields(loggerFields).WithError(err).Debug("CreateDataSetData")
