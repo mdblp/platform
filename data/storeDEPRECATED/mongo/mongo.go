@@ -35,7 +35,7 @@ var (
 
 type Store struct {
 	*storeStructuredMongo.Store
-	BucketStore *MongoStoreBucketClient
+	BucketStore *MongoBucketStoreClient
 }
 
 func NewStore(cfg *storeStructuredMongo.Config, config *goComMgo.Config, lgr log.Logger, lg *logrus.Logger ) (*Store, error) {
@@ -47,21 +47,7 @@ func NewStore(cfg *storeStructuredMongo.Config, config *goComMgo.Config, lgr log
 		return nil, err
 	}
 
-/* 	if config!= nil {
-		config.Indexes = map[string][]mongoo.IndexModel{
-			"hotDailyCbg": {
-				{
-					Keys: bson.D{{ Key: "userId", Value: 1}},
-					Options: mongoOptions.Index().
-						SetName("UserId").
-						SetBackground(true).
-						SetUnique(true),
-				},
-			},
-		}
-	} */
- 
-	bucketStore, err := NewMongoStoreBucketClient(config, lg)
+	bucketStore, err := NewMongoBucketStoreClient(config, lg)
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +68,7 @@ func (s *Store) NewDataSession() storeDEPRECATED.DataSession {
 
 type DataSession struct {
 	*storeStructuredMongo.Session
-	BucketStore *MongoStoreBucketClient
+	BucketStore *MongoBucketStoreClient
 }
 
 func (d *DataSession) GetDataSetsForUserByID(ctx context.Context, userID string, filter *storeDEPRECATED.Filter, pagination *page.Pagination) ([]*upload.Upload, error) {

@@ -13,13 +13,13 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type MongoStoreBucketClient struct {
+type MongoBucketStoreClient struct {
 	*goComMgo.StoreClient
 	log *log.Logger
 }
 
-// Create a new store client for a mongo DB
-func NewMongoStoreBucketClient(config *goComMgo.Config, logger *log.Logger) (*MongoStoreBucketClient, error) {
+// Create a new bucket store client for a mongo DB
+func NewMongoBucketStoreClient(config *goComMgo.Config, logger *log.Logger) (*MongoBucketStoreClient, error) {
 	if config == nil {
 		return nil, errors.New("bucket store mongo configuration is missing")
 	}
@@ -28,7 +28,7 @@ func NewMongoStoreBucketClient(config *goComMgo.Config, logger *log.Logger) (*Mo
 		return nil, errors.New("logger is missing for bucket store client")
 	}
 	
-	client := MongoStoreBucketClient{}
+	client := MongoBucketStoreClient{}
 	client.log = logger
 	store, err := goComMgo.NewStoreClient(config, logger)
 	client.StoreClient = store
@@ -37,8 +37,8 @@ func NewMongoStoreBucketClient(config *goComMgo.Config, logger *log.Logger) (*Mo
 
 /* bucket methods */
 
-// Look for a single bucket based on its internal ID or its public code
-func (c *MongoStoreBucketClient) Find(ctx context.Context, bucket *schema.CbgBucket) (result *schema.CbgBucket, err error) {
+// Look for a single bucket based on its Id
+func (c *MongoBucketStoreClient) Find(ctx context.Context, bucket *schema.CbgBucket) (result *schema.CbgBucket, err error) {
 	
 	if bucket.Id != "" {
 		var query bson.M = bson.M{}
@@ -57,16 +57,29 @@ func (c *MongoStoreBucketClient) Find(ctx context.Context, bucket *schema.CbgBuc
 	return nil, errors.New("Find called with an empty bucket.Id")
 }
 
-// Update a bucket record. The bucket is searched by its internal id
-func (c *MongoStoreBucketClient)Upsert(ctx context.Context, userId string, sample *schema.Sample) error {
+// Update a bucket record if found overwhise it will be created. The bucket is searched by its id.
+func (c *MongoBucketStoreClient)Upsert(ctx context.Context, userId string, sample *schema.Sample) error {
 	
+	if sample == nil {
+		return errors.New("impossible to upsert a nil sample")
+	}
+
+	if sample.TimeStamp.IsZero() {
+		return errors.New("impossible to upsert a sample having a incorrect timestamp")
+	}
+
+	if userId == "" {
+		return errors.New("impossible to upsert a sample for an empty user id")
+	}
+
 	// Extrat ISODate from sample timestamp
 	ts := sample.TimeStamp.Format("02-01-2006")
 	valTrue := true
 
 	c.log.Info("upsert cbg sample for: " + userId + "_" + ts)
 	
-	result, err := c.Collection("hotDailyCbg").UpdateOne(
+	// save in hotDailyCbg
+	_, err := c.Collection("hotDailyCbg").UpdateOne(
 		ctx,
 		bson.D{{Key: "_id", Value: userId + "_" + ts }}, // filter
 		bson.D{ // update
@@ -77,17 +90,36 @@ func (c *MongoStoreBucketClient)Upsert(ctx context.Context, userId string, sampl
 		},
 		&options.UpdateOptions{Upsert: &valTrue}, //options
 	)
-	c.log.Info("error: ", err)
-	c.log.Debug(result)
+
+	if err != nil {
+		return err
+	}
+
+	// save in coldDailyCbg
+	_, err = c.Collection("coldDailyCbg").UpdateOne(
+		ctx,
+		bson.D{{Key: "_id", Value: userId + "_" + ts }}, // filter
+		bson.D{ // update
+			{Key: "$addToSet", Value: bson.D{{Key: "measurements", Value: sample }}},
+			{Key: "$setOnInsert", Value: bson.D{{Key: "_id", Value: userId + "_" + ts }}},
+			{Key: "$setOnInsert", Value: bson.D{{Key: "createdTimestamp", Value: ts }}},
+			{Key: "$setOnInsert", Value: bson.D{{Key: "day", Value: ts }}},
+		},
+		&options.UpdateOptions{Upsert: &valTrue}, //options
+	)
 
 	return err
 }
 
 // Deletes a bucket record from the DB
-func (c *MongoStoreBucketClient) Remove(ctx context.Context, bucket *schema.CbgBucket) error {
+func (c *MongoBucketStoreClient) Remove(ctx context.Context, bucket *schema.CbgBucket) error {
 
 	if bucket.Id != "" {
 		if _, err := c.Collection("hotDailyCbg").DeleteOne(ctx, bson.M{"_id": bucket.Id}); err != nil {
+			return err
+		}
+
+		if _, err := c.Collection("coldDailyCbg").DeleteOne(ctx, bson.M{"_id": bucket.Id}); err != nil {
 			return err
 		}
 	}

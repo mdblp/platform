@@ -182,9 +182,9 @@ func (s *Standard) initializeDataStoreDEPRECATED() error {
 		DisableColors: false,
 		FullTimestamp: true,
 	})
-	
 	// report method name
 	logrusLogger.SetReportCaller(true)
+
 	var mongoDbReadConfig = &mongo.Config{}
 	mongoDbReadConfig.FromEnv()
 	mongoDbReadConfig.Database = "data_read"
