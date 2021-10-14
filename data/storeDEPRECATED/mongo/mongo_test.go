@@ -12,6 +12,7 @@ import (
 	logrusTest "github.com/sirupsen/logrus/hooks/test"
 
 	goComMgo "github.com/mdblp/go-common/clients/mongo"
+
 	"github.com/tidepool-org/platform/data"
 	"github.com/tidepool-org/platform/data/storeDEPRECATED"
 	"github.com/tidepool-org/platform/data/storeDEPRECATED/mongo"
@@ -128,7 +129,7 @@ var _ = Describe("Mongo", func() {
 	var config *storeStructuredMongo.Config
 	var dbReadConfig *goComMgo.Config
 	var store *mongo.Store
-	var session storeDEPRECATED.DataSession  
+	var session storeDEPRECATED.DataSession
 	var hook *logrusTest.Hook
 
 	BeforeEach(func() {
@@ -163,7 +164,7 @@ var _ = Describe("Mongo", func() {
 
 		It("returns a new store and no error if successful", func() {
 			var err error
-			store, err = mongo.NewStore(config, dbReadConfig,logger, dbReadLogger)
+			store, err = mongo.NewStore(config, dbReadConfig, logger, dbReadLogger)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(store).ToNot(BeNil())
 			store.WaitUntilStarted()
@@ -176,7 +177,7 @@ var _ = Describe("Mongo", func() {
 
 		BeforeEach(func() {
 			var err error
-			store, err = mongo.NewStore(config, dbReadConfig,logger, dbReadLogger)
+			store, err = mongo.NewStore(config, dbReadConfig, logger, dbReadLogger)
 			// if any error occured, not needed to wait until the store started
 			Expect(err).ToNot(HaveOccurred())
 			Expect(store).ToNot(BeNil())

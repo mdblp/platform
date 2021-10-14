@@ -5,6 +5,7 @@ import (
 
 	"github.com/mdblp/go-common/clients/mongo"
 	logrus "github.com/sirupsen/logrus"
+
 	"github.com/tidepool-org/platform/application"
 	dataDeduplicatorDeduplicator "github.com/tidepool-org/platform/data/deduplicator/deduplicator"
 	dataDeduplicatorFactory "github.com/tidepool-org/platform/data/deduplicator/factory"
@@ -19,7 +20,6 @@ import (
 	"github.com/tidepool-org/platform/service/service"
 	storeStructuredMongo "github.com/tidepool-org/platform/store/structured/mongo"
 	syncTaskMongo "github.com/tidepool-org/platform/synctask/store/mongo"
-
 )
 
 type Standard struct {

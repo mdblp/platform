@@ -7,16 +7,17 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"math/rand"
+	"os"
 	"strconv"
 	"time"
-	"os"
 
 	mgo "github.com/globalsign/mgo"
 	"github.com/globalsign/mgo/bson"
-	"github.com/urfave/cli"
 	logrus "github.com/sirupsen/logrus"
+	"github.com/urfave/cli"
 
 	"github.com/mdblp/go-common/clients/mongo"
+
 	"github.com/tidepool-org/platform/application"
 	"github.com/tidepool-org/platform/data"
 	dataStoreDEPRECATED "github.com/tidepool-org/platform/data/storeDEPRECATED"
@@ -53,7 +54,6 @@ type Benchmark struct {
 }
 
 type Benchmarks []*Benchmark
-
 
 var logrusLogger = logrus.New()
 

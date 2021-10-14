@@ -3,21 +3,21 @@ package mongo
 import (
 	"context"
 	"time"
-	
-	logrus "github.com/sirupsen/logrus"
+
 	mgo "github.com/globalsign/mgo"
 	"github.com/globalsign/mgo/bson"
+	logrus "github.com/sirupsen/logrus"
 
 	officialBson "go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 
-
 	goComMgo "github.com/mdblp/go-common/clients/mongo"
-	"github.com/tidepool-org/platform/data/schema"
+
 	"github.com/tidepool-org/platform/data"
+	"github.com/tidepool-org/platform/data/schema"
 	"github.com/tidepool-org/platform/data/storeDEPRECATED"
-	"github.com/tidepool-org/platform/data/types/upload"
 	"github.com/tidepool-org/platform/data/types/blood/glucose/continuous"
+	"github.com/tidepool-org/platform/data/types/upload"
 	"github.com/tidepool-org/platform/errors"
 	"github.com/tidepool-org/platform/log"
 	"github.com/tidepool-org/platform/page"
@@ -43,7 +43,7 @@ type Store struct {
 	BucketStore *MongoBucketStoreClient
 }
 
-func NewStore(cfg *storeStructuredMongo.Config, config *goComMgo.Config, lgr log.Logger, lg *logrus.Logger ) (*Store, error) {
+func NewStore(cfg *storeStructuredMongo.Config, config *goComMgo.Config, lgr log.Logger, lg *logrus.Logger) (*Store, error) {
 	if cfg != nil {
 		cfg.Indexes = deviceDataIndexes
 	}
@@ -59,14 +59,14 @@ func NewStore(cfg *storeStructuredMongo.Config, config *goComMgo.Config, lgr log
 
 	bucketStore.Start()
 	return &Store{
-		Store: baseStore,
+		Store:       baseStore,
 		BucketStore: bucketStore,
 	}, nil
 }
 
 func (s *Store) NewDataSession() storeDEPRECATED.DataSession {
 	return &DataSession{
-		Session: s.Store.NewSession("deviceData"),
+		Session:     s.Store.NewSession("deviceData"),
 		BucketStore: s.BucketStore,
 	}
 }
@@ -375,22 +375,22 @@ func (d *DataSession) CreateDataSetData(ctx context.Context, dataSet *upload.Upl
 			s.Value = *event.Value
 			s.Units = *event.Units
 			// extract string value (dereference)
-			s.Timezone =  *event.TimeZoneName	
+			s.Timezone = *event.TimeZoneName
 			s.TimezoneOffset = *event.TimeZoneOffset
 			// what is this mess ???
 			strTime := *event.Time
-			s.TimeStamp, _ = time.Parse(time.RFC3339Nano , strTime)
+			s.TimeStamp, _ = time.Parse(time.RFC3339Nano, strTime)
 			ts := s.TimeStamp.Format("02-01-2006")
 
 			// transform it as a mongo operations
 			strUserId := *dataSet.UserID
 			operationA := mongo.NewUpdateOneModel()
-			operationA.SetFilter(officialBson.D{{Key: "_id", Value: strUserId + "_" + ts }})
+			operationA.SetFilter(officialBson.D{{Key: "_id", Value: strUserId + "_" + ts}})
 			operationA.SetUpdate(officialBson.D{ // update
-				{Key: "$addToSet", Value: officialBson.D{{Key: "samples", Value: s }}},
-				{Key: "$setOnInsert", Value: officialBson.D{{Key: "_id", Value: strUserId + "_" + ts }}},
-				{Key: "$setOnInsert", Value: officialBson.D{{Key: "creationTimestamp", Value: creationTimestamp }}},
-				{Key: "$setOnInsert", Value: officialBson.D{{Key: "day", Value: ts }}},
+				{Key: "$addToSet", Value: officialBson.D{{Key: "samples", Value: s}}},
+				{Key: "$setOnInsert", Value: officialBson.D{{Key: "_id", Value: strUserId + "_" + ts}}},
+				{Key: "$setOnInsert", Value: officialBson.D{{Key: "creationTimestamp", Value: creationTimestamp}}},
+				{Key: "$setOnInsert", Value: officialBson.D{{Key: "day", Value: ts}}},
 			})
 			operationA.SetUpsert(true)
 			operations = append(operations, operationA)

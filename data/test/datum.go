@@ -30,7 +30,7 @@ type Datum struct {
 	GetOriginInvocations                 int
 	GetOriginOutputs                     []*origin.Origin
 	GetTypeInvocations                   int
-	GetTypeOutput						 []string
+	GetTypeOutput                        []string
 	SetUserIDInvocations                 int
 	SetUserIDInputs                      []*string
 	SetDataSetIDInvocations              int
