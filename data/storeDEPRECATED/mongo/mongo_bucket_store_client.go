@@ -3,6 +3,8 @@ package mongo
 import (
 	"context"
 	"errors"
+	"time"
+
 	log "github.com/sirupsen/logrus"
 
 	goComMgo "github.com/mdblp/go-common/clients/mongo"
@@ -58,7 +60,7 @@ func (c *MongoBucketStoreClient) Find(ctx context.Context, bucket *schema.CbgBuc
 }
 
 // Update a bucket record if found overwhise it will be created. The bucket is searched by its id.
-func (c *MongoBucketStoreClient)Upsert(ctx context.Context, userId string, sample *schema.Sample) error {
+func (c *MongoBucketStoreClient)Upsert(ctx context.Context, userId *string, creationTimestamp time.Time, sample *schema.CbgSample) error {
 	
 	if sample == nil {
 		return errors.New("impossible to upsert a nil sample")
@@ -68,24 +70,24 @@ func (c *MongoBucketStoreClient)Upsert(ctx context.Context, userId string, sampl
 		return errors.New("impossible to upsert a sample having a incorrect timestamp")
 	}
 
-	if userId == "" {
+	if userId == nil {
 		return errors.New("impossible to upsert a sample for an empty user id")
 	}
 
 	// Extrat ISODate from sample timestamp
 	ts := sample.TimeStamp.Format("02-01-2006")
 	valTrue := true
+	strUserId := *userId
 
-	c.log.Info("upsert cbg sample for: " + userId + "_" + ts)
-	
+	c.log.Info("upsert cbg sample for: " + strUserId + "_" + ts)
 	// save in hotDailyCbg
 	_, err := c.Collection("hotDailyCbg").UpdateOne(
 		ctx,
-		bson.D{{Key: "_id", Value: userId + "_" + ts }}, // filter
+		bson.D{{Key: "_id", Value: strUserId + "_" + ts }}, // filter
 		bson.D{ // update
-			{Key: "$addToSet", Value: bson.D{{Key: "measurements", Value: sample }}},
-			{Key: "$setOnInsert", Value: bson.D{{Key: "_id", Value: userId + "_" + ts }}},
-			{Key: "$setOnInsert", Value: bson.D{{Key: "createdTimestamp", Value: ts }}},
+			{Key: "$addToSet", Value: bson.D{{Key: "samples", Value: sample }}},
+			{Key: "$setOnInsert", Value: bson.D{{Key: "_id", Value: strUserId + "_" + ts }}},
+			{Key: "$setOnInsert", Value: bson.D{{Key: "creationTimestamp", Value: creationTimestamp }}},
 			{Key: "$setOnInsert", Value: bson.D{{Key: "day", Value: ts }}},
 		},
 		&options.UpdateOptions{Upsert: &valTrue}, //options
@@ -98,15 +100,33 @@ func (c *MongoBucketStoreClient)Upsert(ctx context.Context, userId string, sampl
 	// save in coldDailyCbg
 	_, err = c.Collection("coldDailyCbg").UpdateOne(
 		ctx,
-		bson.D{{Key: "_id", Value: userId + "_" + ts }}, // filter
+		bson.D{{Key: "_id", Value: strUserId + "_" + ts }}, // filter
 		bson.D{ // update
-			{Key: "$addToSet", Value: bson.D{{Key: "measurements", Value: sample }}},
-			{Key: "$setOnInsert", Value: bson.D{{Key: "_id", Value: userId + "_" + ts }}},
-			{Key: "$setOnInsert", Value: bson.D{{Key: "createdTimestamp", Value: ts }}},
+			{Key: "$addToSet", Value: bson.D{{Key: "samples", Value: sample }}},
+			{Key: "$setOnInsert", Value: bson.D{{Key: "_id", Value: strUserId + "_" + ts }}},
+			{Key: "$setOnInsert", Value: bson.D{{Key: "creationTimestamp", Value: creationTimestamp }}},
 			{Key: "$setOnInsert", Value: bson.D{{Key: "day", Value: ts }}},
 		},
 		&options.UpdateOptions{Upsert: &valTrue}, //options
 	)
+
+	return err
+}
+
+// Perform a bulk of operations on bucket records based on the operation argument, update a record if found overwhise created ot. 
+// The bucket is searched by its id.
+func (c *MongoBucketStoreClient)UpsertMany(ctx context.Context, userId *string, operations []mongo.WriteModel) error {
+	
+	// Specify an option to turn the bulk insertion in order of operation
+	bulkOption := options.BulkWriteOptions{}
+	bulkOption.SetOrdered(true)
+
+	_, err := c.Collection("hotDailyCbg").BulkWrite(ctx, operations, &bulkOption)
+	if err != nil {
+        return err
+	}
+
+	_, err = c.Collection("coldDailyCbg").BulkWrite(ctx, operations, &bulkOption)
 
 	return err
 }

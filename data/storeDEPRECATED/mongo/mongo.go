@@ -8,11 +8,16 @@ import (
 	mgo "github.com/globalsign/mgo"
 	"github.com/globalsign/mgo/bson"
 
+	officialBson "go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+
+
 	goComMgo "github.com/mdblp/go-common/clients/mongo"
 	"github.com/tidepool-org/platform/data/schema"
 	"github.com/tidepool-org/platform/data"
 	"github.com/tidepool-org/platform/data/storeDEPRECATED"
 	"github.com/tidepool-org/platform/data/types/upload"
+	"github.com/tidepool-org/platform/data/types/blood/glucose/continuous"
 	"github.com/tidepool-org/platform/errors"
 	"github.com/tidepool-org/platform/log"
 	"github.com/tidepool-org/platform/page"
@@ -349,35 +354,65 @@ func (d *DataSession) CreateDataSetData(ctx context.Context, dataSet *upload.Upl
 	}
 
 	now := time.Now()
-	timestamp := now.Truncate(time.Millisecond).Format(time.RFC3339Nano)
+	creationTimestamp := now.Truncate(time.Millisecond)
+	strTimestamp := creationTimestamp.Format(time.RFC3339Nano)
 
 	insertData := make([]interface{}, len(dataSetData))
+	var operations []mongo.WriteModel
+
 	for index, datum := range dataSetData {
 		datum.SetUserID(dataSet.UserID)
 		datum.SetDataSetID(dataSet.UploadID)
-		datum.SetCreatedTime(&timestamp)
+		datum.SetCreatedTime(&strTimestamp)
+		// Prepare cbg to be pushed into data read db
+		if datum.GetType() == "cbg" {
+			loggerFields := log.Fields{"dataSet": dataSet}
+			log.LoggerFromContext(ctx).WithFields(loggerFields).Debug("add a cbg entry")
+			event := datum.(*continuous.Continuous)
+
+			// mapping
+			var s = &schema.CbgSample{}
+			s.Value = *event.Value
+			s.Units = *event.Units
+			// extract string value (dereference)
+			s.Timezone =  *event.TimeZoneName	
+			s.TimezoneOffset = *event.TimeZoneOffset
+			// what is this mess ???
+			strTime := *event.Time
+			s.TimeStamp, _ = time.Parse(time.RFC3339Nano , strTime)
+			ts := s.TimeStamp.Format("02-01-2006")
+
+			// transform it as a mongo operations
+			strUserId := *dataSet.UserID
+			operationA := mongo.NewUpdateOneModel()
+			operationA.SetFilter(officialBson.D{{Key: "_id", Value: strUserId + "_" + ts }})
+			operationA.SetUpdate(officialBson.D{ // update
+				{Key: "$addToSet", Value: officialBson.D{{Key: "samples", Value: s }}},
+				{Key: "$setOnInsert", Value: officialBson.D{{Key: "_id", Value: strUserId + "_" + ts }}},
+				{Key: "$setOnInsert", Value: officialBson.D{{Key: "creationTimestamp", Value: creationTimestamp }}},
+				{Key: "$setOnInsert", Value: officialBson.D{{Key: "day", Value: ts }}},
+			})
+			operationA.SetUpsert(true)
+			operations = append(operations, operationA)
+		}
+
 		insertData[index] = datum
 	}
 
-	// TODO: Add Cbg in bucket
-	// mapping
-	var s = &schema.Sample{}
-	s.Value = 80.6
-	s.Units = "mmo/l"
-	s.TimeStamp = time.Now() 
-	s.Timezone = "UTC"	
-	s.TimezoneOffset = 2
-	err := d.BucketStore.Upsert(ctx, "123456789", s)
-
-	if err != nil {
-		return errors.Wrap(err, "unable to create cbg data in bucket")
+	if len(operations) > 0 {
+		err := d.BucketStore.UpsertMany(ctx, dataSet.UserID, operations)
+		if err != nil {
+			return errors.Wrap(err, "unable to create cbg bucket")
+		}
+	} else {
+		d.BucketStore.log.Debug("no cbg write operation, nothing to add in bucket")
 	}
 
 	bulk := d.C().Bulk()
 	bulk.Unordered()
 	bulk.Insert(insertData...)
 
-	_, err = bulk.Run()
+	_, err := bulk.Run()
 
 	loggerFields := log.Fields{"dataSetId": dataSet.UploadID, "dataCount": len(dataSetData), "duration": time.Since(now) / time.Microsecond}
 	log.LoggerFromContext(ctx).WithFields(loggerFields).WithError(err).Debug("CreateDataSetData")
