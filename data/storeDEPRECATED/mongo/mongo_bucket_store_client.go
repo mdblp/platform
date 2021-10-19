@@ -115,15 +115,21 @@ func (c *MongoBucketStoreClient) Upsert(ctx context.Context, userId *string, cre
 	return err
 }
 
-// Perform a bulk of operations on bucket records based on the operation argument, update a record if found overwhise created ot.
+// Perform a bulk of operations on bucket records based on the operation argument, update a record if found overwhise created it.
 // The bucket is searched by its id.
 func (c *MongoBucketStoreClient) UpsertMany(ctx context.Context, userId *string, creationTimestamp time.Time, samples []schema.CbgSample) error {
 
 	var operations []mongo.WriteModel
 
+	// transform as mongo operations
 	for _, sample := range samples {
-		// transform it as a mongo operations
 		ts := sample.Timestamp.Format("2006-01-02")
+
+		day, err := time.Parse("2006-01-02", ts)
+		if err != nil {
+			return errors.New("unable to parse cbg day time")
+		}
+
 		strUserId := *userId
 		operationA := mongo.NewUpdateOneModel()
 		operationA.SetFilter(bson.D{{Key: "_id", Value: strUserId + "_" + ts}})
@@ -132,7 +138,7 @@ func (c *MongoBucketStoreClient) UpsertMany(ctx context.Context, userId *string,
 			{Key: "$setOnInsert", Value: bson.D{
 				{Key: "_id", Value: strUserId + "_" + ts},
 				{Key: "creationTimestamp", Value: creationTimestamp},
-				{Key: "day", Value: ts},
+				{Key: "day", Value: day},
 				{Key: "userId", Value: strUserId}}},
 		})
 		operationA.SetUpsert(true)
