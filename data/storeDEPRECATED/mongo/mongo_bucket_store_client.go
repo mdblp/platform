@@ -67,7 +67,7 @@ func (c *MongoBucketStoreClient) Upsert(ctx context.Context, userId *string, cre
 		return errors.New("impossible to upsert a nil sample")
 	}
 
-	if sample.TimeStamp.IsZero() {
+	if sample.Timestamp.IsZero() {
 		return errors.New("impossible to upsert a sample having a incorrect timestamp")
 	}
 
@@ -76,7 +76,7 @@ func (c *MongoBucketStoreClient) Upsert(ctx context.Context, userId *string, cre
 	}
 
 	// Extrat ISODate from sample timestamp
-	ts := sample.TimeStamp.Format("02-01-2006")
+	ts := sample.Timestamp.Format("2006-01-02")
 	valTrue := true
 	strUserId := *userId
 
@@ -87,9 +87,10 @@ func (c *MongoBucketStoreClient) Upsert(ctx context.Context, userId *string, cre
 		bson.D{{Key: "_id", Value: strUserId + "_" + ts}}, // filter
 		bson.D{ // update
 			{Key: "$addToSet", Value: bson.D{{Key: "samples", Value: sample}}},
-			{Key: "$setOnInsert", Value: bson.D{{Key: "_id", Value: strUserId + "_" + ts}}},
-			{Key: "$setOnInsert", Value: bson.D{{Key: "creationTimestamp", Value: creationTimestamp}}},
-			{Key: "$setOnInsert", Value: bson.D{{Key: "day", Value: ts}}},
+			{Key: "$setOnInsert", Value: bson.D{{Key: "_id", Value: strUserId + "_" + ts},
+				{Key: "creationTimestamp", Value: creationTimestamp},
+				{Key: "day", Value: ts},
+				{Key: "userId", Value: strUserId}}},
 		},
 		&options.UpdateOptions{Upsert: &valTrue}, //options
 	)
@@ -116,8 +117,27 @@ func (c *MongoBucketStoreClient) Upsert(ctx context.Context, userId *string, cre
 
 // Perform a bulk of operations on bucket records based on the operation argument, update a record if found overwhise created ot.
 // The bucket is searched by its id.
-func (c *MongoBucketStoreClient) UpsertMany(ctx context.Context, userId *string, operations []mongo.WriteModel) error {
+func (c *MongoBucketStoreClient) UpsertMany(ctx context.Context, userId *string, creationTimestamp time.Time, samples []schema.CbgSample) error {
 
+	var operations []mongo.WriteModel
+
+	for _, sample := range samples {
+		// transform it as a mongo operations
+		ts := sample.Timestamp.Format("2006-01-02")
+		strUserId := *userId
+		operationA := mongo.NewUpdateOneModel()
+		operationA.SetFilter(bson.D{{Key: "_id", Value: strUserId + "_" + ts}})
+		operationA.SetUpdate(bson.D{ // update
+			{Key: "$addToSet", Value: bson.D{{Key: "samples", Value: sample}}},
+			{Key: "$setOnInsert", Value: bson.D{
+				{Key: "_id", Value: strUserId + "_" + ts},
+				{Key: "creationTimestamp", Value: creationTimestamp},
+				{Key: "day", Value: ts},
+				{Key: "userId", Value: strUserId}}},
+		})
+		operationA.SetUpsert(true)
+		operations = append(operations, operationA)
+	}
 	// Specify an option to turn the bulk insertion in order of operation
 	bulkOption := options.BulkWriteOptions{}
 	bulkOption.SetOrdered(true)

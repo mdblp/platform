@@ -64,7 +64,7 @@ func main() {
 type Tool struct {
 	*tool.Tool
 	config          *storeStructuredMongo.Config
-	store           *dataStoreDEPRECATEDMongo.Store
+	store           *dataStoreDEPRECATEDMongo.Stores
 	benchmarksFiles []string
 	benchmarks      Benchmarks
 }

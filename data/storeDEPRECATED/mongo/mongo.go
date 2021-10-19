@@ -8,9 +8,6 @@ import (
 	"github.com/globalsign/mgo/bson"
 	logrus "github.com/sirupsen/logrus"
 
-	officialBson "go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
-
 	goComMgo "github.com/mdblp/go-common/clients/mongo"
 
 	"github.com/tidepool-org/platform/data"
@@ -38,12 +35,12 @@ var (
 	}
 )
 
-type Store struct {
+type Stores struct {
 	*storeStructuredMongo.Store
 	BucketStore *MongoBucketStoreClient
 }
 
-func NewStore(cfg *storeStructuredMongo.Config, config *goComMgo.Config, lgr log.Logger, lg *logrus.Logger) (*Store, error) {
+func NewStore(cfg *storeStructuredMongo.Config, config *goComMgo.Config, lgr log.Logger, lg *logrus.Logger) (*Stores, error) {
 	if cfg != nil {
 		cfg.Indexes = deviceDataIndexes
 	}
@@ -58,13 +55,13 @@ func NewStore(cfg *storeStructuredMongo.Config, config *goComMgo.Config, lgr log
 	}
 
 	bucketStore.Start()
-	return &Store{
+	return &Stores{
 		Store:       baseStore,
 		BucketStore: bucketStore,
 	}, nil
 }
 
-func (s *Store) NewDataSession() storeDEPRECATED.DataSession {
+func (s *Stores) NewDataSession() storeDEPRECATED.DataSession {
 	return &DataSession{
 		Session:     s.Store.NewSession("deviceData"),
 		BucketStore: s.BucketStore,
@@ -358,7 +355,8 @@ func (d *DataSession) CreateDataSetData(ctx context.Context, dataSet *upload.Upl
 	strTimestamp := creationTimestamp.Format(time.RFC3339Nano)
 
 	insertData := make([]interface{}, len(dataSetData))
-	var operations []mongo.WriteModel
+	var samples []schema.CbgSample
+	var err error
 
 	for index, datum := range dataSetData {
 		datum.SetUserID(dataSet.UserID)
@@ -379,40 +377,33 @@ func (d *DataSession) CreateDataSetData(ctx context.Context, dataSet *upload.Upl
 			s.TimezoneOffset = *event.TimeZoneOffset
 			// what is this mess ???
 			strTime := *event.Time
-			s.TimeStamp, _ = time.Parse(time.RFC3339Nano, strTime)
-			ts := s.TimeStamp.Format("02-01-2006")
+			s.Timestamp, err = time.Parse(time.RFC3339Nano, strTime)
 
-			// transform it as a mongo operations
-			strUserId := *dataSet.UserID
-			operationA := mongo.NewUpdateOneModel()
-			operationA.SetFilter(officialBson.D{{Key: "_id", Value: strUserId + "_" + ts}})
-			operationA.SetUpdate(officialBson.D{ // update
-				{Key: "$addToSet", Value: officialBson.D{{Key: "samples", Value: s}}},
-				{Key: "$setOnInsert", Value: officialBson.D{{Key: "_id", Value: strUserId + "_" + ts}}},
-				{Key: "$setOnInsert", Value: officialBson.D{{Key: "creationTimestamp", Value: creationTimestamp}}},
-				{Key: "$setOnInsert", Value: officialBson.D{{Key: "day", Value: ts}}},
-			})
-			operationA.SetUpsert(true)
-			operations = append(operations, operationA)
+			if err != nil {
+				return errors.Wrap(err, "unable to parse cbg event time")
+			}
+
+			samples = append(samples, *s)
+
 		}
 
 		insertData[index] = datum
 	}
 
-	if len(operations) > 0 {
-		err := d.BucketStore.UpsertMany(ctx, dataSet.UserID, operations)
+	if len(samples) > 0 {
+		err := d.BucketStore.UpsertMany(ctx, dataSet.UserID, creationTimestamp, samples)
 		if err != nil {
 			return errors.Wrap(err, "unable to create cbg bucket")
 		}
 	} else {
-		d.BucketStore.log.Debug("no cbg write operation, nothing to add in bucket")
+		d.BucketStore.log.Debug("no cbg sample to write, nothing to add in bucket")
 	}
 
 	bulk := d.C().Bulk()
 	bulk.Unordered()
 	bulk.Insert(insertData...)
 
-	_, err := bulk.Run()
+	_, err = bulk.Run()
 
 	loggerFields := log.Fields{"dataSetId": dataSet.UploadID, "dataCount": len(dataSetData), "duration": time.Since(now) / time.Microsecond}
 	log.LoggerFromContext(ctx).WithFields(loggerFields).WithError(err).Debug("CreateDataSetData")

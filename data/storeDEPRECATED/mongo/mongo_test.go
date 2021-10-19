@@ -128,7 +128,7 @@ var _ = Describe("Mongo", func() {
 	var dbReadLogger *logrus.Logger
 	var config *storeStructuredMongo.Config
 	var dbReadConfig *goComMgo.Config
-	var store *mongo.Store
+	var store *mongo.Stores
 	var session storeDEPRECATED.DataSession
 	var hook *logrusTest.Hook
 

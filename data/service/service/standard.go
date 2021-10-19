@@ -26,7 +26,7 @@ type Standard struct {
 	*service.DEPRECATEDService
 	permissionClient        *permissionClient.Client
 	dataDeduplicatorFactory *dataDeduplicatorFactory.Factory
-	dataStoreDEPRECATED     *dataStoreDEPRECATEDMongo.Store
+	dataStoreDEPRECATED     *dataStoreDEPRECATEDMongo.Stores
 	syncTaskStore           *syncTaskMongo.Store
 	dataClient              *Client
 	api                     *api.Standard
