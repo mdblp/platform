@@ -119,10 +119,23 @@ func (c *MongoBucketStoreClient) Upsert(ctx context.Context, userId *string, cre
 // The bucket is searched by its id.
 func (c *MongoBucketStoreClient) UpsertMany(ctx context.Context, userId *string, creationTimestamp time.Time, samples []schema.CbgSample) error {
 
+	if userId == nil {
+		return errors.New("impossible to upsert an array of sample for an empty or nil user id")
+	}
+
+	if creationTimestamp.IsZero() {
+		return errors.New("impossible to bulk upsert samples having a incorrect timestamp")
+	}
+
+	if len(samples) == 0 {
+		return errors.New("impossible to bulk upsert an array of zero cbg samples")
+	}
+
 	var operations []mongo.WriteModel
-	var m *schema.Metadata
+	var incomingUserMetadata *schema.Metadata
 
 	// transform as mongo operations
+	// no data validation is done here as it is done in above layer in the Validate function
 	for _, sample := range samples {
 		ts := sample.Timestamp.Format("2006-01-02")
 
@@ -135,7 +148,8 @@ func (c *MongoBucketStoreClient) UpsertMany(ctx context.Context, userId *string,
 		operation := mongo.NewUpdateOneModel()
 		operation.SetFilter(bson.D{{Key: "_id", Value: strUserId + "_" + ts}})
 		operation.SetUpdate(bson.D{ // update
-			{Key: "$addToSet", Value: bson.D{{Key: "samples", Value: sample}}},
+			{Key: "$addToSet", Value: bson.D{
+				{Key: "samples", Value: sample}}},
 			{Key: "$setOnInsert", Value: bson.D{
 				{Key: "_id", Value: strUserId + "_" + ts},
 				{Key: "creationTimestamp", Value: creationTimestamp},
@@ -145,33 +159,19 @@ func (c *MongoBucketStoreClient) UpsertMany(ctx context.Context, userId *string,
 		operation.SetUpsert(true)
 		operations = append(operations, operation)
 
-		if m == nil {
-			c.log.Debug("construct meta data information")
-			m = &schema.Metadata{
-				CreationTimestamp:        creationTimestamp,
-				UserId:                   strUserId,
-				OldestCbgSampleTimestamp: sample.Timestamp,
-				NewestCbgSampleTimestamp: sample.Timestamp,
-			}
-		} else {
-			if m.OldestCbgSampleTimestamp.After(sample.Timestamp) {
-				m.OldestCbgSampleTimestamp = sample.Timestamp
-			} else if m.NewestCbgSampleTimestamp.Before(sample.Timestamp) {
-				m.NewestCbgSampleTimestamp = sample.Timestamp
-			}
-		}
+		incomingUserMetadata = c.buildUserMetadata(incomingUserMetadata, creationTimestamp, strUserId, sample)
 	}
 	// Specify an option to turn the bulk insertion in order of operation
 	bulkOption := options.BulkWriteOptions{}
 	bulkOption.SetOrdered(false)
 
-	// update or insest in Hot Daily
+	// update or insert in Hot Daily
 	_, err := c.Collection("hotDailyCbg").BulkWrite(ctx, operations, &bulkOption)
 	if err != nil {
 		return err
 	}
 
-	// update or insest in Cold Daily
+	// update or insert in Cold Daily
 	_, err = c.Collection("coldDailyCbg").BulkWrite(ctx, operations, &bulkOption)
 	if err != nil {
 		return err
@@ -185,23 +185,14 @@ func (c *MongoBucketStoreClient) UpsertMany(ctx context.Context, userId *string,
 		return err
 	}
 
-	if dbUserMetadata != nil {
-		// update
-		if dbUserMetadata.OldestCbgSampleTimestamp.After(m.OldestCbgSampleTimestamp) {
-			dbUserMetadata.OldestCbgSampleTimestamp = m.OldestCbgSampleTimestamp
-		}
-		if dbUserMetadata.NewestCbgSampleTimestamp.Before(m.NewestCbgSampleTimestamp) {
-			dbUserMetadata.NewestCbgSampleTimestamp = m.NewestCbgSampleTimestamp
-		}
-	} else {
-		dbUserMetadata = m
-	}
-
+	dbUserMetadata = c.refreshUserMetadata(dbUserMetadata, incomingUserMetadata)
 	valTrue := true
 	_, err = c.Collection("metadata").UpdateOne(ctx,
 		bson.M{"userId": userId},
 		bson.D{ // update
-			{Key: "$set", Value: bson.D{{Key: "oldestCbgSampleTimestamp", Value: dbUserMetadata.OldestCbgSampleTimestamp}, {Key: "newestCbgSampleTimestamp", Value: dbUserMetadata.NewestCbgSampleTimestamp}}},
+			{Key: "$set", Value: bson.D{
+				{Key: "oldestCbgTimestamp", Value: dbUserMetadata.OldestCbgTimestamp},
+				{Key: "newestCbgTimestamp", Value: dbUserMetadata.NewestCbgTimestamp}}},
 			{Key: "$setOnInsert", Value: bson.D{
 				{Key: "creationTimestamp", Value: dbUserMetadata.CreationTimestamp},
 				{Key: "userId", Value: dbUserMetadata.UserId}}},
@@ -226,4 +217,36 @@ func (c *MongoBucketStoreClient) Remove(ctx context.Context, bucket *schema.CbgB
 	}
 
 	return errors.New("Remove called with an empty bucket.Id")
+}
+
+func (c *MongoBucketStoreClient) buildUserMetadata(incomingUserMetadata *schema.Metadata, creationTimestamp time.Time, strUserId string, sample schema.CbgSample) *schema.Metadata {
+	if incomingUserMetadata == nil {
+		incomingUserMetadata = &schema.Metadata{
+			CreationTimestamp:  creationTimestamp,
+			UserId:             strUserId,
+			OldestCbgTimestamp: sample.Timestamp,
+			NewestCbgTimestamp: sample.Timestamp,
+		}
+	} else {
+		if incomingUserMetadata.OldestCbgTimestamp.After(sample.Timestamp) {
+			incomingUserMetadata.OldestCbgTimestamp = sample.Timestamp
+		} else if incomingUserMetadata.NewestCbgTimestamp.Before(sample.Timestamp) {
+			incomingUserMetadata.NewestCbgTimestamp = sample.Timestamp
+		}
+	}
+	return incomingUserMetadata
+}
+
+func (c *MongoBucketStoreClient) refreshUserMetadata(dbUserMetadata *schema.Metadata, incomingUserMetadata *schema.Metadata) *schema.Metadata {
+	if dbUserMetadata != nil {
+		if dbUserMetadata.OldestCbgTimestamp.After(incomingUserMetadata.OldestCbgTimestamp) {
+			dbUserMetadata.OldestCbgTimestamp = incomingUserMetadata.OldestCbgTimestamp
+		}
+		if dbUserMetadata.NewestCbgTimestamp.Before(incomingUserMetadata.NewestCbgTimestamp) {
+			dbUserMetadata.NewestCbgTimestamp = incomingUserMetadata.NewestCbgTimestamp
+		}
+		return dbUserMetadata
+	} else {
+		return incomingUserMetadata
+	}
 }
