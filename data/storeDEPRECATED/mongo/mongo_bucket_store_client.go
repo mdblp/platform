@@ -77,19 +77,25 @@ func (c *MongoBucketStoreClient) Upsert(ctx context.Context, userId *string, cre
 
 	// Extrat ISODate from sample timestamp
 	ts := sample.Timestamp.Format("2006-01-02")
+	day, err := time.Parse("2006-01-02", ts)
+	if err != nil {
+		return errors.New("unable to parse cbg day time")
+	}
 	valTrue := true
 	strUserId := *userId
 
 	c.log.Info("upsert cbg sample for: " + strUserId + "_" + ts)
 	// save in hotDailyCbg
-	_, err := c.Collection("hotDailyCbg").UpdateOne(
+	_, err = c.Collection("hotDailyCbg").UpdateOne(
 		ctx,
 		bson.D{{Key: "_id", Value: strUserId + "_" + ts}}, // filter
 		bson.D{ // update
-			{Key: "$addToSet", Value: bson.D{{Key: "samples", Value: sample}}},
-			{Key: "$setOnInsert", Value: bson.D{{Key: "_id", Value: strUserId + "_" + ts},
+			{Key: "$addToSet", Value: bson.D{
+				{Key: "samples", Value: sample}}},
+			{Key: "$setOnInsert", Value: bson.D{
+				{Key: "_id", Value: strUserId + "_" + ts},
 				{Key: "creationTimestamp", Value: creationTimestamp},
-				{Key: "day", Value: ts},
+				{Key: "day", Value: day},
 				{Key: "userId", Value: strUserId}}},
 		},
 		&options.UpdateOptions{Upsert: &valTrue}, //options
@@ -104,10 +110,13 @@ func (c *MongoBucketStoreClient) Upsert(ctx context.Context, userId *string, cre
 		ctx,
 		bson.D{{Key: "_id", Value: strUserId + "_" + ts}}, // filter
 		bson.D{ // update
-			{Key: "$addToSet", Value: bson.D{{Key: "samples", Value: sample}}},
-			{Key: "$setOnInsert", Value: bson.D{{Key: "_id", Value: strUserId + "_" + ts}}},
-			{Key: "$setOnInsert", Value: bson.D{{Key: "creationTimestamp", Value: creationTimestamp}}},
-			{Key: "$setOnInsert", Value: bson.D{{Key: "day", Value: ts}}},
+			{Key: "$addToSet", Value: bson.D{
+				{Key: "samples", Value: sample}}},
+			{Key: "$setOnInsert", Value: bson.D{
+				{Key: "_id", Value: strUserId + "_" + ts},
+				{Key: "creationTimestamp", Value: creationTimestamp},
+				{Key: "day", Value: day},
+				{Key: "userId", Value: strUserId}}},
 		},
 		&options.UpdateOptions{Upsert: &valTrue}, //options
 	)
@@ -161,7 +170,7 @@ func (c *MongoBucketStoreClient) UpsertMany(ctx context.Context, userId *string,
 
 		incomingUserMetadata = c.buildUserMetadata(incomingUserMetadata, creationTimestamp, strUserId, sample)
 	}
-	// Specify an option to turn the bulk insertion in order of operation
+	// Specify an option to turn the bulk insertion with no order of operation
 	bulkOption := options.BulkWriteOptions{}
 	bulkOption.SetOrdered(false)
 
