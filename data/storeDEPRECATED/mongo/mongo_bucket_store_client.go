@@ -120,6 +120,7 @@ func (c *MongoBucketStoreClient) Upsert(ctx context.Context, userId *string, cre
 func (c *MongoBucketStoreClient) UpsertMany(ctx context.Context, userId *string, creationTimestamp time.Time, samples []schema.CbgSample) error {
 
 	var operations []mongo.WriteModel
+	var m *schema.Metadata
 
 	// transform as mongo operations
 	for _, sample := range samples {
@@ -131,9 +132,9 @@ func (c *MongoBucketStoreClient) UpsertMany(ctx context.Context, userId *string,
 		}
 
 		strUserId := *userId
-		operationA := mongo.NewUpdateOneModel()
-		operationA.SetFilter(bson.D{{Key: "_id", Value: strUserId + "_" + ts}})
-		operationA.SetUpdate(bson.D{ // update
+		operation := mongo.NewUpdateOneModel()
+		operation.SetFilter(bson.D{{Key: "_id", Value: strUserId + "_" + ts}})
+		operation.SetUpdate(bson.D{ // update
 			{Key: "$addToSet", Value: bson.D{{Key: "samples", Value: sample}}},
 			{Key: "$setOnInsert", Value: bson.D{
 				{Key: "_id", Value: strUserId + "_" + ts},
@@ -141,19 +142,72 @@ func (c *MongoBucketStoreClient) UpsertMany(ctx context.Context, userId *string,
 				{Key: "day", Value: day},
 				{Key: "userId", Value: strUserId}}},
 		})
-		operationA.SetUpsert(true)
-		operations = append(operations, operationA)
+		operation.SetUpsert(true)
+		operations = append(operations, operation)
+
+		if m == nil {
+			c.log.Debug("construct meta data information")
+			m = &schema.Metadata{
+				CreationTimestamp:        creationTimestamp,
+				UserId:                   strUserId,
+				OldestCbgSampleTimestamp: sample.Timestamp,
+				NewestCbgSampleTimestamp: sample.Timestamp,
+			}
+		} else {
+			if m.OldestCbgSampleTimestamp.After(sample.Timestamp) {
+				m.OldestCbgSampleTimestamp = sample.Timestamp
+			} else if m.NewestCbgSampleTimestamp.Before(sample.Timestamp) {
+				m.NewestCbgSampleTimestamp = sample.Timestamp
+			}
+		}
 	}
 	// Specify an option to turn the bulk insertion in order of operation
 	bulkOption := options.BulkWriteOptions{}
-	bulkOption.SetOrdered(true)
+	bulkOption.SetOrdered(false)
 
+	// update or insest in Hot Daily
 	_, err := c.Collection("hotDailyCbg").BulkWrite(ctx, operations, &bulkOption)
 	if err != nil {
 		return err
 	}
 
+	// update or insest in Cold Daily
 	_, err = c.Collection("coldDailyCbg").BulkWrite(ctx, operations, &bulkOption)
+	if err != nil {
+		return err
+	}
+
+	// update or insert in MetaData
+	opts := options.FindOne()
+	var dbUserMetadata *schema.Metadata
+	if err := c.Collection("metadata").FindOne(ctx, bson.M{"userId": userId}, opts).Decode(&dbUserMetadata); err != nil && err != mongo.ErrNoDocuments {
+		c.log.WithError(err)
+		return err
+	}
+
+	if dbUserMetadata != nil {
+		// update
+		if dbUserMetadata.OldestCbgSampleTimestamp.After(m.OldestCbgSampleTimestamp) {
+			dbUserMetadata.OldestCbgSampleTimestamp = m.OldestCbgSampleTimestamp
+		}
+		if dbUserMetadata.NewestCbgSampleTimestamp.Before(m.NewestCbgSampleTimestamp) {
+			dbUserMetadata.NewestCbgSampleTimestamp = m.NewestCbgSampleTimestamp
+		}
+	} else {
+		dbUserMetadata = m
+	}
+
+	valTrue := true
+	_, err = c.Collection("metadata").UpdateOne(ctx,
+		bson.M{"userId": userId},
+		bson.D{ // update
+			{Key: "$set", Value: bson.D{{Key: "oldestCbgSampleTimestamp", Value: dbUserMetadata.OldestCbgSampleTimestamp}, {Key: "newestCbgSampleTimestamp", Value: dbUserMetadata.NewestCbgSampleTimestamp}}},
+			{Key: "$setOnInsert", Value: bson.D{
+				{Key: "creationTimestamp", Value: dbUserMetadata.CreationTimestamp},
+				{Key: "userId", Value: dbUserMetadata.UserId}}},
+		},
+		&options.UpdateOptions{Upsert: &valTrue}, //options
+	)
 
 	return err
 }
