@@ -200,8 +200,8 @@ func (c *MongoBucketStoreClient) UpsertMany(ctx context.Context, userId *string,
 		bson.M{"userId": userId},
 		bson.D{ // update
 			{Key: "$set", Value: bson.D{
-				{Key: "oldestCbgTimestamp", Value: dbUserMetadata.OldestCbgTimestamp},
-				{Key: "newestCbgTimestamp", Value: dbUserMetadata.NewestCbgTimestamp}}},
+				{Key: "oldestDataTimestamp", Value: dbUserMetadata.OldestDataTimestamp},
+				{Key: "newestDataTimestamp", Value: dbUserMetadata.NewestDataTimestamp}}},
 			{Key: "$setOnInsert", Value: bson.D{
 				{Key: "creationTimestamp", Value: dbUserMetadata.CreationTimestamp},
 				{Key: "userId", Value: dbUserMetadata.UserId}}},
@@ -231,16 +231,16 @@ func (c *MongoBucketStoreClient) Remove(ctx context.Context, bucket *schema.CbgB
 func (c *MongoBucketStoreClient) buildUserMetadata(incomingUserMetadata *schema.Metadata, creationTimestamp time.Time, strUserId string, sample schema.CbgSample) *schema.Metadata {
 	if incomingUserMetadata == nil {
 		incomingUserMetadata = &schema.Metadata{
-			CreationTimestamp:  creationTimestamp,
-			UserId:             strUserId,
-			OldestCbgTimestamp: sample.Timestamp,
-			NewestCbgTimestamp: sample.Timestamp,
+			CreationTimestamp:   creationTimestamp,
+			UserId:              strUserId,
+			OldestDataTimestamp: sample.Timestamp,
+			NewestDataTimestamp: sample.Timestamp,
 		}
 	} else {
-		if incomingUserMetadata.OldestCbgTimestamp.After(sample.Timestamp) {
-			incomingUserMetadata.OldestCbgTimestamp = sample.Timestamp
-		} else if incomingUserMetadata.NewestCbgTimestamp.Before(sample.Timestamp) {
-			incomingUserMetadata.NewestCbgTimestamp = sample.Timestamp
+		if incomingUserMetadata.OldestDataTimestamp.After(sample.Timestamp) {
+			incomingUserMetadata.OldestDataTimestamp = sample.Timestamp
+		} else if incomingUserMetadata.NewestDataTimestamp.Before(sample.Timestamp) {
+			incomingUserMetadata.NewestDataTimestamp = sample.Timestamp
 		}
 	}
 	return incomingUserMetadata
@@ -248,11 +248,11 @@ func (c *MongoBucketStoreClient) buildUserMetadata(incomingUserMetadata *schema.
 
 func (c *MongoBucketStoreClient) refreshUserMetadata(dbUserMetadata *schema.Metadata, incomingUserMetadata *schema.Metadata) *schema.Metadata {
 	if dbUserMetadata != nil {
-		if dbUserMetadata.OldestCbgTimestamp.After(incomingUserMetadata.OldestCbgTimestamp) {
-			dbUserMetadata.OldestCbgTimestamp = incomingUserMetadata.OldestCbgTimestamp
+		if dbUserMetadata.OldestDataTimestamp.After(incomingUserMetadata.OldestDataTimestamp) {
+			dbUserMetadata.OldestDataTimestamp = incomingUserMetadata.OldestDataTimestamp
 		}
-		if dbUserMetadata.NewestCbgTimestamp.Before(incomingUserMetadata.NewestCbgTimestamp) {
-			dbUserMetadata.NewestCbgTimestamp = incomingUserMetadata.NewestCbgTimestamp
+		if dbUserMetadata.NewestDataTimestamp.Before(incomingUserMetadata.NewestDataTimestamp) {
+			dbUserMetadata.NewestDataTimestamp = incomingUserMetadata.NewestDataTimestamp
 		}
 		return dbUserMetadata
 	} else {
