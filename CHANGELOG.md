@@ -1,7 +1,7 @@
 # Platform 
 The Tidepool platform API
 
-## 0.14.0-RC0
+## Unreleased
 ### Changed
 - YLP-1017 push glycemia data  in buckets in read db 
 
