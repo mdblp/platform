@@ -16,6 +16,8 @@ import (
 	"github.com/tidepool-org/platform/data/schema"
 )
 
+var dailyCbgCollections = []string{"hotDailyCbg", "coldDailyCbg"}
+
 type MongoBucketStoreClient struct {
 	*goComMgo.StoreClient
 	log *log.Logger
@@ -85,41 +87,27 @@ func (c *MongoBucketStoreClient) Upsert(ctx context.Context, userId *string, cre
 	strUserId := *userId
 
 	c.log.Info("upsert cbg sample for: " + strUserId + "_" + ts)
-	// save in hotDailyCbg
-	_, err = c.Collection("hotDailyCbg").UpdateOne(
-		ctx,
-		bson.D{{Key: "_id", Value: strUserId + "_" + ts}}, // filter
-		bson.D{ // update
-			{Key: "$addToSet", Value: bson.D{
-				{Key: "samples", Value: sample}}},
-			{Key: "$setOnInsert", Value: bson.D{
-				{Key: "_id", Value: strUserId + "_" + ts},
-				{Key: "creationTimestamp", Value: creationTimestamp},
-				{Key: "day", Value: day},
-				{Key: "userId", Value: strUserId}}},
-		},
-		&options.UpdateOptions{Upsert: &valTrue}, //options
-	)
 
-	if err != nil {
-		return err
+	for _, collection := range dailyCbgCollections {
+		_, err = c.Collection(collection).UpdateOne(
+			ctx,
+			bson.D{{Key: "_id", Value: strUserId + "_" + ts}}, // filter
+			bson.D{ // update
+				{Key: "$addToSet", Value: bson.D{
+					{Key: "samples", Value: sample}}},
+				{Key: "$setOnInsert", Value: bson.D{
+					{Key: "_id", Value: strUserId + "_" + ts},
+					{Key: "creationTimestamp", Value: creationTimestamp},
+					{Key: "day", Value: day},
+					{Key: "userId", Value: strUserId}}},
+			},
+			&options.UpdateOptions{Upsert: &valTrue}, //options
+		)
+
+		if err != nil {
+			return err
+		}
 	}
-
-	// save in coldDailyCbg
-	_, err = c.Collection("coldDailyCbg").UpdateOne(
-		ctx,
-		bson.D{{Key: "_id", Value: strUserId + "_" + ts}}, // filter
-		bson.D{ // update
-			{Key: "$addToSet", Value: bson.D{
-				{Key: "samples", Value: sample}}},
-			{Key: "$setOnInsert", Value: bson.D{
-				{Key: "_id", Value: strUserId + "_" + ts},
-				{Key: "creationTimestamp", Value: creationTimestamp},
-				{Key: "day", Value: day},
-				{Key: "userId", Value: strUserId}}},
-		},
-		&options.UpdateOptions{Upsert: &valTrue}, //options
-	)
 
 	return err
 }
@@ -174,16 +162,12 @@ func (c *MongoBucketStoreClient) UpsertMany(ctx context.Context, userId *string,
 	bulkOption := options.BulkWriteOptions{}
 	bulkOption.SetOrdered(false)
 
-	// update or insert in Hot Daily
-	_, err := c.Collection("hotDailyCbg").BulkWrite(ctx, operations, &bulkOption)
-	if err != nil {
-		return err
-	}
-
-	// update or insert in Cold Daily
-	_, err = c.Collection("coldDailyCbg").BulkWrite(ctx, operations, &bulkOption)
-	if err != nil {
-		return err
+	// update or insert in Hot Daily and Cold Daily
+	for _, collection := range dailyCbgCollections {
+		_, err := c.Collection(collection).BulkWrite(ctx, operations, &bulkOption)
+		if err != nil {
+			return err
+		}
 	}
 
 	// update or insert in MetaData
@@ -196,7 +180,7 @@ func (c *MongoBucketStoreClient) UpsertMany(ctx context.Context, userId *string,
 
 	dbUserMetadata = c.refreshUserMetadata(dbUserMetadata, incomingUserMetadata)
 	valTrue := true
-	_, err = c.Collection("metadata").UpdateOne(ctx,
+	_, err := c.Collection("metadata").UpdateOne(ctx,
 		bson.M{"userId": userId},
 		bson.D{ // update
 			{Key: "$set", Value: bson.D{
@@ -216,12 +200,11 @@ func (c *MongoBucketStoreClient) UpsertMany(ctx context.Context, userId *string,
 func (c *MongoBucketStoreClient) Remove(ctx context.Context, bucket *schema.CbgBucket) error {
 
 	if bucket.Id != "" {
-		if _, err := c.Collection("hotDailyCbg").DeleteOne(ctx, bson.M{"_id": bucket.Id}); err != nil {
-			return err
-		}
 
-		if _, err := c.Collection("coldDailyCbg").DeleteOne(ctx, bson.M{"_id": bucket.Id}); err != nil {
-			return err
+		for _, collection := range dailyCbgCollections {
+			if _, err := c.Collection(collection).DeleteOne(ctx, bson.M{"_id": bucket.Id}); err != nil {
+				return err
+			}
 		}
 	}
 
