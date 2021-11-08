@@ -58,7 +58,7 @@ type Stores struct {
 	BucketStore *MongoBucketStoreClient
 }
 
-func NewStore(cfg *storeStructuredMongo.Config, config *goComMgo.Config, lgr log.Logger, lg *logrus.Logger) (*Stores, error) {
+func NewStore(cfg *storeStructuredMongo.Config, config *goComMgo.Config, lgr log.Logger, lg *logrus.Logger, enableBucketStore bool) (*Stores, error) {
 	if cfg != nil {
 		cfg.Indexes = deviceDataIndexes
 	}
@@ -67,12 +67,15 @@ func NewStore(cfg *storeStructuredMongo.Config, config *goComMgo.Config, lgr log
 		return nil, err
 	}
 
-	bucketStore, err := NewMongoBucketStoreClient(config, lg)
+	bucketStore, err := NewMongoBucketStoreClient(enableBucketStore, config, lg)
 	if err != nil {
 		return nil, err
 	}
 
-	bucketStore.Start()
+	if bucketStore.StoreClient != nil {
+		bucketStore.Start()
+	}
+
 	return &Stores{
 		Store:       baseStore,
 		BucketStore: bucketStore,
@@ -413,9 +416,17 @@ func (d *DataSession) CreateDataSetData(ctx context.Context, dataSet *upload.Upl
 		err := d.BucketStore.UpsertMany(ctx, dataSet.UserID, creationTimestamp, samples)
 		if err != nil {
 			return errors.Wrap(err, "unable to create cbg bucket")
+	if d.BucketStore.enable {
+		if len(samples) > 0 {
+			err := d.BucketStore.UpsertMany(ctx, dataSet.UserID, creationTimestamp, samples)
+			if err != nil {
+				return errors.Wrap(err, "unable to create cbg bucket")
+			}
+		} else {
+			d.BucketStore.log.Debug("no cbg sample to write, nothing to add in bucket")
 		}
 	} else {
-		d.BucketStore.log.Debug("no cbg sample to write, nothing to add in bucket")
+		d.BucketStore.log.Debug("push to read database is disabled")
 	}
 	elapsed_time := time.Since(start).Milliseconds()
 	dataWriteToReadStoreMetrics.WithLabelValues("cbg").Observe(float64(elapsed_time))

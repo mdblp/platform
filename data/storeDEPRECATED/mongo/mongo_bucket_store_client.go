@@ -20,24 +20,36 @@ var dailyCbgCollections = []string{"hotDailyCbg", "coldDailyCbg"}
 
 type MongoBucketStoreClient struct {
 	*goComMgo.StoreClient
-	log *log.Logger
+	log    *log.Logger
+	enable bool
 }
 
-// Create a new bucket store client for a mongo DB
-func NewMongoBucketStoreClient(config *goComMgo.Config, logger *log.Logger) (*MongoBucketStoreClient, error) {
+// Create a new bucket store client for a mongo DB if active is set to true, nil otherwise
+func NewMongoBucketStoreClient(enable bool, config *goComMgo.Config, logger *log.Logger) (*MongoBucketStoreClient, error) {
 	if config == nil {
 		return nil, errors.New("bucket store mongo configuration is missing")
 	}
 
 	if logger == nil {
 		return nil, errors.New("logger is missing for bucket store client")
+
 	}
 
 	client := MongoBucketStoreClient{}
 	client.log = logger
-	store, err := goComMgo.NewStoreClient(config, logger)
-	client.StoreClient = store
-	return &client, err
+	client.enable = enable
+
+	if enable {
+		store, err := goComMgo.NewStoreClient(config, logger)
+		client.StoreClient = store
+		return &client, err
+	}
+
+	return &client, nil
+}
+
+func (c *MongoBucketStoreClient) IsEnabled() bool {
+	return c.enable
 }
 
 /* bucket methods */
@@ -64,6 +76,10 @@ func (c *MongoBucketStoreClient) Find(ctx context.Context, bucket *schema.CbgBuc
 
 // Update a bucket record if found overwhise it will be created. The bucket is searched by its id.
 func (c *MongoBucketStoreClient) Upsert(ctx context.Context, userId *string, creationTimestamp time.Time, sample *schema.CbgSample) error {
+
+	if !c.enable {
+		return errors.New("the store is disabled")
+	}
 
 	if sample == nil {
 		return errors.New("impossible to upsert a nil sample")
@@ -115,6 +131,10 @@ func (c *MongoBucketStoreClient) Upsert(ctx context.Context, userId *string, cre
 // Perform a bulk of operations on bucket records based on the operation argument, update a record if found overwhise created it.
 // The bucket is searched by its id.
 func (c *MongoBucketStoreClient) UpsertMany(ctx context.Context, userId *string, creationTimestamp time.Time, samples []schema.CbgSample) error {
+
+	if !c.enable {
+		return errors.New("the store is disabled")
+	}
 
 	if userId == nil {
 		return errors.New("impossible to upsert an array of sample for an empty or nil user id")
@@ -198,6 +218,10 @@ func (c *MongoBucketStoreClient) UpsertMany(ctx context.Context, userId *string,
 
 // Deletes a bucket record from the DB
 func (c *MongoBucketStoreClient) Remove(ctx context.Context, bucket *schema.CbgBucket) error {
+
+	if !c.enable {
+		return errors.New("the store is disabled")
+	}
 
 	if bucket.Id != "" {
 
