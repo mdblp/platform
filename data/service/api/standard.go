@@ -81,7 +81,6 @@ func (s *Standard) DEPRECATEDInitializeRouter(routes []dataService.Route) error 
 		promhttp.Handler().ServeHTTP(w.(http.ResponseWriter), r.Request)
 	})
 
-
 	contextRoutes = append(contextRoutes, metricRoute)
 
 	router, err := rest.MakeRouter(contextRoutes...)
