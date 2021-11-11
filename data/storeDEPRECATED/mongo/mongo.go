@@ -37,16 +37,16 @@ var (
 	}
 )
 
-var writeDataToReadStore = promauto.NewHistogramVec(prometheus.HistogramOpts{
-	Name:      "write_to_read_store_milliseconds",
+var dataWriteToReadStoreMetrics = promauto.NewHistogramVec(prometheus.HistogramOpts{
+	Name:      "write_to_read_store_duration_milliseconds",
 	Help:      "A histogram for writing cbg data to read store execution time in ms",
 	Buckets:   prometheus.LinearBuckets(20, 20, 300),
 	Subsystem: "data",
 	Namespace: "dblp",
 }, []string{"type"})
 
-var writeDatumToDeviceDataStore = promauto.NewHistogram(prometheus.HistogramOpts{
-	Name:      "write_datum_to_deviceData_milliseconds",
+var datumWriteToDeviceDataStoreMetrics = promauto.NewHistogram(prometheus.HistogramOpts{
+	Name:      "write_datum_to_deviceData_duration_milliseconds",
 	Help:      "A histogram for writing a datum to the device data execution time (ms)",
 	Buckets:   prometheus.LinearBuckets(20, 20, 300),
 	Subsystem: "data",
@@ -418,7 +418,7 @@ func (d *DataSession) CreateDataSetData(ctx context.Context, dataSet *upload.Upl
 		d.BucketStore.log.Debug("no cbg sample to write, nothing to add in bucket")
 	}
 	elapsed_time := time.Since(start).Milliseconds()
-	writeDataToReadStore.WithLabelValues("cbg").Observe(float64(elapsed_time))
+	dataWriteToReadStoreMetrics.WithLabelValues("cbg").Observe(float64(elapsed_time))
 
 	start = time.Now()
 	bulk := d.C().Bulk()
@@ -427,7 +427,7 @@ func (d *DataSession) CreateDataSetData(ctx context.Context, dataSet *upload.Upl
 
 	_, err = bulk.Run()
 	elapsed_time = time.Since(start).Milliseconds()
-	writeDatumToDeviceDataStore.Observe(float64(elapsed_time))
+	datumWriteToDeviceDataStoreMetrics.Observe(float64(elapsed_time))
 
 	loggerFields := log.Fields{"dataSetId": dataSet.UploadID, "dataCount": len(dataSetData), "duration": time.Since(now) / time.Microsecond}
 	log.LoggerFromContext(ctx).WithFields(loggerFields).WithError(err).Debug("CreateDataSetData")
