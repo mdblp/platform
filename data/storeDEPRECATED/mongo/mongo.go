@@ -412,10 +412,6 @@ func (d *DataSession) CreateDataSetData(ctx context.Context, dataSet *upload.Upl
 	}
 
 	start := time.Now()
-	if len(samples) > 0 {
-		err := d.BucketStore.UpsertMany(ctx, dataSet.UserID, creationTimestamp, samples)
-		if err != nil {
-			return errors.Wrap(err, "unable to create cbg bucket")
 	if d.BucketStore.enable {
 		if len(samples) > 0 {
 			err := d.BucketStore.UpsertMany(ctx, dataSet.UserID, creationTimestamp, samples)
