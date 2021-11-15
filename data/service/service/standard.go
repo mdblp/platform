@@ -187,7 +187,7 @@ func (s *Standard) initializeDataStoreDEPRECATED() error {
 	})
 	// report method name
 	logrusLogger.SetReportCaller(true)
-	pushToReadStore := getPushToReadStoreEnv("PUSH_TO_READ_STORE_ENABLED")
+	pushToReadStore := getPushToReadStoreEnv()
 	var mongoDbReadConfig = &mongo.Config{}
 	mongoDbReadConfig.FromEnv()
 	mongoDbReadConfig.Database = "data_read"
@@ -290,8 +290,8 @@ func getenvStr(key string) (string, error) {
 // Retrieve the PUSH_TO_READ_STORE_ENABLED env variable
 // It accepts 1, t, T, TRUE, true, True, 0, f, F, FALSE, false, False.
 // Any other value returns true by default.
-func getPushToReadStoreEnv(key string) bool {
-	s, err := getenvStr(key)
+func getPushToReadStoreEnv() bool {
+	s, err := getenvStr("PUSH_TO_READ_STORE_ENABLED")
 	if err != nil {
 		logrusLogger.Warn("environment variable PUSH_TO_READ_STORE_ENABLED not exported, set true by default")
 		return true
