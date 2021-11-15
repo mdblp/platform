@@ -55,7 +55,12 @@ var datumWriteToDeviceDataStoreMetrics = promauto.NewHistogram(prometheus.Histog
 
 type Stores struct {
 	*storeStructuredMongo.Store
-	BucketStore *MongoBucketStoreClient
+	BucketStore        *MongoBucketStoreClient
+	BucketStoreEnabled bool
+}
+
+func (s *Stores) IsEnabled() bool {
+	return s.BucketStoreEnabled
 }
 
 func NewStore(cfg *storeStructuredMongo.Config, config *goComMgo.Config, lgr log.Logger, lg *logrus.Logger, enableBucketStore bool) (*Stores, error) {
@@ -67,31 +72,37 @@ func NewStore(cfg *storeStructuredMongo.Config, config *goComMgo.Config, lgr log
 		return nil, err
 	}
 
-	bucketStore, err := NewMongoBucketStoreClient(enableBucketStore, config, lg)
-	if err != nil {
-		return nil, err
-	}
+	bucketStore := &MongoBucketStoreClient{}
+	if enableBucketStore {
+		bucketStore, err := NewMongoBucketStoreClient(config, lg)
+		if err != nil {
+			return nil, err
+		}
 
-	if bucketStore.StoreClient != nil {
-		bucketStore.Start()
+		if bucketStore.StoreClient != nil {
+			bucketStore.Start()
+		}
 	}
 
 	return &Stores{
-		Store:       baseStore,
-		BucketStore: bucketStore,
+		Store:              baseStore,
+		BucketStore:        bucketStore,
+		BucketStoreEnabled: enableBucketStore,
 	}, nil
 }
 
 func (s *Stores) NewDataSession() storeDEPRECATED.DataSession {
 	return &DataSession{
-		Session:     s.Store.NewSession("deviceData"),
-		BucketStore: s.BucketStore,
+		Session:            s.Store.NewSession("deviceData"),
+		BucketStore:        s.BucketStore,
+		BucketStoreEnabled: s.BucketStoreEnabled,
 	}
 }
 
 type DataSession struct {
 	*storeStructuredMongo.Session
-	BucketStore *MongoBucketStoreClient
+	BucketStore        *MongoBucketStoreClient
+	BucketStoreEnabled bool
 }
 
 func (d *DataSession) GetDataSetsForUserByID(ctx context.Context, userID string, filter *storeDEPRECATED.Filter, pagination *page.Pagination) ([]*upload.Upload, error) {
@@ -411,8 +422,8 @@ func (d *DataSession) CreateDataSetData(ctx context.Context, dataSet *upload.Upl
 		insertData[index] = datum
 	}
 
-	start := time.Now()
-	if d.BucketStore.enable {
+	if d.BucketStoreEnabled {
+		start := time.Now()
 		if len(samples) > 0 {
 			err := d.BucketStore.UpsertMany(ctx, dataSet.UserID, creationTimestamp, samples)
 			if err != nil {
@@ -421,19 +432,19 @@ func (d *DataSession) CreateDataSetData(ctx context.Context, dataSet *upload.Upl
 		} else {
 			d.BucketStore.log.Debug("no cbg sample to write, nothing to add in bucket")
 		}
+		elapsed_time := time.Since(start).Milliseconds()
+		dataWriteToReadStoreMetrics.WithLabelValues("cbg").Observe(float64(elapsed_time))
 	} else {
 		d.BucketStore.log.Debug("push to read database is disabled")
 	}
-	elapsed_time := time.Since(start).Milliseconds()
-	dataWriteToReadStoreMetrics.WithLabelValues("cbg").Observe(float64(elapsed_time))
 
-	start = time.Now()
+	start := time.Now()
 	bulk := d.C().Bulk()
 	bulk.Unordered()
 	bulk.Insert(insertData...)
 
 	_, err = bulk.Run()
-	elapsed_time = time.Since(start).Milliseconds()
+	elapsed_time := time.Since(start).Milliseconds()
 	datumWriteToDeviceDataStoreMetrics.Observe(float64(elapsed_time))
 
 	loggerFields := log.Fields{"dataSetId": dataSet.UploadID, "dataCount": len(dataSetData), "duration": time.Since(now) / time.Microsecond}

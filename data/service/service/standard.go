@@ -78,7 +78,7 @@ func (s *Standard) Terminate() {
 	}
 	if s.dataStoreDEPRECATED != nil {
 		s.dataStoreDEPRECATED.Close()
-		if s.dataStoreDEPRECATED.BucketStore.IsEnabled() {
+		if s.dataStoreDEPRECATED.BucketStore != nil {
 			s.dataStoreDEPRECATED.BucketStore.Close()
 		}
 		s.dataStoreDEPRECATED = nil

@@ -146,9 +146,7 @@ var _ = Describe("Mongo", func() {
 		if store != nil {
 			store.Close()
 			if store.BucketStore != nil {
-				if store.BucketStore.IsEnabled() {
-					store.BucketStore.Close()
-				}
+				store.BucketStore.Close()
 			}
 		}
 		if hook != nil {
