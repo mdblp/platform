@@ -74,14 +74,11 @@ func NewStore(cfg *storeStructuredMongo.Config, config *goComMgo.Config, lgr log
 
 	bucketStore := &MongoBucketStoreClient{}
 	if enableBucketStore {
-		bucketStore, err := NewMongoBucketStoreClient(config, lg)
+		bucketStore, err = NewMongoBucketStoreClient(config, lg)
 		if err != nil {
 			return nil, err
 		}
-
-		if bucketStore.StoreClient != nil {
-			bucketStore.Start()
-		}
+		bucketStore.Start()
 	}
 
 	return &Stores{
