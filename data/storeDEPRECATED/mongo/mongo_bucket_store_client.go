@@ -130,7 +130,6 @@ func (c *MongoBucketStoreClient) UpsertMany(ctx context.Context, userId *string,
 	}
 
 	var operations []mongo.WriteModel
-	var incomingUserMetadata *schema.Metadata
 
 	// transform as mongo operations
 	// no data validation is done here as it is done in above layer in the Validate function
@@ -157,7 +156,6 @@ func (c *MongoBucketStoreClient) UpsertMany(ctx context.Context, userId *string,
 		operation.SetUpsert(true)
 		operations = append(operations, operation)
 
-		incomingUserMetadata = c.buildUserMetadata(incomingUserMetadata, creationTimestamp, strUserId, sample)
 	}
 	// Specify an option to turn the bulk insertion with no order of operation
 	bulkOption := options.BulkWriteOptions{}
@@ -171,7 +169,11 @@ func (c *MongoBucketStoreClient) UpsertMany(ctx context.Context, userId *string,
 		}
 	}
 
-	// update or insert in MetaData
+	return nil
+}
+
+// update or insert in MetaData
+func (c *MongoBucketStoreClient) UpsertMetaData(ctx context.Context, userId *string, incomingUserMetadata *schema.Metadata) error {
 	opts := options.FindOne()
 	var dbUserMetadata *schema.Metadata
 	if err := c.Collection("metadata").FindOne(ctx, bson.M{"userId": userId}, opts).Decode(&dbUserMetadata); err != nil && err != mongo.ErrNoDocuments {
@@ -183,7 +185,7 @@ func (c *MongoBucketStoreClient) UpsertMany(ctx context.Context, userId *string,
 	valTrue := true
 	_, err := c.Collection("metadata").UpdateOne(ctx,
 		bson.M{"userId": userId},
-		bson.D{ // update
+		bson.D{
 			{Key: "$set", Value: bson.D{
 				{Key: "oldestDataTimestamp", Value: dbUserMetadata.OldestDataTimestamp},
 				{Key: "newestDataTimestamp", Value: dbUserMetadata.NewestDataTimestamp}}},
@@ -191,9 +193,8 @@ func (c *MongoBucketStoreClient) UpsertMany(ctx context.Context, userId *string,
 				{Key: "creationTimestamp", Value: dbUserMetadata.CreationTimestamp},
 				{Key: "userId", Value: dbUserMetadata.UserId}}},
 		},
-		&options.UpdateOptions{Upsert: &valTrue}, //options
+		&options.UpdateOptions{Upsert: &valTrue},
 	)
-
 	return err
 }
 
@@ -212,19 +213,19 @@ func (c *MongoBucketStoreClient) Remove(ctx context.Context, bucket *schema.CbgB
 	return errors.New("Remove called with an empty bucket.Id")
 }
 
-func (c *MongoBucketStoreClient) buildUserMetadata(incomingUserMetadata *schema.Metadata, creationTimestamp time.Time, strUserId string, sample schema.CbgSample) *schema.Metadata {
+func (c *MongoBucketStoreClient) BuildUserMetadata(incomingUserMetadata *schema.Metadata, creationTimestamp time.Time, strUserId string, dataTimestamp time.Time) *schema.Metadata {
 	if incomingUserMetadata == nil {
 		incomingUserMetadata = &schema.Metadata{
 			CreationTimestamp:   creationTimestamp,
 			UserId:              strUserId,
-			OldestDataTimestamp: sample.Timestamp,
-			NewestDataTimestamp: sample.Timestamp,
+			OldestDataTimestamp: dataTimestamp,
+			NewestDataTimestamp: dataTimestamp,
 		}
 	} else {
-		if incomingUserMetadata.OldestDataTimestamp.After(sample.Timestamp) {
-			incomingUserMetadata.OldestDataTimestamp = sample.Timestamp
-		} else if incomingUserMetadata.NewestDataTimestamp.Before(sample.Timestamp) {
-			incomingUserMetadata.NewestDataTimestamp = sample.Timestamp
+		if incomingUserMetadata.OldestDataTimestamp.After(dataTimestamp) {
+			incomingUserMetadata.OldestDataTimestamp = dataTimestamp
+		} else if incomingUserMetadata.NewestDataTimestamp.Before(dataTimestamp) {
+			incomingUserMetadata.NewestDataTimestamp = dataTimestamp
 		}
 	}
 	return incomingUserMetadata

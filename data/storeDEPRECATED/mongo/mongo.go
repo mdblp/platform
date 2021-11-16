@@ -386,6 +386,8 @@ func (d *DataSession) CreateDataSetData(ctx context.Context, dataSet *upload.Upl
 	insertData := make([]interface{}, len(dataSetData))
 	var samples []schema.CbgSample
 	var err error
+	var incomingUserMetadata *schema.Metadata
+	strUserId := *dataSet.UserID
 
 	for index, datum := range dataSetData {
 		datum.SetUserID(dataSet.UserID)
@@ -415,7 +417,7 @@ func (d *DataSession) CreateDataSetData(ctx context.Context, dataSet *upload.Upl
 			samples = append(samples, *s)
 
 		}
-
+		incomingUserMetadata = d.BucketStore.BuildUserMetadata(incomingUserMetadata, creationTimestamp, strUserId, datum.GetTime())
 		insertData[index] = datum
 	}
 
@@ -425,6 +427,10 @@ func (d *DataSession) CreateDataSetData(ctx context.Context, dataSet *upload.Upl
 			err := d.BucketStore.UpsertMany(ctx, dataSet.UserID, creationTimestamp, samples)
 			if err != nil {
 				return errors.Wrap(err, "unable to create cbg bucket")
+			}
+			err = d.BucketStore.UpsertMetaData(ctx, dataSet.UserID, incomingUserMetadata)
+			if err != nil {
+				return errors.Wrap(err, "unable to update metadata")
 			}
 		} else {
 			d.BucketStore.log.Debug("no cbg sample to write, nothing to add in bucket")
