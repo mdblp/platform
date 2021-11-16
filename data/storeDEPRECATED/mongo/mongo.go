@@ -428,15 +428,18 @@ func (d *DataSession) CreateDataSetData(ctx context.Context, dataSet *upload.Upl
 			if err != nil {
 				return errors.Wrap(err, "unable to create cbg bucket")
 			}
-			err = d.BucketStore.UpsertMetaData(ctx, dataSet.UserID, incomingUserMetadata)
-			if err != nil {
-				return errors.Wrap(err, "unable to update metadata")
-			}
 		} else {
 			d.BucketStore.log.Debug("no cbg sample to write, nothing to add in bucket")
 		}
 		elapsed_time := time.Since(start).Milliseconds()
 		dataWriteToReadStoreMetrics.WithLabelValues("cbg").Observe(float64(elapsed_time))
+		// update meta data
+		if incomingUserMetadata != nil {
+			err = d.BucketStore.UpsertMetaData(ctx, dataSet.UserID, incomingUserMetadata)
+			if err != nil {
+				return errors.Wrap(err, "unable to update metadata")
+			}
+		}
 	} else {
 		d.BucketStore.log.Debug("push to read database is disabled")
 	}
