@@ -6,6 +6,7 @@ The Tidepool platform API
 - YLP-1017 push glycemia data  in buckets in read db
 - YLP-1033 Create metrics when write documents in both dbs (data_read and data)
 - YLP-1070 Implement feature flag for platform in order to disable bucket functionality
+- YLP-1068 Update oldestDataTimestamp and newestDataTimestamp fields with value for all recieved data
 
 ## 0.13.0 - 2021-09-09
 ### Changed
