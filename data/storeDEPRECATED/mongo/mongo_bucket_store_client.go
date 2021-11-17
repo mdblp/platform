@@ -188,6 +188,7 @@ func (c *MongoBucketStoreClient) UpsertMetaData(ctx context.Context, userId *str
 	valTrue := true
 
 	if performUpdate {
+		c.log.Debug("perform update on metadata collection in data_read db")
 		_, err := c.Collection("metadata").UpdateOne(ctx,
 			bson.M{"userId": userId},
 			bson.D{
@@ -243,10 +244,12 @@ func (c *MongoBucketStoreClient) refreshUserMetadata(dbUserMetadata *schema.Meta
 	if dbUserMetadata != nil {
 		var performUpdate = false
 		if dbUserMetadata.OldestDataTimestamp.After(incomingUserMetadata.OldestDataTimestamp) {
+			c.log.WithField("oldestDataTimestamp", incomingUserMetadata.OldestDataTimestamp).Debug("set perform update to true and update OldestDataTimestamp db value")
 			performUpdate = true
 			dbUserMetadata.OldestDataTimestamp = incomingUserMetadata.OldestDataTimestamp
 		}
 		if dbUserMetadata.NewestDataTimestamp.Before(incomingUserMetadata.NewestDataTimestamp) {
+			c.log.WithField("newestDataTimestamp", incomingUserMetadata.NewestDataTimestamp).Debug("set perform update to true and update NewestDataTimestamp db value")
 			performUpdate = true
 			dbUserMetadata.NewestDataTimestamp = incomingUserMetadata.NewestDataTimestamp
 		}
