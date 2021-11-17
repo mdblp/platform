@@ -174,28 +174,36 @@ func (c *MongoBucketStoreClient) UpsertMany(ctx context.Context, userId *string,
 
 // update or insert in MetaData
 func (c *MongoBucketStoreClient) UpsertMetaData(ctx context.Context, userId *string, incomingUserMetadata *schema.Metadata) error {
-	opts := options.FindOne()
+
 	var dbUserMetadata *schema.Metadata
+	var performUpdate bool
+
+	opts := options.FindOne()
 	if err := c.Collection("metadata").FindOne(ctx, bson.M{"userId": userId}, opts).Decode(&dbUserMetadata); err != nil && err != mongo.ErrNoDocuments {
 		c.log.WithError(err)
 		return err
 	}
 
-	dbUserMetadata = c.refreshUserMetadata(dbUserMetadata, incomingUserMetadata)
+	dbUserMetadata, performUpdate = c.refreshUserMetadata(dbUserMetadata, incomingUserMetadata)
 	valTrue := true
-	_, err := c.Collection("metadata").UpdateOne(ctx,
-		bson.M{"userId": userId},
-		bson.D{
-			{Key: "$set", Value: bson.D{
-				{Key: "oldestDataTimestamp", Value: dbUserMetadata.OldestDataTimestamp},
-				{Key: "newestDataTimestamp", Value: dbUserMetadata.NewestDataTimestamp}}},
-			{Key: "$setOnInsert", Value: bson.D{
-				{Key: "creationTimestamp", Value: dbUserMetadata.CreationTimestamp},
-				{Key: "userId", Value: dbUserMetadata.UserId}}},
-		},
-		&options.UpdateOptions{Upsert: &valTrue},
-	)
-	return err
+
+	if performUpdate {
+		_, err := c.Collection("metadata").UpdateOne(ctx,
+			bson.M{"userId": userId},
+			bson.D{
+				{Key: "$set", Value: bson.D{
+					{Key: "oldestDataTimestamp", Value: dbUserMetadata.OldestDataTimestamp},
+					{Key: "newestDataTimestamp", Value: dbUserMetadata.NewestDataTimestamp}}},
+				{Key: "$setOnInsert", Value: bson.D{
+					{Key: "creationTimestamp", Value: dbUserMetadata.CreationTimestamp},
+					{Key: "userId", Value: dbUserMetadata.UserId}}},
+			},
+			&options.UpdateOptions{Upsert: &valTrue},
+		)
+		return err
+	}
+
+	return nil
 }
 
 // Deletes a bucket record from the DB
@@ -231,16 +239,19 @@ func (c *MongoBucketStoreClient) BuildUserMetadata(incomingUserMetadata *schema.
 	return incomingUserMetadata
 }
 
-func (c *MongoBucketStoreClient) refreshUserMetadata(dbUserMetadata *schema.Metadata, incomingUserMetadata *schema.Metadata) *schema.Metadata {
+func (c *MongoBucketStoreClient) refreshUserMetadata(dbUserMetadata *schema.Metadata, incomingUserMetadata *schema.Metadata) (*schema.Metadata, bool) {
 	if dbUserMetadata != nil {
+		var performUpdate = false
 		if dbUserMetadata.OldestDataTimestamp.After(incomingUserMetadata.OldestDataTimestamp) {
+			performUpdate = true
 			dbUserMetadata.OldestDataTimestamp = incomingUserMetadata.OldestDataTimestamp
 		}
 		if dbUserMetadata.NewestDataTimestamp.Before(incomingUserMetadata.NewestDataTimestamp) {
+			performUpdate = true
 			dbUserMetadata.NewestDataTimestamp = incomingUserMetadata.NewestDataTimestamp
 		}
-		return dbUserMetadata
+		return dbUserMetadata, performUpdate
 	} else {
-		return incomingUserMetadata
+		return incomingUserMetadata, true
 	}
 }
