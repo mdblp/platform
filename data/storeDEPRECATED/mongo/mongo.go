@@ -29,7 +29,6 @@ var (
 	deviceDataIndexes = map[string][]mgo.Index{
 		"deviceData": {
 			{Key: []string{"_userId", "_active", "_schemaVersion", "-time"}, Background: true, Name: "UserIdTypeWeighted"},
-			{Key: []string{"origin.id", "type", "-deletedTime", "_active"}, Background: true, Name: "OriginId"},
 			{Key: []string{"type", "uploadId"}, Background: true, Name: "typeUploadId"},
 			{Key: []string{"uploadId", "type", "-deletedTime", "_active"}, Background: true, Name: "UploadId"},
 			{Key: []string{"uploadId"}, Background: true, Unique: true, PartialFilter: bson.M{"type": "upload"}, Name: "UniqueUploadId"},
