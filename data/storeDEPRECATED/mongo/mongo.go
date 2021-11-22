@@ -943,7 +943,7 @@ func (d *DataSession) ListUserDataSets(ctx context.Context, userID string, filte
 	if filter.DataSetType != nil {
 		selector["dataSetType"] = *filter.DataSetType
 	}
-	err := d.C().Find(selector).Sort("-createdTime").Skip(pagination.Page * pagination.Size).Limit(pagination.Size).All(&dataSets)
+	err := d.C().Find(selector).Sort("-time").Skip(pagination.Page * pagination.Size).Limit(pagination.Size).All(&dataSets)
 	logger.WithFields(log.Fields{"count": len(dataSets), "duration": time.Since(now) / time.Microsecond}).WithError(err).Debug("ListUserDataSets")
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to list user data sets")
