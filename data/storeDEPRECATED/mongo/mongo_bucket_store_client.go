@@ -134,10 +134,10 @@ func (c *MongoBucketStoreClient) UpsertMany(ctx context.Context, userId *string,
 	if len(samples) == 0 {
 		return ErrNoSamples
 	}
-	
+
 	if dataType == "" {
 		return ErrInvalidDataType
-	} 
+	}
 
 	var operations []mongo.WriteModel
 
@@ -149,7 +149,7 @@ func (c *MongoBucketStoreClient) UpsertMany(ctx context.Context, userId *string,
 
 		day, err := time.Parse("2006-01-02", ts)
 		if err != nil {
-			return ErrUnableToParseBucketDayTime 
+			return ErrUnableToParseBucketDayTime
 		}
 
 		strUserId := *userId

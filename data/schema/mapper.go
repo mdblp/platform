@@ -9,7 +9,7 @@ import (
 	"github.com/tidepool-org/platform/errors"
 )
 
-func(s *BasalSample) MapForAutomatedBasal(event *automated.Automated) error {
+func (s *BasalSample) MapForAutomatedBasal(event *automated.Automated) error {
 	var err error
 	s.DeliveryType = event.DeliveryType
 	s.Duration = *event.Duration
@@ -28,7 +28,7 @@ func(s *BasalSample) MapForAutomatedBasal(event *automated.Automated) error {
 	return nil
 }
 
-func(s *BasalSample) MapForScheduledBasal(event *scheduled.Scheduled) error {
+func (s *BasalSample) MapForScheduledBasal(event *scheduled.Scheduled) error {
 	var err error
 	s.DeliveryType = event.DeliveryType
 	s.Duration = *event.Duration

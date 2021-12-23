@@ -12,16 +12,16 @@ type (
 	}
 
 	CbgSample struct {
-		Sample       `bson:",inline"`
-		Value          float64   `bson:"value,omitempty"`
-		Units          string    `bson:"units,omitempty"`
+		Sample `bson:",inline"`
+		Value  float64 `bson:"value,omitempty"`
+		Units  string  `bson:"units,omitempty"`
 	}
 )
 
-func(c CbgBucket) GetId() string {
+func (c CbgBucket) GetId() string {
 	return c.Id
 }
 
-func(c CbgSample) GetTimestamp() time.Time {
+func (c CbgSample) GetTimestamp() time.Time {
 	return c.Timestamp
 }

@@ -383,7 +383,7 @@ func (d *DataSession) CreateDataSetData(ctx context.Context, dataSet *upload.Upl
 	strTimestamp := creationTimestamp.Format(time.RFC3339Nano)
 
 	insertData := make([]interface{}, len(dataSetData))
-	
+
 	allSamples := make(map[string][]schema.ISample)
 	var err error
 	var incomingUserMetadata *schema.Metadata
@@ -424,9 +424,9 @@ func (d *DataSession) CreateDataSetData(ctx context.Context, dataSet *upload.Upl
 		for dataType, samples := range allSamples {
 			start := time.Now()
 			err := d.BucketStore.UpsertMany(ctx, dataSet.UserID, creationTimestamp, samples, dataType)
-				
+
 			if err == ErrNoSamples {
-				d.BucketStore.log.Debug("no %v sample to write, nothing to add in bucket", dataType)
+				d.BucketStore.log.Debugf("no %v sample to write, nothing to add in bucket", dataType)
 			} else if err != nil {
 				return errors.Wrapf(err, "unable to create %v bucket", dataType)
 			}
