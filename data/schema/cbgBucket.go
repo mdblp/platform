@@ -18,6 +18,10 @@ type (
 	}
 )
 
+func(c CbgBucket) GetId() string {
+	return c.Id
+}
+
 func(c CbgSample) GetTimestamp() time.Time {
 	return c.Timestamp
 }

@@ -23,6 +23,10 @@ type (
 	}
 )
 
+func(b BasalBucket) GetId() string {
+	return b.Id
+}
+
 func(b BasalSample) GetTimestamp() time.Time {
 	return b.Timestamp
 }

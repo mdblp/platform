@@ -2,7 +2,7 @@ package schema
 
 import "time"
 
-type Timestamper interface {
+type ISample interface {
 	GetTimestamp() time.Time
 }
 
