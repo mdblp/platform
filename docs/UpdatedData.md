@@ -323,7 +323,7 @@ The basal is defined as an array of scheduled basals over the day defined at a g
 - rate: a floating point number >= 0 representing the amount of insulin delivered in units per hour.
 - start: an integer encoding a start time as milliseconds from the start of a twenty-four hour day.
 
-The objects in the basalSchedule array have to be sorted based on the `start` field. If the objects are not correctly sorted, the API will return for the given entry that is not well positionned.
+The objects in the basalSchedule array have to be sorted based on the `start` field. If the objects are not correctly sorted, the API will return an error for the given entry that is not well positionned.
 
 Below is an example of a valid basal with 4 segments in the day:
 - 12am to 12pm: 1 u/hour
