@@ -413,7 +413,7 @@ func (d *DataSession) CreateDataSetData(ctx context.Context, dataSet *upload.Upl
 			s.MapForScheduledBasal(event)
 			allSamples["Basal"] = append(allSamples["Basal"], *s)
 		default:
-			d.BucketStore.log.Infof("default %v", event)
+			d.BucketStore.log.Infof("object ignored %v", event)
 		}
 
 		incomingUserMetadata = d.BucketStore.BuildUserMetadata(incomingUserMetadata, creationTimestamp, strUserId, datum.GetTime())
@@ -425,9 +425,7 @@ func (d *DataSession) CreateDataSetData(ctx context.Context, dataSet *upload.Upl
 			start := time.Now()
 			err := d.BucketStore.UpsertMany(ctx, dataSet.UserID, creationTimestamp, samples, dataType)
 
-			if err == ErrNoSamples {
-				d.BucketStore.log.Debugf("no %v sample to write, nothing to add in bucket", dataType)
-			} else if err != nil {
+			if err != nil {
 				return errors.Wrapf(err, "unable to create %v bucket", dataType)
 			}
 			elapsed_time := time.Since(start).Milliseconds()

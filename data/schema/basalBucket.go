@@ -19,7 +19,6 @@ type (
 		DeliveryType string  `bson:"deliveryType,omitempty"`
 		Duration     int     `bson:"duration,omitempty"`
 		Rate         float64 `bson:"rate"`
-		ScheduleName string  `bson:"scheduleName,omitempty"`
 	}
 )
 

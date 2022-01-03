@@ -9,20 +9,20 @@ import (
 	"github.com/tidepool-org/platform/errors"
 )
 
+const ErrEventTime = "unable to parse event time"
+
 func (s *BasalSample) MapForAutomatedBasal(event *automated.Automated) error {
 	var err error
 	s.DeliveryType = event.DeliveryType
 	s.Duration = *event.Duration
 	s.Rate = *event.Rate
-	//s.ScheduleName = *event.ScheduleName
-	//extract string value (dereference)
 	s.Timezone = *event.TimeZoneName
 	s.TimezoneOffset = *event.TimeZoneOffset
 	strTime := *event.Time
 	s.Timestamp, err = time.Parse(time.RFC3339Nano, strTime)
 
 	if err != nil {
-		return errors.Wrap(err, "unable to parse event time")
+		return errors.Wrap(err, ErrEventTime)
 	}
 
 	return nil
@@ -33,15 +33,13 @@ func (s *BasalSample) MapForScheduledBasal(event *scheduled.Scheduled) error {
 	s.DeliveryType = event.DeliveryType
 	s.Duration = *event.Duration
 	s.Rate = *event.Rate
-	//s.ScheduleName = *event.ScheduleName
-	//extract string value (dereference)
 	s.Timezone = *event.TimeZoneName
 	s.TimezoneOffset = *event.TimeZoneOffset
 	strTime := *event.Time
 	s.Timestamp, err = time.Parse(time.RFC3339Nano, strTime)
 
 	if err != nil {
-		return errors.Wrap(err, "unable to parse event time")
+		return errors.Wrap(err, ErrEventTime)
 	}
 
 	return nil
@@ -59,7 +57,7 @@ func (c *CbgSample) Map(event *continuous.Continuous) error {
 	c.Timestamp, err = time.Parse(time.RFC3339Nano, strTime)
 
 	if err != nil {
-		return errors.Wrap(err, "unable to parse cbg event time")
+		return errors.Wrap(err, ErrEventTime)
 	}
 
 	return nil

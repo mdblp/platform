@@ -132,7 +132,8 @@ func (c *MongoBucketStoreClient) UpsertMany(ctx context.Context, userId *string,
 	}
 
 	if len(samples) == 0 {
-		return ErrNoSamples
+		c.log.Debugf("no %v sample to write, nothing to add in bucket", dataType)
+		return nil
 	}
 
 	if dataType == "" {
