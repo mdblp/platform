@@ -317,11 +317,11 @@ Leveraging the `deviceEvent` type and creating 2 new subTypes with the same stru
 }
 ```
 
-## security basal
+## Security basal
 
-The basal is defined as an array of scheduled basals over the day defined at a given `time`. The array contains all the values to describe the scheduled basals, `basalSchedule:
+The security basal is defined as an array of scheduled basals. It's an array of couples defining the starting time named `start` and the basal `rate`: 
 - rate: a floating point number >= 0 representing the amount of insulin delivered in units per hour.
-- start: an integer encoding a start time as milliseconds from the start of a twenty-four hour day.
+- start: an integer encoding a start time as milliseconds from the start of a twenty-four hour day, 0 to 86.400.000 ms.
 
 The objects in the basalSchedule array have to be sorted based on the `start` field. If the objects are not correctly sorted, the API will return an error for the given entry that is not well positionned.
 
