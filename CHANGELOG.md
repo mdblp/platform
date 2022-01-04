@@ -2,6 +2,8 @@
 The Tidepool platform API
 
 ## Unreleased
+### Changed 
+- YLP-1123 Add backloops device events - Flush
 ### Engineering
 YLP-1142 Clean up unused packages/services
 
