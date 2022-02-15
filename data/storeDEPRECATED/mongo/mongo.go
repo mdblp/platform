@@ -64,13 +64,19 @@ type Stores struct {
 	*storeStructuredMongo.Store
 	BucketStore        *MongoBucketStoreClient
 	BucketStoreEnabled bool
+	DataTypesArchived  []string
+}
+
+type BucketMigrationConfig struct {
+	EnableBucketStore bool
+	DataTypesArchived []string
 }
 
 func (s *Stores) IsEnabled() bool {
 	return s.BucketStoreEnabled
 }
 
-func NewStore(cfg *storeStructuredMongo.Config, config *goComMgo.Config, lgr log.Logger, lg *logrus.Logger, enableBucketStore bool) (*Stores, error) {
+func NewStore(cfg *storeStructuredMongo.Config, config *goComMgo.Config, lgr log.Logger, lg *logrus.Logger, migrateConfig BucketMigrationConfig) (*Stores, error) {
 	if cfg != nil {
 		cfg.Indexes = deviceDataIndexes
 	}
@@ -80,7 +86,7 @@ func NewStore(cfg *storeStructuredMongo.Config, config *goComMgo.Config, lgr log
 	}
 
 	bucketStore := &MongoBucketStoreClient{}
-	if enableBucketStore {
+	if migrateConfig.EnableBucketStore {
 		bucketStore, err = NewMongoBucketStoreClient(config, lg)
 		if err != nil {
 			return nil, err
@@ -91,7 +97,8 @@ func NewStore(cfg *storeStructuredMongo.Config, config *goComMgo.Config, lgr log
 	return &Stores{
 		Store:              baseStore,
 		BucketStore:        bucketStore,
-		BucketStoreEnabled: enableBucketStore,
+		BucketStoreEnabled: migrateConfig.EnableBucketStore,
+		DataTypesArchived:  migrateConfig.DataTypesArchived,
 	}, nil
 }
 
@@ -100,6 +107,7 @@ func (s *Stores) NewDataSession() storeDEPRECATED.DataSession {
 		Session:            s.Store.NewSession("deviceData"),
 		BucketStore:        s.BucketStore,
 		BucketStoreEnabled: s.BucketStoreEnabled,
+		DataTypesArchived:  s.DataTypesArchived,
 	}
 }
 
@@ -107,6 +115,7 @@ type DataSession struct {
 	*storeStructuredMongo.Session
 	BucketStore        *MongoBucketStoreClient
 	BucketStoreEnabled bool
+	DataTypesArchived  []string
 }
 
 func (d *DataSession) GetDataSetsForUserByID(ctx context.Context, userID string, filter *storeDEPRECATED.Filter, pagination *page.Pagination) ([]*upload.Upload, error) {
@@ -402,7 +411,7 @@ func (d *DataSession) CreateDataSetData(ctx context.Context, dataSet *upload.Upl
 		datum.SetUserID(dataSet.UserID)
 		datum.SetDataSetID(dataSet.UploadID)
 		datum.SetCreatedTime(&strTimestamp)
-		archive := false
+		archive := d.isDatumToArchive(datum)
 		// Prepare cbg to be pushed into data read db
 		loggerFields := log.Fields{"datum": datum}
 		switch event := datum.(type) {
@@ -412,8 +421,6 @@ func (d *DataSession) CreateDataSetData(ctx context.Context, dataSet *upload.Upl
 			var s = &schema.CbgSample{}
 			s.Map(event)
 			allSamples["Cbg"] = append(allSamples["Cbg"], *s)
-			// Cbg data is archived
-			archive = true
 		case *automated.Automated:
 			log.LoggerFromContext(ctx).WithFields(loggerFields).Debug("add a automated basal entry")
 			var s = &schema.BasalSample{}
@@ -489,6 +496,16 @@ func (d *DataSession) bulkInsert(collection *mgo.Collection, data []interface{},
 		return err
 	}
 	return nil
+}
+
+func (d *DataSession) isDatumToArchive(datum data.Datum) bool {
+	datumType := datum.GetType()
+	for _, archivedType := range d.DataTypesArchived {
+		if archivedType == datumType {
+			return true
+		}
+	}
+	return false
 }
 
 func (d *DataSession) ActivateDataSetData(ctx context.Context, dataSet *upload.Upload, selectors *data.Selectors) error {
