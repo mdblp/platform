@@ -319,7 +319,7 @@ func getPushToReadStoreEnv() bool {
 func getArchivedDataTypesEnv() []string {
 	s, err := getenvStr("ARCHIVED_DATA_TYPES")
 	if err != nil {
-		logrusLogger.Warn("environment variable ARCHIVED_DATA_TYPES not exported, set true by default")
+		logrusLogger.Warn("environment variable ARCHIVED_DATA_TYPES not exported, set empty by default")
 		return []string{}
 	}
 	if s != "" {
