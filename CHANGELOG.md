@@ -1,6 +1,10 @@
 # Platform 
 The Tidepool platform API
 
+## 0.16.0 - 2022-02-15
+### Changed
+- YLP-1219 Re-route CBG data to archive collection (deviceData database)
+
 ## 0.15.0 - 2022-01-10
 ### Changed 
 - YLP-1123 Add backloops device events - Flush
