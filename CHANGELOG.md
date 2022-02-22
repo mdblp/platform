@@ -1,6 +1,10 @@
 # Platform 
 The Tidepool platform API
 
+## 0.16.1-rc1 - 2022-02-22
+### Engineering
+- Build multi-architecture docker images
+
 ## 0.16.0 - 2022-02-15
 ### Changed
 - YLP-1219 Re-route CBG data to archive collection (deviceData database)
