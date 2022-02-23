@@ -1,4 +1,4 @@
-@Library('mdblp-library') _
+@Library('mdblp-library@fix/multiplatform') _
 def builderImage
 pipeline {
     agent any
