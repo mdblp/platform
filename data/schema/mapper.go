@@ -1,8 +1,9 @@
 package schema
 
 import (
-	"github.com/google/uuid"
 	"time"
+
+	"github.com/google/uuid"
 
 	"github.com/tidepool-org/platform/data/types/basal/automated"
 	"github.com/tidepool-org/platform/data/types/basal/scheduled"
