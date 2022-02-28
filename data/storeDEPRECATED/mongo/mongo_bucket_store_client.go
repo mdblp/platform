@@ -209,7 +209,8 @@ func buildUpdateOneModel(dataType string, sample schema.ISample, userId *string,
 			},
 		})
 		basalFirstOp.SetUpsert(true)
-		// Update in case of temporary basal
+
+		// Update the basal
 		basalSecondOp := mongo.NewUpdateOneModel()
 		elemfilter := sample.(schema.BasalSample)
 		basalSecondOp.SetFilter(bson.D{
@@ -230,7 +231,9 @@ func buildUpdateOneModel(dataType string, sample schema.ISample, userId *string,
 			},
 			},
 		})
-		// guarantee that the sample is inserted in the array
+
+		// Otherwise we know that we did not update the basal so we guarantee an insertion
+		// in the array
 		basalThirdOp := mongo.NewUpdateOneModel()
 		basalThirdOp.SetFilter(bson.D{{Key: "_id", Value: strUserId + "_" + ts}})
 		basalThirdOp.SetUpdate(bson.D{ // update
