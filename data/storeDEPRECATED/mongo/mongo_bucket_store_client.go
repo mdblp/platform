@@ -227,6 +227,7 @@ func buildUpdateOneModel(dataType string, sample schema.ISample, userId *string,
 		})
 		basalSecondOp.SetUpdate(bson.D{ // update
 			{Key: "$set", Value: bson.D{
+				{Key: "samples.$.internalId", Value: elemfilter.InternalID},
 				{Key: "samples.$.duration", Value: elemfilter.Duration},
 			},
 			},
