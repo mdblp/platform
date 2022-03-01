@@ -47,6 +47,13 @@ func NewMongoBucketStoreClient(config *goComMgo.Config, logger *log.Logger) (*Mo
 	return &client, err
 }
 
+func reverse(ss []string) {
+	last := len(ss) - 1
+	for i := 0; i < len(ss)/2; i++ {
+		ss[i], ss[last-i] = ss[last-i], ss[i]
+	}
+}
+
 /* bucket methods */
 
 // Look for a single bucket based on its Id in cold and daily
@@ -58,14 +65,18 @@ func (c *MongoBucketStoreClient) Find(ctx context.Context, bucket schema.IBucket
 		opts := options.FindOne()
 		opts.SetSort(bson.D{primitive.E{Key: "_id", Value: -1}})
 
-		for _, collectionPrefix := range dailyPrefixCollections {
+		revertedCollections := dailyPrefixCollections
+		reverse(revertedCollections)
+
+		for _, collectionPrefix := range revertedCollections {
 			collectionName := collectionPrefix + dataType
 			if err = c.Collection(collectionName).FindOne(ctx, query, opts).Decode(&result); err != nil && err != mongo.ErrNoDocuments {
 				c.log.WithError(err)
 				return result, err
+			} else if err != mongo.ErrNoDocuments {
+				return result, nil
 			}
 		}
-		return result, nil
 	}
 
 	return nil, errors.New("Find called with an empty bucket.Id")
