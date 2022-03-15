@@ -31,7 +31,7 @@ func NewMode() *mode.Mode {
 	datum := mode.New(mode.ZenMode)
 	datum.Device = *dataTypesDeviceTest.NewDevice()
 	datum.SubType = mode.ZenMode
-	datum.EventID = pointer.FromString("123456789")
+	datum.GUID = pointer.FromString("123456789")
 	datum.Duration = dataTypesCommonTest.NewDuration()
 	datum.InputTime = dataTypesCommonTest.NewInputTime()
 	return datum
@@ -43,7 +43,7 @@ func CloneMode(datum *mode.Mode) *mode.Mode {
 	}
 	clone := mode.New(datum.SubType)
 	clone.Device = *dataTypesDeviceTest.CloneDevice(&datum.Device)
-	clone.EventID = pointer.FromString("123456789")
+	clone.GUID = pointer.FromString("123456789")
 	clone.Duration = dataTypesCommonTest.CloneDuration(datum.Duration)
 	clone.InputTime = dataTypesCommonTest.CloneInputTime(datum.InputTime)
 	return clone
@@ -126,25 +126,25 @@ var _ = Describe("Change", func() {
 					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueNotEqualTo("invalidType", "deviceEvent"), "/type", &device.Meta{Type: "invalidType", SubType: "invalidSubType"}),
 					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueStringNotOneOf("invalidSubType", []string{"confidential", "zen", "warmup", "loopMode"}), "/subType", &device.Meta{Type: "invalidType", SubType: "invalidSubType"}),
 				),
-				Entry("EventId is missing",
+				Entry("GUID is missing",
 					func(datum *mode.Mode) {
-						datum.EventID = nil
+						datum.GUID = nil
 					},
-					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueNotExists(), "/eventId", &device.Meta{Type: "deviceEvent", SubType: "zen"}),
+					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueNotExists(), "/guid", &device.Meta{Type: "deviceEvent", SubType: "zen"}),
 				),
-				Entry("EventId is missing",
+				Entry("GUID is missing",
 					func(datum *mode.Mode) {
 						datum.SubType = "confidential"
-						datum.EventID = nil
+						datum.GUID = nil
 					},
-					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueNotExists(), "/eventId", &device.Meta{Type: "deviceEvent", SubType: "confidential"}),
+					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueNotExists(), "/guid", &device.Meta{Type: "deviceEvent", SubType: "confidential"}),
 				),
-				Entry("EventId is missing",
+				Entry("GUID is missing",
 					func(datum *mode.Mode) {
 						datum.SubType = "warmup"
-						datum.EventID = nil
+						datum.GUID = nil
 					},
-					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueNotExists(), "/eventId", &device.Meta{Type: "deviceEvent", SubType: "warmup"}),
+					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueNotExists(), "/guid", &device.Meta{Type: "deviceEvent", SubType: "warmup"}),
 				),
 				Entry("inputTime is missing",
 					func(datum *mode.Mode) {
