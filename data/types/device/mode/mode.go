@@ -12,6 +12,7 @@ const (
 	ConfidentialMode = "confidential"
 	ZenMode          = "zen"
 	Warmup           = "warmup"
+	LoopMode         = "loopMode"
 )
 
 func Modes() []string {
@@ -19,6 +20,7 @@ func Modes() []string {
 		ConfidentialMode,
 		ZenMode,
 		Warmup,
+		LoopMode,
 	}
 }
 
@@ -57,7 +59,7 @@ func (m *Mode) Validate(validator structure.Validator) {
 	validator.String("eventId", m.EventID).Exists().NotEmpty()
 	if m.Duration != nil {
 		m.Duration.Validate(validator.WithReference("duration"))
-	} else {
+	} else if m.SubType != LoopMode {
 		validator.WithReference("duration").ReportError(structureValidator.ErrorValueNotExists())
 	}
 	if m.InputTime.InputTime != nil {
