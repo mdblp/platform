@@ -326,7 +326,7 @@ Leveraging the `deviceEvent` type and creating new subTypes with the same struct
   "type": "deviceEvent",
   "subType": "loopMode",
   "eventId": "LoopMode123456789",
-  "guif": "LoopMode123456789",
+  "guid": "LoopMode123456789",
   "duration": { 
     "value": 864000000,
     "units": "milliseconds"
