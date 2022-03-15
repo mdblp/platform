@@ -12,6 +12,7 @@ The data platform API
 ## 0.18.0 - 2022-06-17
 ### Engineering
 - Build multi-architecture docker images
+
 ### Changed
 - YLP-1326 Implement Loop Mode objects upload
 - YLP-1380 Implement biphasicId instead of eventId
