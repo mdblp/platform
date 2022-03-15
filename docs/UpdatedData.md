@@ -14,6 +14,10 @@ _Note_: the examples below focused on the new fields. All the other fields (such
 
 We are also encouraging to provide the `guid` field as an external ID so that we can troubleshoot uploads and ease the reconciliations with external data. This `guid`field is available in all data types but it's not mandatory.
 
+The `duration` field is commonly used in different data types/subTypes (physical activity, warmup, loopMode...). This field is a struct composed of two sub-fields:
+- `value`: duration (float64) min value 0, max value 20 days
+- `unit`: duration unit: `hours | minutes | seconds | milliseconds`
+
 ## wizard 
 
 The wizard object comes with an optional `recommended` structure that can be leveraged for our purpose. This structure is composed of 3 optional floating point value fields:
@@ -268,12 +272,12 @@ The below fields are mandatory if `alarmType` is set to `handset`. They remain o
 
 ## Zen mode , Confidential mode && Sensor Warmup
 
-Leveraging the `deviceEvent` type and creating 2 new subTypes with the same structure: `zen` and `confidential`.
+Leveraging the `deviceEvent` type and creating new subTypes with the same structure: `zen`, `confidential`, `warmup` and `loopMode` .
 
-- `subType`: `zen | confidential | warmup`
-- `duration`: is a structured object that gives the duration of the event. __This field is mandatory__.
+- `subType`: `zen | confidential | warmup | loopMode`
+- `duration`: is a structured object that gives the duration of the event. __This field is mandatory for the subType `zen`, `confidential`, and `warmup`.__ It is optional for loopMode subType (the duration is updated at the end of the event).
 - `eventId`: unique ID provided by the client that is used to link stop and start events. __This ID is mandatory__.
-- `inputTime`: is a UTC string timestamp that defines at what time the patient has entered or modified the event. __This field is manadatory__. It takes the same format as `time` field.
+- `inputTime`: is a UTC string timestamp that defines at what time the patient has entered or modified the event. __This field is mandatory__. It takes the same format as `time` field.
 
 ```json
 {
@@ -311,6 +315,21 @@ Leveraging the `deviceEvent` type and creating 2 new subTypes with the same stru
   "duration": { 
     "value": 3,
     "units": "hours"
+  },
+  "deviceId": "Id12345",
+  "deviceTime": "2018-02-01T00:00:00",
+  "time": "2020-05-12T08:50:08.000Z",
+  "inputTime": "2020-05-12T08:40:00.000Z",
+  "timezone": "Europe/Paris"
+}
+{
+  "type": "deviceEvent",
+  "subType": "loopMode",
+  "eventId": "LoopMode123456789",
+  "guif": "LoopMode123456789",
+  "duration": { 
+    "value": 864000000,
+    "units": "milliseconds"
   },
   "deviceId": "Id12345",
   "deviceTime": "2018-02-01T00:00:00",
