@@ -1,7 +1,7 @@
 # Platform 
 The Tidepool platform API
 
-## Unreleased
+## 0.18.0-rc1 - 2022-03-16
 ### Changed
 - YLP-1326 Implement Loop Mode objects upload
 
