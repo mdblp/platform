@@ -332,17 +332,6 @@ var _ = Describe("Change", func() {
 					},
 					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueNotExists(), "/guid", NewMeta()),
 				),
-				Entry("GUID length out of range",
-					func(datum *alarm.Alarm) {
-						datum.GUID = pointer.FromString(test.RandomStringFromRange(65, 65))
-					},
-					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorLengthNotLessThanOrEqualTo(65, 64), "/guid", NewMeta()),
-				),
-				Entry("GUID length in range",
-					func(datum *alarm.Alarm) {
-						datum.GUID = pointer.FromString(test.RandomStringFromRange(64, 64))
-					},
-				),
 				Entry("invalid alarm level",
 					func(datum *alarm.Alarm) {
 						datum.AlarmLevel = pointer.FromString("invalid")

@@ -28,7 +28,6 @@ const (
 	Acknowledged            = "acknowledged"
 	Outdated                = "outdated"
 	AlarmCodeMaximumLength  = 64
-	GUIDMaximumLength       = 64
 	AlarmLabelMaximumLength = 256
 )
 
@@ -135,7 +134,7 @@ func (a *Alarm) Validate(validator structure.Validator) {
 	timeValidator.AsTime(types.TimeFormat)
 
 	if a.AlarmType != nil && *a.AlarmType == AlarmTypeHandset {
-		validator.String("guid", a.GUID).Exists().LengthLessThanOrEqualTo(GUIDMaximumLength)
+		validator.String("guid", a.GUID).Exists()
 		alarmLevelValidator.Exists()
 		validator.String("alarmCode", a.AlarmCode).Exists().LengthLessThanOrEqualTo(AlarmCodeMaximumLength)
 		validator.String("alarmLabel", a.AlarmLabel).Exists().LengthLessThanOrEqualTo(AlarmLabelMaximumLength)
