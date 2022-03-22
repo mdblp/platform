@@ -137,7 +137,7 @@ Here we are introducing 2 new fields in the bolus objects:
 
 A `biphasic` bolus is a 2 parts bolus that is defined by the system. Below is the definition for this new type of bolus that leverages most of the fields from `normal` bolus. The subType associated to this type of bolus is `biphasic`.
 We add the following fields:
-- `guid` (replacing `eventId` deprecated field): unique ID provided by the client that is used to link the 2 parts of the bolus. This field is mandatory. 
+- `biphasicId` (replacing `eventId` deprecated field): unique ID provided by the client that is used to link the 2 parts of the bolus. This field is mandatory. 
 - part: `"1" | "2"`. It's either the first part or the second part of the bolus. This field is mandatory. 
 - `normal` and `expectedNormal` are similar to what is defined in `normal` bolus. 
 - `linkedBolus` defined the second part of the bolus at the time the first part is created. It's an estimated bolus that may be modified by the system. This section is optional. 
@@ -158,6 +158,7 @@ __Note #2__: the `"part":"2"` object is not mandatory. The system can decide to 
   "type": "bolus",
   "subType": "biphasic",
   "guid": "Bo123456789",
+  "biphasicId": "Bo123456789",
   "part": "1",
   "normal": 3.5,
   "expectedNormal": 4.0,
@@ -177,7 +178,8 @@ __Note #2__: the `"part":"2"` object is not mandatory. The system can decide to 
   "deviceId": "IdOfTheDevice",
   "type": "bolus",
   "subType": "biphasic",
-  "guid": "Bo123456789",
+  "guid": "Bo012345678",
+  "biphasicId": "Bo123456789",
   "part": "2",
   "normal": 3.5,
   "prescriptor": "auto"
