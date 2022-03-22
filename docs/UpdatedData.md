@@ -158,7 +158,7 @@ __Note #2__: the `"part":"2"` object is not mandatory. The system can decide to 
   "type": "bolus",
   "subType": "biphasic",
   "guid": "Bo123456789",
-  "biphasicId": "Bo123456789",
+  "biphasicId": "biphasic1234",
   "part": "1",
   "normal": 3.5,
   "expectedNormal": 4.0,
@@ -179,7 +179,7 @@ __Note #2__: the `"part":"2"` object is not mandatory. The system can decide to 
   "type": "bolus",
   "subType": "biphasic",
   "guid": "Bo012345678",
-  "biphasicId": "Bo123456789",
+  "biphasicId": "biphasic1234",
   "part": "2",
   "normal": 3.5,
   "prescriptor": "auto"
