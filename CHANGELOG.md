@@ -1,13 +1,12 @@
 # Platform 
 The Tidepool platform API
 
-## Unreleased
+## 0.18.0-rc3 - 2022-03-24
 ### Engineering
 - Build multi-architecture docker images
-
-## 0.18.0-rc1 - 2022-03-16
 ### Changed
 - YLP-1326 Implement Loop Mode objects upload
+- YLP-1380 Implement biphasicId instead of eventId
 
 ## 0.17.4 - 2022-03-02
 ### Fixed
