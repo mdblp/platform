@@ -448,8 +448,8 @@ func (d *DataRepository) CreateDataSetData(ctx context.Context, dataSet *upload.
 			if err != nil {
 				return errors.Wrapf(err, "unable to create %v bucket", dataType)
 			}
-			elapsed_time := time.Since(start).Seconds()
-			dataWriteToReadStoreMetrics.WithLabelValues(dataType).Observe(float64(elapsed_time))
+			elapsedTime := time.Since(start).Seconds()
+			dataWriteToReadStoreMetrics.WithLabelValues(dataType).Observe(float64(elapsedTime))
 		}
 		// update meta data
 		if incomingUserMetadata != nil {
