@@ -13,7 +13,7 @@ func NewConfig() *storeStructuredMongo.Config {
 		CollectionPrefix: NewCollectionPrefix(),
 		Timeout:          5 * time.Second,
 	}
-	conf.SetAddresses([]string{Address()})
+	conf.Addresses = []string{Address()}
 
 	return conf
 }

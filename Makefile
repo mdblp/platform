@@ -71,7 +71,7 @@ endif
 goimports:
 ifeq ($(shell which goimports),)
 	go install golang.org/x/tools/cmd/goimports
-endif	
+endif
 
 golint:
 ifeq ($(shell which golint),)
@@ -116,8 +116,8 @@ imports-write: goimports
 vet: tmp
 	@echo "go vet"
 	cd $(ROOT_DIRECTORY) && \
-		go vet ./... 2> _tmp/govet.out > _tmp/govet.out && \
-		O=`diff -w .govetignore _tmp/govet.out` || (echo "$${O}" && exit 1)
+    		go vet ./... > _tmp/govet.out 2>&1 || \
+    		(diff -w .govetignore _tmp/govet.out && exit 1)
 
 vet-ignore:
 	@cd $(ROOT_DIRECTORY) && cp _tmp/govet.out .govetignore
@@ -196,16 +196,6 @@ ci-test: ginkgo
 	@echo "ginkgo -requireSuite -slowSpecThreshold=10 --compilers=2 -r -randomizeSuites -randomizeAllSpecs -failOnPending -race -timeout=8m --reportFile=junit-report/report.xml $(TEST)"
 	@cd $(ROOT_DIRECTORY) && . ./env.test.sh && ginkgo -requireSuite -slowSpecThreshold=10 --compilers=2 -r -randomizeSuites -randomizeAllSpecs -failOnPending -race -timeout=8m --reportFile=junit-report/report.xml $(TEST)
 
-snyk-test:
-	@echo "snyk test --dev --org=tidepool"
-	@cd $(ROOT_DIRECTORY) && snyk test --dev --org=tidepool
-
-snyk-monitor:
-	@echo "snyk monitor --org=tidepool"
-	@cd $(ROOT_DIRECTORY) && snyk monitor --org=tidepool
-
-ci-snyk: snyk-test snyk-monitor
-
 ci-test-until-failure: ginkgo
 	@echo "ginkgo -requireSuite -slowSpecThreshold=10 -r -randomizeSuites -randomizeAllSpecs -succinct -failOnPending -cover -trace -race -progress -keepGoing -untilItFails $(TEST)"
 	@cd $(ROOT_DIRECTORY) && . ./env.test.sh && ginkgo -requireSuite -slowSpecThreshold=10 -r -randomizeSuites -randomizeAllSpecs -succinct -failOnPending -cover -trace -race -progress -keepGoing -untilItFails $(TEST)
@@ -233,13 +223,13 @@ endif
 
 ci-deploy: deploy
 
-ci-soups: clean-soup-doc generate-soups 
+ci-soups: clean-soup-doc generate-soups
 
 generate-soups:
 	@cd $(ROOT_DIRECTORY) && \
-		$(MAKE) service-soup SERVICE_DIRECTORY=data SERVICE=platform TARGET=soup VERSION=${VERSION_BASE} 
+		$(MAKE) service-soup SERVICE_DIRECTORY=data SERVICE=platform TARGET=soup VERSION=${VERSION_BASE}
 
-service-soup: 
+service-soup:
 	@cd ${SERVICE_DIRECTORY} && \
 		echo "# SOUPs List for ${SERVICE}@${VERSION}" > soup.md && \
 		go list -f '## {{printf "%s \n\t* description: \n\t* version: %s\n\t* webSite: https://%s\n\t* sources:" .Path .Version .Path}}' -m all >> soup.md && \
