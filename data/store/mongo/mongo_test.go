@@ -5,9 +5,10 @@ import (
 	"math/rand"
 	"time"
 
+	mongodb "go.mongodb.org/mongo-driver/mongo"
+
 	dataStore "github.com/tidepool-org/platform/data/store"
 	"github.com/tidepool-org/platform/data/store/mongo"
-	mongodb "go.mongodb.org/mongo-driver/mongo"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
