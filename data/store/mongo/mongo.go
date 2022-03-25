@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/globalsign/mgo"
 	"github.com/tidepool-org/platform/data/types/basal/automated"
 	"github.com/tidepool-org/platform/data/types/basal/scheduled"
 	"github.com/tidepool-org/platform/data/types/blood/glucose/continuous"
@@ -483,21 +482,6 @@ func (d *DataRepository) CreateDataSetData(ctx context.Context, dataSet *upload.
 		}
 	}
 
-	return nil
-}
-
-func (d *DataRepository) bulkInsert(collection *mgo.Collection, data []interface{}, promHisto prometheus.Histogram) error {
-	if len(data) > 0 {
-		start := time.Now()
-		bulk := collection.Bulk()
-		bulk.Unordered()
-		bulk.Insert(data...)
-
-		_, err := bulk.Run()
-		elapsed_time := time.Since(start).Seconds()
-		promHisto.Observe(float64(elapsed_time))
-		return err
-	}
 	return nil
 }
 
