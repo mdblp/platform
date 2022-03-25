@@ -2,11 +2,12 @@ package mongo
 
 import (
 	"context"
+	"time"
+
 	"github.com/globalsign/mgo"
 	"github.com/tidepool-org/platform/data/types/basal/automated"
 	"github.com/tidepool-org/platform/data/types/basal/scheduled"
 	"github.com/tidepool-org/platform/data/types/blood/glucose/continuous"
-	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"

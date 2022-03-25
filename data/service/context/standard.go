@@ -1,8 +1,9 @@
 package context
 
 import (
-	dataStore "github.com/tidepool-org/platform/data/store"
 	"net/http"
+
+	dataStore "github.com/tidepool-org/platform/data/store"
 
 	"github.com/mdblp/go-json-rest/rest"
 

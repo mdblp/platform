@@ -2,11 +2,12 @@ package mongo_test
 
 import (
 	"context"
+	"math/rand"
+	"time"
+
 	dataStore "github.com/tidepool-org/platform/data/store"
 	"github.com/tidepool-org/platform/data/store/mongo"
 	mongodb "go.mongodb.org/mongo-driver/mongo"
-	"math/rand"
-	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
