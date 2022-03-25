@@ -43,7 +43,7 @@ type DeleteInput struct {
 	Context    context.Context
 	Repository dataStore.DataRepository
 	DataSet    *dataTypesUpload.Upload
-	doPurge bool
+	doPurge    bool
 }
 
 type Deduplicator struct {
