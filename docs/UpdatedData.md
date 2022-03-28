@@ -272,12 +272,12 @@ The below fields are mandatory if `alarmType` is set to `handset`. They remain o
 }
 ```
 
-## Zen mode , Confidential mode && Sensor Warmup
+## Zen mode , Confidential mode, Sensor Warmup, Loop mode &&  Energy saving mode
 
-Leveraging the `deviceEvent` type and creating new subTypes with the same structure: `zen`, `confidential`, `warmup` and `loopMode` .
+Leveraging the `deviceEvent` type and creating new subTypes with the same structure: `zen`, `confidential`, `warmup`, `loopMode` and `energySaving`.
 
-- `subType`: `zen | confidential | warmup | loopMode`
-- `duration`: is a structured object that gives the duration of the event. __This field is mandatory for the subType `zen`, `confidential`, and `warmup`.__ It is optional for loopMode subType (the duration is updated at the end of the event).
+- `subType`: `zen | confidential | warmup | loopMode | energySaving`
+- `duration`: is a structured object that gives the duration of the event. __This field is mandatory for the subType `zen`, `confidential`, `warmup` and `energySaving`.__ It is optional for loopMode subType (the duration is updated at the end of the event).
 - `guid` (replacing `eventId` deprecated field): unique ID provided by the client that is used to link stop and start events. __This ID is mandatory__.
 - `inputTime`: is a UTC string timestamp that defines at what time the patient has entered or modified the event. __This field is mandatory__. It takes the same format as `time` field.
 
@@ -331,6 +331,20 @@ Leveraging the `deviceEvent` type and creating new subTypes with the same struct
   "duration": { 
     "value": 864000000,
     "units": "milliseconds"
+  },
+  "deviceId": "Id12345",
+  "deviceTime": "2018-02-01T00:00:00",
+  "time": "2020-05-12T08:50:08.000Z",
+  "inputTime": "2020-05-12T08:40:00.000Z",
+  "timezone": "Europe/Paris"
+}
+{
+  "type": "deviceEvent",
+  "subType": "energySaving",
+  "guid": "EenergySaving123456789",
+  "duration": { 
+    "value": 24,
+    "units": "hours"
   },
   "deviceId": "Id12345",
   "deviceTime": "2018-02-01T00:00:00",
