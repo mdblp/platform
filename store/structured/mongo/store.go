@@ -3,7 +3,8 @@ package mongo
 import (
 	"context"
 	"fmt"
-	
+	"time"
+
 	mongoDriver "go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
@@ -29,19 +30,59 @@ func NewStore(c *Config) (*Store, error) {
 		config: c,
 	}
 
-	var err error
 	cs := c.AsConnectionString()
 	clientOptions := options.Client().
 		ApplyURI(cs).
 		SetConnectTimeout(store.config.Timeout).
 		SetServerSelectionTimeout(store.config.Timeout)
-	// todo yann : a retry loop here to ensure mongo can be ping
+
+	var attempts int64 = 1
+	var err error
+	var closingChannel = make(chan bool, 1)
+	for {
+		var timer <-chan time.Time
+		if attempts == int64(0) {
+			timer = time.After(0)
+		} else {
+			timer = time.After(store.config.WaitConnectionInterval)
+		}
+		select {
+		case <-closingChannel:
+			close(closingChannel)
+			if err != nil {
+				return nil, err
+			}
+			return store, nil
+		case <-timer:
+			err = initConnexion(store, clientOptions)
+			if err == nil {
+				closingChannel <- true
+			} else {
+				if store.config.MaxConnectionAttempts > 0 && store.config.MaxConnectionAttempts <= attempts {
+					closingChannel <- true
+				} else {
+					attempts++
+				}
+			}
+		}
+	}
+}
+
+func initConnexion(store *Store, clientOptions *options.ClientOptions) error {
+	var err error
 	store.client, err = mongoDriver.Connect(context.Background(), clientOptions)
 	if err != nil {
-		return nil, errors.Wrap(err, "connection options are invalid")
+		fmt.Println("connection options are invalid")
+		return errors.Wrap(err, "connection options are invalid")
 	}
-
-	return store, nil
+	ctx, cancel := context.WithTimeout(context.Background(), store.config.Timeout)
+	defer cancel()
+	err = store.client.Ping(ctx, readpref.PrimaryPreferred())
+	if err != nil {
+		fmt.Println("cannot ping store")
+		return errors.Wrap(err, "cannot ping store")
+	}
+	return nil
 }
 
 func (o *Store) GetRepository(collection string) *Repository {

@@ -39,6 +39,7 @@ var _ = Describe("Config", func() {
 			Expect(datum.Username).To(BeNil())
 			Expect(datum.Password).To(BeNil())
 			Expect(datum.Timeout).To(Equal(60 * time.Second))
+			Expect(datum.MaxConnectionAttempts).To(Equal(int64(0)))
 		})
 	})
 

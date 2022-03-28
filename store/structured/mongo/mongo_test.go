@@ -52,22 +52,7 @@ var _ = Describe("Mongo", func() {
 				config.Addresses = []string{"145.0.0.2", "175.0.0.3"}
 				var err error
 				store, err = storeStructuredMongo.NewStore(config)
-				Expect(store).ToNot(BeNil())
-				Expect(err).ToNot(HaveOccurred())
-				// We can't compare the exact error here, since different OSes display slightly different errors
-				err = store.Ping(context.Background())
 				Expect(err).To(HaveOccurred())
-			})
-
-			It("returns the correct status if the addresses are not reachable", func() {
-				config.Addresses = []string{"145.0.0.2", "175.0.0.3"}
-				var err error
-				store, err = storeStructuredMongo.NewStore(config)
-				Expect(store).ToNot(BeNil())
-				Expect(err).ToNot(HaveOccurred())
-				status := store.Status(context.Background())
-				Expect(status).ToNot(BeNil())
-				Expect(status.Ping).To(Equal("FAILED"))
 			})
 
 			It("returns an error if the username or password is invalid", func() {
@@ -75,9 +60,7 @@ var _ = Describe("Mongo", func() {
 				config.Password = pointer.FromString("password")
 				var err error
 				store, err = storeStructuredMongo.NewStore(config)
-				Expect(store).ToNot(BeNil())
-				Expect(err).ToNot(HaveOccurred())
-				err = store.Ping(context.Background())
+				Expect(store).To(BeNil())
 				Expect(err).ToNot(BeNil())
 			})
 
@@ -85,9 +68,7 @@ var _ = Describe("Mongo", func() {
 				config.TLS = true
 				var err error
 				store, err = storeStructuredMongo.NewStore(config)
-				Expect(store).ToNot(BeNil())
-				Expect(err).ToNot(HaveOccurred())
-				err = store.Ping(context.Background())
+				Expect(store).To(BeNil())
 				Expect(err).ToNot(BeNil())
 			})
 

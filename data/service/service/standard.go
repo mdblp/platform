@@ -178,7 +178,7 @@ func (s *Standard) initializeDataStore() error {
 
 	cfg := storeStructuredMongo.NewConfig()
 	if err := cfg.Load(); err != nil {
-		return errors.Wrap(err, "unable to load data store DEPRECATED config")
+		return errors.Wrap(err, "unable to load data store config")
 	}
 	if err := cfg.SetDatabaseFromReporter(s.ConfigReporter().WithScopes("DEPRECATED", "data", "store")); err != nil {
 		return errors.Wrap(err, "unable to load data source structured store config")
