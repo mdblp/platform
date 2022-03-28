@@ -174,7 +174,7 @@ func (s *Standard) initializeDataDeduplicatorFactory() error {
 }
 
 func (s *Standard) initializeDataStore() error {
-	s.Logger().Debug("Loading data store DEPRECATED config")
+	s.Logger().Debug("Loading data store config")
 
 	cfg := storeStructuredMongo.NewConfig()
 	if err := cfg.Load(); err != nil {

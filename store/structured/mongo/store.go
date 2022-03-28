@@ -3,7 +3,6 @@ package mongo
 import (
 	"context"
 	"fmt"
-
 	mongoDriver "go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
@@ -35,6 +34,7 @@ func NewStore(c *Config) (*Store, error) {
 		ApplyURI(cs).
 		SetConnectTimeout(store.config.Timeout).
 		SetServerSelectionTimeout(store.config.Timeout)
+	// todo yann : a retry loop here to ensure mongo can be ping
 	store.client, err = mongoDriver.Connect(context.Background(), clientOptions)
 	if err != nil {
 		return nil, errors.Wrap(err, "connection options are invalid")
