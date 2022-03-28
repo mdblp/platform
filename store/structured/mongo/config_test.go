@@ -38,7 +38,7 @@ var _ = Describe("Config", func() {
 			Expect(datum.CollectionPrefix).To(BeEmpty())
 			Expect(datum.Username).To(BeNil())
 			Expect(datum.Password).To(BeNil())
-			Expect(datum.Timeout).To(Equal(30 * time.Second))
+			Expect(datum.Timeout).To(Equal(60 * time.Second))
 		})
 	})
 
