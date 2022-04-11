@@ -3,6 +3,7 @@ package mongo_test
 import (
 	"context"
 	"os"
+	"strings"
 	"time"
 
 	. "github.com/onsi/ginkgo"
@@ -50,6 +51,10 @@ var _ = Describe("Mongo", func() {
 			})
 
 			It("returns no error if the server is not reachable and initialize session once it is", func() {
+				mongoAddress := "127.0.0.1:27020"
+				if os.Getenv("TIDEPOOL_STORE_ADDRESSES") != "" {
+					mongoAddress = strings.Replace(os.Getenv("TIDEPOOL_STORE_ADDRESSES"), "27017", "27020", 1)
+				}
 				config.SetAddressesSync([]string{"127.0.0.1:27020"})
 				config.WaitConnectionInterval = 1 * time.Second
 				config.Timeout = 2 * time.Second
@@ -59,7 +64,7 @@ var _ = Describe("Mongo", func() {
 				Expect(err).To(BeNil())
 				Expect(store).ToNot(BeNil())
 				time.Sleep(3 * time.Second)
-				mongoAddress := "127.0.0.1:27017"
+				mongoAddress = "127.0.0.1:27017"
 				if os.Getenv("TIDEPOOL_STORE_ADDRESSES") != "" {
 					mongoAddress = os.Getenv("TIDEPOOL_STORE_ADDRESSES")
 				}
