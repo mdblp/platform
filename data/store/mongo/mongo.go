@@ -68,7 +68,39 @@ func (s *Stores) IsEnabled() bool {
 	return s.BucketStoreEnabled
 }
 
+var (
+	dataSourcesIndexes = map[string][]mongo.IndexModel{
+		"deviceData": {
+			// Additional indexes are also created in `tide-whisperer` and `jellyfish`
+			{
+				Keys: bson.D{
+					{Key: "_userId", Value: 1},
+					{Key: "uploadId", Value: 1},
+					{Key: "type", Value: 1},
+				},
+				Options: options.Index().
+					SetBackground(true).
+					SetName("UserIdUploadIdType"),
+			},
+			{
+				Keys: bson.D{
+					{Key: "uploadId", Value: 1},
+				},
+				Options: options.Index().
+					SetUnique(true).
+					SetBackground(true).
+					SetPartialFilterExpression(bson.D{{Key: "type", Value: "upload"}}).
+					SetName("UniqueUploadId"),
+			},
+		},
+	}
+)
+
 func NewStores(cfg *storeStructuredMongo.Config, config *goComMgo.Config, lgr log.Logger, lg *logrus.Logger, migrateConfig BucketMigrationConfig) (*Stores, error) {
+	if config != nil {
+		cfg.Indexes = dataSourcesIndexes
+	}
+
 	baseStore, err := storeStructuredMongo.NewStore(cfg)
 	if err != nil {
 		return nil, err
@@ -92,11 +124,6 @@ func NewStores(cfg *storeStructuredMongo.Config, config *goComMgo.Config, lgr lo
 	}, nil
 }
 
-func (s *Stores) EnsureIndexes() error {
-	repository := s.NewDataRepository()
-	return repository.EnsureIndexes()
-}
-
 func (s *Stores) NewDataRepository() store.DataRepository {
 	return &DataRepository{
 		Repository:         s.Store.GetRepository("deviceData"),
@@ -113,32 +140,6 @@ type DataRepository struct {
 	BucketStoreEnabled bool
 	DataTypesArchived  []string
 	DataTypesBucketed  []string
-}
-
-func (d *DataRepository) EnsureIndexes() error {
-	return d.CreateAllIndexes(context.Background(), []mongo.IndexModel{
-		// Additional indexes are also created in `tide-whisperer` and `jellyfish`
-		{
-			Keys: bson.D{
-				{Key: "_userId", Value: 1},
-				{Key: "uploadId", Value: 1},
-				{Key: "type", Value: 1},
-			},
-			Options: options.Index().
-				SetBackground(true).
-				SetName("UserIdUploadIdType"),
-		},
-		{
-			Keys: bson.D{
-				{Key: "uploadId", Value: 1},
-			},
-			Options: options.Index().
-				SetUnique(true).
-				SetBackground(true).
-				SetPartialFilterExpression(bson.D{{Key: "type", Value: "upload"}}).
-				SetName("UniqueUploadId"),
-		},
-	})
 }
 
 func (d *DataRepository) GetDataSetsForUserByID(ctx context.Context, userID string, filter *store.Filter, pagination *page.Pagination) ([]*upload.Upload, error) {

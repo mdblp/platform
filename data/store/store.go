@@ -17,8 +17,6 @@ type Store interface {
 }
 
 type DataRepository interface {
-	EnsureIndexes() error
-
 	GetDataSetsForUserByID(ctx context.Context, userID string, filter *Filter, pagination *page.Pagination) ([]*upload.Upload, error)
 	GetDataSetByID(ctx context.Context, dataSetID string) (*upload.Upload, error)
 	CreateDataSet(ctx context.Context, dataSet *upload.Upload) error

@@ -2,15 +2,15 @@ package mongo_test
 
 import (
 	"context"
-
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"os"
+	"time"
 
-	"github.com/tidepool-org/platform/pointer"
 	storeStructuredMongo "github.com/tidepool-org/platform/store/structured/mongo"
 	storeStructuredMongoTest "github.com/tidepool-org/platform/store/structured/mongo/test"
 )
@@ -44,39 +44,33 @@ var _ = Describe("Mongo", func() {
 				config.Addresses = nil
 				var err error
 				store, err = storeStructuredMongo.NewStore(config)
-				Expect(err).To(MatchError("connection options are invalid; error parsing uri: must have at least 1 host"))
+				Expect(err).To(MatchError("config is invalid; addresses is missing"))
 				Expect(store).To(BeNil())
 			})
 
-			It("returns an error if the addresses are not reachable", func() {
-				config.Addresses = []string{"145.0.0.2", "175.0.0.3"}
+			It("returns no error if the server is not reachable and initialize session once it is", func() {
+				config.SetAddressesSync([]string{"127.0.0.0"})
+				config.WaitConnectionInterval = 1 * time.Second
+				config.Timeout = 2 * time.Second
 				var err error
-				store, err = storeStructuredMongo.NewStore(config)
-				Expect(err).To(HaveOccurred())
-			})
 
-			It("returns an error if the username or password is invalid", func() {
-				config.Username = pointer.FromString("username")
-				config.Password = pointer.FromString("password")
-				var err error
 				store, err = storeStructuredMongo.NewStore(config)
-				Expect(store).To(BeNil())
-				Expect(err).ToNot(BeNil())
-			})
-
-			It("returns an error if TLS is specified on a server that does not support it", func() {
-				config.TLS = true
-				var err error
-				store, err = storeStructuredMongo.NewStore(config)
-				Expect(store).To(BeNil())
-				Expect(err).ToNot(BeNil())
+				Expect(err).To(BeNil())
+				Expect(store).ToNot(BeNil())
+				time.Sleep(3 * time.Second)
+				mongoAddress := "127.0.0.1:27017"
+				if os.Getenv("TIDEPOOL_STORE_ADDRESSES") != "" {
+					mongoAddress = os.Getenv("TIDEPOOL_STORE_ADDRESSES")
+				}
+				config.SetAddressesSync([]string{mongoAddress})
+				store.WaitUntilStarted()
+				Expect(true)
 			})
 
 			It("returns no error if successful", func() {
 				var err error
 				store, err = storeStructuredMongo.NewStore(config)
-				// todo yann reintegrate the wait until started
-				//store.WaitUntilStarted()
+				store.WaitUntilStarted()
 				Expect(err).ToNot(HaveOccurred())
 				Expect(store).ToNot(BeNil())
 			})
@@ -86,7 +80,7 @@ var _ = Describe("Mongo", func() {
 			BeforeEach(func() {
 				var err error
 				store, err = storeStructuredMongo.NewStore(config)
-				//store.WaitUntilStarted()
+				store.WaitUntilStarted()
 				Expect(err).ToNot(HaveOccurred())
 				Expect(store).ToNot(BeNil())
 			})

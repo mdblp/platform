@@ -218,11 +218,6 @@ func (s *Standard) initializeDataStore() error {
 	}
 	s.dataStore = str
 
-	err = s.dataStore.EnsureIndexes()
-	if err != nil {
-		return errors.Wrap(err, "unable to ensure data store indexes")
-	}
-
 	return nil
 }
 

@@ -4,7 +4,10 @@ import (
 	"fmt"
 	"net/url"
 	"strings"
+	"sync"
 	"time"
+
+	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/kelseyhightower/envconfig"
 	"go.mongodb.org/mongo-driver/x/mongo/driver/connstring"
@@ -24,17 +27,19 @@ func NewConfig() *Config {
 
 //Config describe parameters need to make a connection to a Mongo database
 type Config struct {
-	Scheme                 string        `json:"scheme" envconfig:"TIDEPOOL_STORE_SCHEME"`
-	Addresses              []string      `json:"addresses" envconfig:"TIDEPOOL_STORE_ADDRESSES" required:"true"`
-	TLS                    bool          `json:"tls" envconfig:"TIDEPOOL_STORE_TLS" default:"true"`
-	Database               string        `json:"database" envconfig:"TIDEPOOL_STORE_DATABASE" required:"true"`
-	CollectionPrefix       string        `json:"collectionPrefix" envconfig:"TIDEPOOL_STORE_COLLECTION_PREFIX"`
-	Username               *string       `json:"-" envconfig:"TIDEPOOL_STORE_USERNAME"`
-	Password               *string       `json:"-" envconfig:"TIDEPOOL_STORE_PASSWORD"`
-	Timeout                time.Duration `json:"timeout" envconfig:"TIDEPOOL_STORE_TIMEOUT" default:"60s"`
-	OptParams              *string       `json:"optParams" envconfig:"TIDEPOOL_STORE_OPT_PARAMS"`
-	WaitConnectionInterval time.Duration `json:"waitConnectionInterval"`
-	MaxConnectionAttempts  int64         `json:"maxConnectionAttempts"`
+	Scheme                 string                        `json:"scheme" envconfig:"TIDEPOOL_STORE_SCHEME"`
+	Addresses              []string                      `json:"addresses" envconfig:"TIDEPOOL_STORE_ADDRESSES" required:"true"`
+	TLS                    bool                          `json:"tls" envconfig:"TIDEPOOL_STORE_TLS" default:"true"`
+	Database               string                        `json:"database" envconfig:"TIDEPOOL_STORE_DATABASE" required:"true"`
+	CollectionPrefix       string                        `json:"collectionPrefix" envconfig:"TIDEPOOL_STORE_COLLECTION_PREFIX"`
+	Username               *string                       `json:"-" envconfig:"TIDEPOOL_STORE_USERNAME"`
+	Password               *string                       `json:"-" envconfig:"TIDEPOOL_STORE_PASSWORD"`
+	Timeout                time.Duration                 `json:"timeout" envconfig:"TIDEPOOL_STORE_TIMEOUT" default:"60s"`
+	OptParams              *string                       `json:"optParams" envconfig:"TIDEPOOL_STORE_OPT_PARAMS"`
+	WaitConnectionInterval time.Duration                 `json:"waitConnectionInterval"`
+	MaxConnectionAttempts  int64                         `json:"maxConnectionAttempts"`
+	Indexes                map[string][]mongo.IndexModel `json:"indexes"`
+	addressMux             sync.Mutex
 }
 
 // AsConnectionString constructs a MongoDB connection string from a Config
@@ -54,7 +59,7 @@ func (c *Config) AsConnectionString() string {
 		}
 		connectionString += "@"
 	}
-	connectionString += strings.Join(c.Addresses, ",")
+	connectionString += strings.Join(c.AddressesSync(), ",")
 	connectionString += "/"
 	connectionString += c.Database
 	if c.TLS {
@@ -67,6 +72,17 @@ func (c *Config) AsConnectionString() string {
 	}
 
 	return connectionString
+}
+
+func (c *Config) AddressesSync() []string {
+	c.addressMux.Lock()
+	defer c.addressMux.Unlock()
+	return c.Addresses
+}
+func (c *Config) SetAddressesSync(addresses []string) {
+	c.addressMux.Lock()
+	defer c.addressMux.Unlock()
+	c.Addresses = addresses
 }
 
 func (c *Config) Load() error {

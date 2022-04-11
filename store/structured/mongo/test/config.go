@@ -10,12 +10,12 @@ import (
 func NewConfig() *storeStructuredMongo.Config {
 	conf := &storeStructuredMongo.Config{
 		Database:               Database(),
+		Addresses:              []string{Address()},
 		CollectionPrefix:       NewCollectionPrefix(),
 		Timeout:                5 * time.Second,
 		WaitConnectionInterval: 1 * time.Second,
 		MaxConnectionAttempts:  1,
 	}
-	conf.Addresses = []string{Address()}
 
 	return conf
 }
