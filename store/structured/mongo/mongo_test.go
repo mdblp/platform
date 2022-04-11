@@ -55,7 +55,7 @@ var _ = Describe("Mongo", func() {
 				if os.Getenv("TIDEPOOL_STORE_ADDRESSES") != "" {
 					mongoAddress = strings.Replace(os.Getenv("TIDEPOOL_STORE_ADDRESSES"), "27017", "27020", 1)
 				}
-				config.SetAddressesSync([]string{"127.0.0.1:27020"})
+				config.SetAddressesSync([]string{mongoAddress})
 				config.WaitConnectionInterval = 1 * time.Second
 				config.Timeout = 2 * time.Second
 				var err error
