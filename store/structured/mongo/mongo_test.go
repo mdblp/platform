@@ -50,7 +50,7 @@ var _ = Describe("Mongo", func() {
 			})
 
 			It("returns no error if the server is not reachable and initialize session once it is", func() {
-				config.SetAddressesSync([]string{"127.0.0.0"})
+				config.SetAddressesSync([]string{"127.0.0.1:27020"})
 				config.WaitConnectionInterval = 1 * time.Second
 				config.Timeout = 2 * time.Second
 				var err error
