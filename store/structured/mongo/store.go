@@ -90,6 +90,7 @@ func (s *Store) connectionRoutine() {
 			} else {
 				if s.config.MaxConnectionAttempts > 0 && s.config.MaxConnectionAttempts <= attempts {
 					s.closingChannel <- true
+					panic(err)
 				} else {
 					attempts++
 				}
