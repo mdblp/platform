@@ -53,6 +53,7 @@ var _ = Describe("Mongo", func() {
 				config.SetAddressesSync([]string{"127.0.0.0"})
 				config.WaitConnectionInterval = 1 * time.Second
 				config.Timeout = 2 * time.Second
+				config.MaxConnectionAttempts = 3
 				var err error
 
 				store, err = storeStructuredMongo.NewStore(config)
