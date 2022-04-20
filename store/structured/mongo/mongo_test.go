@@ -2,7 +2,6 @@ package mongo_test
 
 import (
 	"context"
-	"os"
 	"time"
 
 	. "github.com/onsi/ginkgo"
@@ -60,11 +59,7 @@ var _ = Describe("Mongo", func() {
 				Expect(err).To(BeNil())
 				Expect(store).ToNot(BeNil())
 				time.Sleep(3 * time.Second)
-				mongoAddress := "127.0.0.1:27017"
-				if os.Getenv("TIDEPOOL_STORE_ADDRESSES") != "" {
-					mongoAddress = os.Getenv("TIDEPOOL_STORE_ADDRESSES")
-				}
-				config.SetAddressesSync([]string{mongoAddress})
+				config.SetAddressesSync([]string{storeStructuredMongoTest.Address()})
 				store.WaitUntilStarted()
 				Expect(true)
 			})
