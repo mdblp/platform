@@ -114,7 +114,9 @@ func CloneDataSetData(dataSetData data.Data) data.Data {
 	clonedDataSetData := data.Data{}
 	for _, dataSetDatum := range dataSetData {
 		if datum, ok := dataSetDatum.(*types.Base); ok {
-			clonedDataSetData = append(clonedDataSetData, dataTypesTest.CloneBase(datum))
+			clonedData := dataTypesTest.CloneBase(datum)
+			clonedData.GUID = pointer.FromString(dataTest.RandomID())
+			clonedDataSetData = append(clonedDataSetData, clonedData)
 		}
 	}
 	return clonedDataSetData
