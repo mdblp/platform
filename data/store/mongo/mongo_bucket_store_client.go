@@ -224,25 +224,49 @@ func buildUpdateOneModel(dataType string, sample schema.ISample, userId *string,
 		// Update the basal
 		basalSecondOp := mongo.NewUpdateOneModel()
 		elemfilter := sample.(schema.BasalSample)
-		basalSecondOp.SetFilter(bson.D{
-			{Key: "_id", Value: strUserId + "_" + ts},
-			{Key: "samples", Value: bson.D{
-				{Key: "$elemMatch", Value: bson.D{
-					{Key: "rate", Value: elemfilter.Rate},
-					{Key: "deliveryType", Value: elemfilter.DeliveryType},
-					{Key: "timestamp", Value: elemfilter.Timestamp},
+		if elemfilter.Guid != "" {
+			basalSecondOp.SetFilter(bson.D{
+				{Key: "_id", Value: strUserId + "_" + ts},
+				{Key: "samples", Value: bson.D{
+					{Key: "$elemMatch", Value: bson.D{
+						{Key: "guid", Value: elemfilter.Guid},
+					},
+					},
 				},
 				},
-			},
-			},
-		})
-		basalSecondOp.SetUpdate(bson.D{ // update
-			{Key: "$set", Value: bson.D{
-				{Key: "samples.$.internalId", Value: elemfilter.InternalID},
-				{Key: "samples.$.duration", Value: elemfilter.Duration},
-			},
-			},
-		})
+			})
+			basalSecondOp.SetUpdate(bson.D{ // update
+				{Key: "$set", Value: bson.D{
+					{Key: "samples.$.internalId", Value: elemfilter.InternalID},
+					{Key: "samples.$.duration", Value: elemfilter.Duration},
+					{Key: "samples.$.rate", Value: elemfilter.Rate},
+					{Key: "samples.$.deliveryType", Value: elemfilter.DeliveryType},
+					{Key: "samples.$.timestamp", Value: elemfilter.Timestamp},
+				},
+				},
+			})
+		} else {
+			basalSecondOp.SetFilter(bson.D{
+				{Key: "_id", Value: strUserId + "_" + ts},
+				{Key: "samples", Value: bson.D{
+					{Key: "$elemMatch", Value: bson.D{
+						{Key: "guid", Value: nil},
+						{Key: "rate", Value: elemfilter.Rate},
+						{Key: "deliveryType", Value: elemfilter.DeliveryType},
+						{Key: "timestamp", Value: elemfilter.Timestamp},
+					},
+					},
+				},
+				},
+			})
+			basalSecondOp.SetUpdate(bson.D{ // update
+				{Key: "$set", Value: bson.D{
+					{Key: "samples.$.internalId", Value: elemfilter.InternalID},
+					{Key: "samples.$.duration", Value: elemfilter.Duration},
+				},
+				},
+			})
+		}
 
 		// Otherwise we know that we did not update the basal so we guarantee an insertion
 		// in the array

@@ -829,6 +829,23 @@ var _ = Describe("Mongo", func() {
 								ValidateDataSetData(collection, bson.M{"createdTime": bson.M{"$exists": true}, "createdUserId": bson.M{"$exists": false}}, bson.M{}, append(dataSetBeforeCreateData, dataSetData...))
 							})
 
+							It("updates data set data based on guid", func() {
+								dataSetBeforeCreateData := append(append(dataSetExistingOtherData, dataSetExistingOneData...), dataSetExistingTwoData...)
+								ValidateDataSetData(collection, bson.M{"createdTime": bson.M{"$exists": true}, "createdUserId": bson.M{"$exists": false}}, bson.M{}, dataSetBeforeCreateData)
+								Expect(repository.CreateDataSetData(ctx, dataSet, dataSetData)).To(Succeed())
+								ValidateDataSetData(collection, bson.M{"createdTime": bson.M{"$exists": true}, "createdUserId": bson.M{"$exists": false}}, bson.M{}, append(dataSetBeforeCreateData, dataSetData...))
+
+								var updatedData data.Data
+								for _, data := range dataSetData {
+									datum := dataTypesTest.NewBase()
+									datum.GUID = data.GetGUID()
+									datum.UserID = data.GetUserID()
+									updatedData = append(updatedData, data)
+								}
+								Expect(repository.CreateDataSetData(ctx, dataSet, updatedData)).To(Succeed())
+								ValidateDataSetData(collection, bson.M{"createdTime": bson.M{"$exists": true}, "createdUserId": bson.M{"$exists": false}}, bson.M{}, append(dataSetBeforeCreateData, updatedData...))
+							})
+
 							It("stores cbg data in archive collection", func() {
 								dataSetBeforeCreateData := append(append(dataSetExistingOtherData, dataSetExistingOneData...), dataSetExistingTwoData...)
 								Expect(repository.CreateDataSetData(ctx, dataSet, dataSetCbgData)).To(Succeed())

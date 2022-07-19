@@ -405,6 +405,7 @@ func (d *DataRepository) CreateDataSetData(ctx context.Context, dataSet *upload.
 		datum.SetCreatedTime(&strTimestamp)
 		archive := d.isDatumToArchive(datum)
 		moveToBucket := d.isDatumToBucket(datum)
+		guid := datum.GetGUID()
 
 		if moveToBucket {
 			// Prepare cbg to be pushed into data read db
@@ -433,12 +434,18 @@ func (d *DataRepository) CreateDataSetData(ctx context.Context, dataSet *upload.
 			d.BucketStore.log.Infof("object ignored %v", datum)
 		}
 		incomingUserMetadata = d.BucketStore.BuildUserMetadata(incomingUserMetadata, creationTimestamp, strUserId, datum.GetTime())
-		if archive {
-			archiveData = append(archiveData, mongo.NewInsertOneModel().SetDocument(datum))
-		} else {
-			insertData = append(insertData, mongo.NewInsertOneModel().SetDocument(datum))
-		}
 
+		var writeOp mongo.WriteModel
+		if guid != nil {
+			writeOp = mongo.NewReplaceOneModel().SetFilter(bson.M{"guid": *guid, "_userId": strUserId}).SetReplacement(datum).SetUpsert(true)
+		} else {
+			writeOp = mongo.NewInsertOneModel().SetDocument(datum)
+		}
+		if archive {
+			archiveData = append(archiveData, writeOp)
+		} else {
+			insertData = append(insertData, writeOp)
+		}
 	}
 
 	if d.BucketStoreEnabled {
