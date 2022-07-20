@@ -79,7 +79,6 @@ var (
 					{Key: "type", Value: 1},
 				},
 				Options: options.Index().
-					SetBackground(true).
 					SetName("UserIdUploadIdType"),
 			},
 			{
@@ -88,9 +87,17 @@ var (
 				},
 				Options: options.Index().
 					SetUnique(true).
-					SetBackground(true).
 					SetPartialFilterExpression(bson.D{{Key: "type", Value: "upload"}}).
 					SetName("UniqueUploadId"),
+			},
+			{
+				Keys: bson.D{
+					{Key: "_userId", Value: 1},
+					{Key: "guid", Value: 1},
+				},
+				Options: options.Index().
+					SetPartialFilterExpression(bson.M{"guid": bson.M{"$exists": true}}).
+					SetName("UserIdGUID"),
 			},
 		},
 	}
