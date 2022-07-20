@@ -7,7 +7,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/mdblp/go-common/auth"
 	"github.com/tidepool-org/platform/auth"
 	"github.com/tidepool-org/platform/config"
 	"github.com/tidepool-org/platform/errors"
