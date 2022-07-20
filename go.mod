@@ -9,7 +9,6 @@ require (
 	github.com/fatih/color v1.10.0 // indirect
 	github.com/githubnemo/CompileDaemon v1.2.1
 	github.com/golang/protobuf v1.5.2 // indirect
-	github.com/google/go-cmp v0.5.7 // indirect
 	github.com/google/uuid v1.3.0
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/kr/text v0.2.0 // indirect
