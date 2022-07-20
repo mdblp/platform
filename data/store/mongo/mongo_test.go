@@ -270,16 +270,19 @@ var _ = Describe("Mongo", func() {
 						"Key": Equal(storeStructuredMongoTest.MakeKeySlice("_id")),
 					}),
 					MatchFields(IgnoreExtras, Fields{
-						"Key":        Equal(storeStructuredMongoTest.MakeKeySlice("_userId", "uploadId", "type")),
-						"Background": Equal(true),
-						"Name":       Equal("UserIdUploadIdType"),
+						"Key":  Equal(storeStructuredMongoTest.MakeKeySlice("_userId", "uploadId", "type")),
+						"Name": Equal("UserIdUploadIdType"),
 					}),
 					MatchFields(IgnoreExtras, Fields{
 						"Key":                     Equal(storeStructuredMongoTest.MakeKeySlice("uploadId")),
-						"Background":              Equal(true),
 						"Unique":                  Equal(true),
 						"Name":                    Equal("UniqueUploadId"),
 						"PartialFilterExpression": Equal(bson.D{{Key: "type", Value: "upload"}}),
+					}),
+					MatchFields(IgnoreExtras, Fields{
+						"Key":                     Equal(storeStructuredMongoTest.MakeKeySlice("_userId", "guid")),
+						"Name":                    Equal("UserIdGUID"),
+						"PartialFilterExpression": Equal(bson.D{{Key: "guid", Value: bson.D{{Key: "$exists", Value: true}}}}),
 					}),
 				))
 			})
