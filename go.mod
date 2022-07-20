@@ -4,6 +4,7 @@ go 1.15
 
 require (
 	github.com/ant0ine/go-json-rest v3.3.2+incompatible // indirect
+	github.com/auth0/go-jwt-middleware/v2 v2.0.1
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/fatih/color v1.10.0 // indirect
 	github.com/githubnemo/CompileDaemon v1.2.1
@@ -21,7 +22,6 @@ require (
 	github.com/sirupsen/logrus v1.8.1
 	go.mongodb.org/mongo-driver v1.7.2
 	go.uber.org/fx v1.17.1
-	golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83 // indirect
 	golang.org/x/lint v0.0.0-20201208152925-83fdc39ff7b5
 	golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd // indirect
 	golang.org/x/tools v0.1.5
