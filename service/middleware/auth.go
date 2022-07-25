@@ -172,10 +172,12 @@ func setupAuth0() (*validator.Validator, error) {
 	if err != nil {
 		return nil, errors.New("Failed to parse the issuer url: " + err.Error())
 	}
-	keyProvider := jwks.NewCachingProvider(issuerURL, 5*time.Minute)
+	var keyProvider *jwks.CachingProvider
 	// Use a custom CA cert if it's provided
 	if os.Getenv("SSL_CUSTOM_CA_KEY") != "" {
 		keyProvider = jwks.NewCachingProvider(issuerURL, 5*time.Minute, WithCustomCA(os.Getenv("SSL_CUSTOM_CA_KEY")))
+	} else {
+		keyProvider = jwks.NewCachingProvider(issuerURL, 5*time.Minute)
 	}
 	jwtValidator, err := validator.New(
 		keyProvider.KeyFunc,
