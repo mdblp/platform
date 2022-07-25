@@ -213,28 +213,28 @@ var _ = Describe("Auth", func() {
 						Expect(res.WriteHeaderInputs).To(Equal([]int{403}))
 					})
 
-					// It("returns successfully", func() {
-					// 	userID := serviceTest.NewUserID()
-					// 	authClient.ValidateSessionTokenOutputs = []authTest.ValidateSessionTokenOutput{
-					// 		{Details: request.NewDetails(request.MethodSessionToken, userID, accessToken), Error: nil},
-					// 	}
-					// 	handlerFunc = func(res rest.ResponseWriter, req *rest.Request) {
-					// 		details := request.DetailsFromContext(req.Context())
-					// 		Expect(details).ToNot(BeNil())
-					// 		Expect(details.Method()).To(Equal(request.MethodAccessToken))
-					// 		Expect(details.IsUser()).To(BeTrue())
-					// 		Expect(details.UserID()).To(Equal(userID))
-					// 		Expect(details.Token()).To(Equal(accessToken))
-					// 		Expect(service.GetRequestAuthDetails(req)).To(Equal(details))
-					// 		Expect(log.LoggerFromContext(req.Context())).ToNot(BeNil())
-					// 		Expect(log.LoggerFromContext(req.Context())).ToNot(Equal(lgr))
-					// 		Expect(service.GetRequestLogger(req)).ToNot(BeNil())
-					// 		Expect(service.GetRequestLogger(req)).ToNot(Equal(lgr))
-					// 	}
-					// 	middlewareFunc(res, req)
-					// 	Expect(authClient.ValidateSessionTokenInputs).To(Equal([]string{accessToken}))
-					// })
+					It("returns successfully", func() {
+						res.HeaderOutput = &http.Header{}
+						res.WriteOutputs = []testRest.WriteOutput{{BytesWritten: 0, Error: nil}}
+						req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", accessToken))
+						userID := serviceTest.NewUserID()
+						handlerFunc = func(res rest.ResponseWriter, req *rest.Request) {
+							details := request.DetailsFromContext(req.Context())
+							Expect(details).ToNot(BeNil())
+							Expect(details.Method()).To(Equal(request.MethodAccessToken))
+							Expect(details.IsUser()).To(BeFalse())
+							Expect(details.UserID()).To(Equal(userID))
+							Expect(details.Token()).To(Equal(accessToken))
+							Expect(service.GetRequestAuthDetails(req)).To(Equal(details))
+							Expect(log.LoggerFromContext(req.Context())).ToNot(BeNil())
+							Expect(log.LoggerFromContext(req.Context())).ToNot(Equal(lgr))
+							Expect(service.GetRequestLogger(req)).ToNot(BeNil())
+							Expect(service.GetRequestLogger(req)).ToNot(Equal(lgr))
+						}
+						middlewareFunc(res, req)
+					})
 
+					// TODO: create real tests to cover auth tokens YLP-1668
 					// It("returns successfully with no details if access token is not valid", func() {
 					// 	authClient.ValidateSessionTokenOutputs = []authTest.ValidateSessionTokenOutput{{Details: nil, Error: errorsTest.RandomError()}}
 					// 	handlerFunc = func(res rest.ResponseWriter, req *rest.Request) {
