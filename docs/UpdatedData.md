@@ -341,7 +341,7 @@ Leveraging the `deviceEvent` type and creating new subTypes with the same struct
 {
   "type": "deviceEvent",
   "subType": "energySaving",
-  "guid": "EenergySaving123456789",
+  "guid": "EnergySaving123456789",
   "duration": { 
     "value": 24,
     "units": "hours"
