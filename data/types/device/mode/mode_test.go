@@ -54,6 +54,8 @@ var _ = Describe("Change", func() {
 		Expect(mode.ConfidentialMode).To(Equal("confidential"))
 		Expect(mode.ZenMode).To(Equal("zen"))
 		Expect(mode.Warmup).To(Equal("warmup"))
+		Expect(mode.LoopMode).To(Equal("loopMode"))
+		Expect(mode.EnergySaving).To(Equal("energySaving"))
 	})
 
 	Context("New", func() {
@@ -76,6 +78,20 @@ var _ = Describe("Change", func() {
 			Expect(datum).ToNot(BeNil())
 			Expect(datum.Type).To(Equal("deviceEvent"))
 			Expect(datum.SubType).To(Equal("warmup"))
+			Expect(datum.InputTime.InputTime).To(BeNil())
+		})
+		It("returns the expected datum with all loopMode values initialized", func() {
+			datum := mode.New(mode.LoopMode)
+			Expect(datum).ToNot(BeNil())
+			Expect(datum.Type).To(Equal("deviceEvent"))
+			Expect(datum.SubType).To(Equal("loopMode"))
+			Expect(datum.InputTime.InputTime).To(BeNil())
+		})
+		It("returns the expected datum with all energySaving values initialized", func() {
+			datum := mode.New(mode.EnergySaving)
+			Expect(datum).ToNot(BeNil())
+			Expect(datum.Type).To(Equal("energySaving"))
+			Expect(datum.SubType).To(Equal("loopMode"))
 			Expect(datum.InputTime.InputTime).To(BeNil())
 		})
 	})
@@ -115,8 +131,20 @@ var _ = Describe("Change", func() {
 					func(datum *mode.Mode) { datum.SubType = "invalidSubType" },
 					errorsTest.WithPointerSourceAndMeta(structureValidator.ErrorValueStringNotOneOf("invalidSubType", []string{"confidential", "zen", "warmup", "loopMode"}), "/subType", &device.Meta{Type: "deviceEvent", SubType: "invalidSubType"}),
 				),
+				Entry("sub type confidential",
+					func(datum *mode.Mode) { datum.SubType = "confidential" },
+				),
 				Entry("sub type zen",
 					func(datum *mode.Mode) { datum.SubType = "zen" },
+				),
+				Entry("sub type warmup",
+					func(datum *mode.Mode) { datum.SubType = "warmup" },
+				),
+				Entry("sub type loopMode",
+					func(datum *mode.Mode) { datum.SubType = "loopMode" },
+				),
+				Entry("sub type energySaving",
+					func(datum *mode.Mode) { datum.SubType = "energySaving" },
 				),
 				Entry("multiple errors",
 					func(datum *mode.Mode) {

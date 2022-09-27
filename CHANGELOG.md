@@ -1,6 +1,12 @@
 # Platform 
 The data platform API
 
+## 0.20.0 - 2022-09-27
+### Changed
+- YLP-1800 Implement Power Saving objects upload
+### Fixed
+- YLP-1799 Unexpected data types
+
 ## 0.19.1 - 2022-09-08
 ### Fixed
 - YLP-1736 Updating old data when a terminal is replaced (same guid)
