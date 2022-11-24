@@ -20,6 +20,5 @@ export TIDEPOOL_SESSION_STORE_DATABASE="user_test"
 export TIDEPOOL_SYNC_TASK_STORE_DATABASE="data_test"
 export TIDEPOOL_USER_STORE_DATABASE="user_test"
 
-export PUSH_TO_READ_STORE_ENABLED=true
-export ARCHIVED_DATA_TYPES="cbg"
-export BUCKETED_DATA_TYPES="cbg,basal"
+export WRITE_TO_ARCHIVE="basal"
+export WRITE_TO_BUCKET="cbg,basal"

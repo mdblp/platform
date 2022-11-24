@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"os"
-	"strconv"
 	"strings"
 
 	"github.com/mdblp/go-common/clients/mongo"
@@ -207,9 +206,9 @@ func (s *Standard) initializeDataStore() error {
 	mongoDbReadConfig.Database = "data_read"
 
 	migrateConfig := dataStoreMongo.BucketMigrationConfig{
-		EnableBucketStore: getPushToReadStoreEnv(),
 		DataTypesArchived: getArchivedDataTypesEnv(),
 		DataTypesBucketed: getBucketsDataTypesEnv(),
+		DataTypesLegacy:   getLegacyDataTypesEnv(),
 	}
 
 	str, err := dataStoreMongo.NewStores(cfg, mongoDbReadConfig, s.Logger(), logrusLogger, migrateConfig)
@@ -310,27 +309,10 @@ func getenvStr(key string) (string, error) {
 	return v, nil
 }
 
-// Retrieve the PUSH_TO_READ_STORE_ENABLED env variable
-// It accepts 1, t, T, TRUE, true, True, 0, f, F, FALSE, false, False.
-// Any other value returns true by default.
-func getPushToReadStoreEnv() bool {
-	s, err := getenvStr("PUSH_TO_READ_STORE_ENABLED")
-	if err != nil {
-		logrusLogger.Warn("environment variable PUSH_TO_READ_STORE_ENABLED not exported, set true by default")
-		return true
-	}
-	v, err := strconv.ParseBool(s)
-	if err != nil {
-		logrusLogger.Warn("environment variable PUSH_TO_READ_STORE_ENABLED exported with wrong value,Any other value returns an error. We set true by default")
-		return true
-	}
-	return v
-}
-
 func getArchivedDataTypesEnv() []string {
-	s, err := getenvStr("ARCHIVED_DATA_TYPES")
+	s, err := getenvStr("WRITE_TO_ARCHIVE")
 	if err != nil {
-		logrusLogger.Warn("environment variable ARCHIVED_DATA_TYPES not exported, set empty by default")
+		logrusLogger.Warn("environment variable WRITE_TO_ARCHIVE not exported, set empty by default")
 		return []string{}
 	}
 	if s != "" {
@@ -341,9 +323,22 @@ func getArchivedDataTypesEnv() []string {
 }
 
 func getBucketsDataTypesEnv() []string {
-	s, err := getenvStr("BUCKETED_DATA_TYPES")
+	s, err := getenvStr("WRITE_TO_BUCKET")
 	if err != nil {
-		logrusLogger.Warn("environment variable BUCKETED_DATA_TYPES not exported, set empty by default")
+		logrusLogger.Warn("environment variable WRITE_TO_BUCKET not exported, set empty by default")
+		return []string{}
+	}
+	if s != "" {
+		dataTypes := strings.Split(s, ",")
+		return dataTypes
+	}
+	return []string{}
+}
+
+func getLegacyDataTypesEnv() []string {
+	s, err := getenvStr("WRITE_TO_LEGACY")
+	if err != nil {
+		logrusLogger.Warn("environment variable WRITE_TO_LEGACY not exported, set empty by default")
 		return []string{}
 	}
 	if s != "" {

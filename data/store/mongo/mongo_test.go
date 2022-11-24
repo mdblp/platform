@@ -204,7 +204,7 @@ var _ = Describe("Mongo", func() {
 		It("returns an error if unsuccessful", func() {
 			var err error
 			bucketConfig := mongo.BucketMigrationConfig{
-				EnableBucketStore: false,
+				DataTypesLegacy:   []string{""},
 				DataTypesArchived: []string{"cbg"},
 				DataTypesBucketed: []string{"cbg", "basal"},
 			}
@@ -216,7 +216,7 @@ var _ = Describe("Mongo", func() {
 		It("returns a new store and no error if successful", func() {
 			var err error
 			bucketConfig := mongo.BucketMigrationConfig{
-				EnableBucketStore: true,
+				DataTypesLegacy:   []string{""},
 				DataTypesArchived: []string{"cbg"},
 				DataTypesBucketed: []string{"cbg", "basal"},
 			}
@@ -234,7 +234,7 @@ var _ = Describe("Mongo", func() {
 		BeforeEach(func() {
 			var err error
 			bucketConfig := mongo.BucketMigrationConfig{
-				EnableBucketStore: true,
+				DataTypesLegacy:   []string{""},
 				DataTypesArchived: []string{"cbg"},
 				DataTypesBucketed: []string{"cbg", "basal"},
 			}
