@@ -5,8 +5,8 @@ export TIDEPOOL_ENV="test"
 
 export TIDEPOOL_LOGGER_LEVEL="error"
 
-#export TIDEPOOL_STORE_ADDRESSES="mongo4platform${RUN_ID}:27017"
-export TIDEPOOL_STORE_ADDRESSES="localhost:27018"
+export TIDEPOOL_STORE_ADDRESSES="mongo4platform${RUN_ID}:27017"
+#export TIDEPOOL_STORE_ADDRESSES="localhost:27018"
 export TIDEPOOL_STORE_TLS="false"
 export TIDEPOOL_STORE_DATABASE="tidepool_test"
 export TIDEPOOL_STORE_MAX_CONNECTION_ATTEMPTS=5
@@ -20,5 +20,6 @@ export TIDEPOOL_SESSION_STORE_DATABASE="user_test"
 export TIDEPOOL_SYNC_TASK_STORE_DATABASE="data_test"
 export TIDEPOOL_USER_STORE_DATABASE="user_test"
 
+export WRITE_TO_LEGACY="basal"
 export WRITE_TO_ARCHIVE="cbg"
 export WRITE_TO_BUCKET="cbg,basal"
