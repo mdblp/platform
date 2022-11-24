@@ -476,7 +476,7 @@ func (d *DataRepository) CreateDataSetData(ctx context.Context, dataSet *upload.
 
 		/*If data type is not in write to bucket ENV VAR, we write it to legacy deviceData*/
 		/*We also write it if write to legacy is set alongside write to bucket ENV VAR*/
-		if !writeToBucket || writeToBucket && writeToLegacy {
+		if !writeToBucket || (writeToBucket && writeToLegacy) {
 			insertData = append(insertData, writeOp)
 		}
 	}
