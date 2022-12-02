@@ -182,7 +182,7 @@ service-restart-all:
 
 test: ginkgo
 	@echo "ginkgo -v -requireSuite -slowSpecThreshold=10 -r $(TEST)"
-	@cd $(ROOT_DIRECTORY) && . ./env.test.sh && ginkgo -requireSuite -slowSpecThreshold=10 -r $(TEST)
+	@cd $(ROOT_DIRECTORY) && . ./env.test.sh && ginkgo -v -requireSuite -slowSpecThreshold=10 -r $(TEST)
 
 test-until-failure: ginkgo
 	@echo "ginkgo -requireSuite -slowSpecThreshold=10 -r -untilItFails $(TEST)"
