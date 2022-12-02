@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 
 	"os"
 	"strings"
@@ -345,5 +346,7 @@ func getLegacyDataTypesEnv() []string {
 		dataTypes := strings.Split(s, ",")
 		return dataTypes
 	}
+
+	fmt.Printf("TOTO %s", s)
 	return []string{}
 }
