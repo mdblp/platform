@@ -2,6 +2,7 @@ package mongo
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/tidepool-org/platform/data/types/basal/automated"
@@ -435,6 +436,7 @@ func (d *DataRepository) CreateDataSetData(ctx context.Context, dataSet *upload.
 
 		/*If data type is in write to bucket ENV VAR, we write it to bucket*/
 		if writeToBucket {
+			fmt.Printf("bucket")
 			// Prepare cbg to be pushed into data read db
 			loggerFields := log.Fields{"datum": datum}
 			switch event := datum.(type) {
@@ -470,12 +472,14 @@ func (d *DataRepository) CreateDataSetData(ctx context.Context, dataSet *upload.
 
 		/*If data type is in write to archive ENV VAR, we write it to the archive*/
 		if writeToArchive {
+			fmt.Printf("archive")
 			archiveData = append(archiveData, writeOp)
 		}
 
 		/*If data type is not in write to bucket ENV VAR, we write it to legacy deviceData*/
 		/*We also write it if write to legacy is set alongside write to bucket ENV VAR*/
 		if !writeToBucket || (writeToBucket && writeToLegacy) {
+			fmt.Printf("legacy")
 			insertData = append(insertData, writeOp)
 		}
 	}
