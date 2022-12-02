@@ -421,6 +421,10 @@ func (d *DataRepository) CreateDataSetData(ctx context.Context, dataSet *upload.
 	strUserId := *dataSet.UserID
 	uploadDeviceId := dataSet.DeviceID
 
+	fmt.Printf("titi legacy %v", d.DataTypesLegacy)
+	fmt.Printf("titi bucket %v", d.DataTypesBucketed)
+	fmt.Printf("titi archive %v", d.DataTypesArchived)
+
 	for _, datum := range dataSetData {
 		datum.SetUserID(dataSet.UserID)
 		datum.SetDataSetID(dataSet.UploadID)
