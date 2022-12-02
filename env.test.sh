@@ -20,6 +20,6 @@ export TIDEPOOL_SESSION_STORE_DATABASE="user_test"
 export TIDEPOOL_SYNC_TASK_STORE_DATABASE="data_test"
 export TIDEPOOL_USER_STORE_DATABASE="user_test"
 
-export WRITE_TO_LEGACY="basal"
+export WRITE_TO_LEGACY="basal,cbg"
 export WRITE_TO_ARCHIVE="cbg"
 export WRITE_TO_BUCKET="cbg,basal"
