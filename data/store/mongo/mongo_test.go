@@ -852,9 +852,9 @@ var _ = Describe("Mongo", func() {
 							})
 
 							It("stores cbg data in archive collection", func() {
-								//dataSetBeforeCreateData := append(append(dataSetExistingOtherData, dataSetExistingOneData...), dataSetExistingTwoData...)
+								dataSetBeforeCreateData := append(append(dataSetExistingOtherData, dataSetExistingOneData...), dataSetExistingTwoData...)
 								Expect(repository.CreateDataSetData(ctx, dataSet, dataSetCbgData)).To(Succeed())
-								//ValidateDataSetData(collection, bson.M{"createdTime": bson.M{"$exists": true}, "createdUserId": bson.M{"$exists": false}}, bson.M{}, dataSetBeforeCreateData)
+								ValidateDataSetData(collection, bson.M{"createdTime": bson.M{"$exists": true}, "createdUserId": bson.M{"$exists": false}}, bson.M{}, dataSetBeforeCreateData)
 								ValidateDataSetData(archiveCollection, bson.M{"createdTime": bson.M{"$exists": true}, "createdUserId": bson.M{"$exists": false}}, bson.M{}, dataSetCbgData)
 							})
 						})

@@ -457,9 +457,8 @@ func (d *DataRepository) CreateDataSetData(ctx context.Context, dataSet *upload.
 			default:
 				d.BucketStore.log.Infof("object ignored %v", event)
 			}
-		} else {
-			d.BucketStore.log.Infof("object ignored %v", datum)
 		}
+
 		incomingUserMetadata = d.BucketStore.BuildUserMetadata(incomingUserMetadata, creationTimestamp, strUserId, datum.GetTime())
 
 		var writeOp mongo.WriteModel
