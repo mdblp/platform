@@ -151,7 +151,7 @@ func (s *Stores) NewDataRepository() store.DataRepository {
 		BucketStore:       s.BucketStore,
 		DataTypesArchived: s.DataTypesArchived,
 		DataTypesBucketed: s.DataTypesBucketed,
-		DataTypesLegacy:   s.DataTypesBucketed,
+		DataTypesLegacy:   s.DataTypesLegacy,
 	}
 }
 
@@ -420,10 +420,6 @@ func (d *DataRepository) CreateDataSetData(ctx context.Context, dataSet *upload.
 	var incomingUserMetadata *schema.Metadata
 	strUserId := *dataSet.UserID
 	uploadDeviceId := dataSet.DeviceID
-
-	fmt.Printf("titi legacy %v", d.DataTypesLegacy)
-	fmt.Printf("titi bucket %v", d.DataTypesBucketed)
-	fmt.Printf("titi archive %v", d.DataTypesArchived)
 
 	for _, datum := range dataSetData {
 		datum.SetUserID(dataSet.UserID)
