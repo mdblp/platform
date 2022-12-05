@@ -74,6 +74,11 @@ pipeline {
                 script {
                     builderImage.inside("") {
                         sh """
+                            git describe --abbrev=0 --tags 2> /dev/null
+                        """
+                    }
+                    builderImage.inside("") {
+                        sh """
                             SERVICE=data make ci-soups
                             ./buildDoc.sh
                             mkdir -p ./ci-doc
