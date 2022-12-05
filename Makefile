@@ -15,11 +15,8 @@ REPOSITORY_NAME:=$(notdir $(REPOSITORY_PACKAGE))
 BIN_DIRECTORY := ${ROOT_DIRECTORY}/_bin
 PATH := ${PATH}:${BIN_DIRECTORY}
 
-ifdef TRAVIS_TAG
-	VERSION_BASE:=$(TRAVIS_TAG)
-else
-	VERSION_BASE:=$(shell git describe --abbrev=0 --tags 2> /dev/null || echo 'v.0.0.0')
-endif
+
+VERSION_BASE:=$(shell git describe --abbrev=0 --tags 2> /dev/null || echo 'v.0.0.0')
 
 VERSION_BASE:=$(VERSION_BASE:v.%=%)
 VERSION_SHORT_COMMIT:=$(shell git rev-parse --short HEAD)
