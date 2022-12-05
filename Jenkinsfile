@@ -73,7 +73,10 @@ pipeline {
             steps {
                 script {
                     builderImage.inside("") {
-                        sh "git describe --abbrev=0 --tags 2> /dev/null"
+                        sh "git status"
+                    }
+                    builderImage.inside("") {
+                        sh "git describe --abbrev=0 --tags"
                     }
                     builderImage.inside("") {
                         sh """
