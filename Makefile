@@ -18,11 +18,10 @@ PATH := ${PATH}:${BIN_DIRECTORY}
 ifdef TRAVIS_TAG
 	VERSION_BASE:=$(TRAVIS_TAG)
 else
-	VERSION_BASE:=$(shell git describe --abbrev=0 --tags 2> /dev/null || echo 'dblp.0.0.0')
-	@echo "${VERSION_BASE}"
+	VERSION_BASE:=$(shell git describe --abbrev=0 --tags 2> /dev/null || echo 'v.0.0.0')
 endif
 
-VERSION_BASE:=$(VERSION_BASE:dblp.%=%)
+VERSION_BASE:=$(VERSION_BASE:v.%=%)
 VERSION_SHORT_COMMIT:=$(shell git rev-parse --short HEAD)
 VERSION_FULL_COMMIT:=$(shell git rev-parse HEAD)
 VERSION_PACKAGE:=$(REPOSITORY_PACKAGE)/application
