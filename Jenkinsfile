@@ -24,6 +24,15 @@ pipeline {
                 }
             }
         }
+        stage('Yann') {
+            steps {
+                script {
+                    builderImage.inside("") {
+                        sh "git status"
+                    }
+                }
+            }
+        }
         stage('Build') {
             steps {
                 script {
