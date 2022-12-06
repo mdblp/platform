@@ -73,11 +73,7 @@ pipeline {
             steps {
                 script {
                     builderImage.inside("") {
-                        env.version = sh (
-                            script: 'release-helper get-version',
-                            returnStdout: true
-                        ).trim().toUpperCase()
-
+                        sh 'VERSION=' + env.version
                         sh """
                             SERVICE=data make ci-soups
                             ./buildDoc.sh
