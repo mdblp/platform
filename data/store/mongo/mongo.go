@@ -2,7 +2,6 @@ package mongo
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/tidepool-org/platform/data/types/basal/automated"
@@ -53,16 +52,16 @@ var datumWriteToDeviceDataArchiveStoreMetrics = promauto.NewHistogram(prometheus
 
 type Stores struct {
 	*storeStructuredMongo.Store
-	BucketStore       *MongoBucketStoreClient
-	DataTypesArchived []string
-	DataTypesBucketed []string
-	DataTypesLegacy   []string
+	BucketStore           *MongoBucketStoreClient
+	DataTypesArchived     []string
+	DataTypesBucketed     []string
+	DataTypesKeptInLegacy []string
 }
 
 type BucketMigrationConfig struct {
-	DataTypesArchived []string
-	DataTypesBucketed []string
-	DataTypesLegacy   []string
+	DataTypesArchived     []string
+	DataTypesBucketed     []string
+	DataTypesKeptInLegacy []string
 }
 
 var (
@@ -137,30 +136,30 @@ func NewStores(cfg *storeStructuredMongo.Config, config *goComMgo.Config, lgr lo
 	bucketStore.Start()
 
 	return &Stores{
-		Store:             baseStore,
-		BucketStore:       bucketStore,
-		DataTypesArchived: migrateConfig.DataTypesArchived,
-		DataTypesBucketed: migrateConfig.DataTypesBucketed,
-		DataTypesLegacy:   migrateConfig.DataTypesLegacy,
+		Store:                 baseStore,
+		BucketStore:           bucketStore,
+		DataTypesArchived:     migrateConfig.DataTypesArchived,
+		DataTypesBucketed:     migrateConfig.DataTypesBucketed,
+		DataTypesKeptInLegacy: migrateConfig.DataTypesKeptInLegacy,
 	}, nil
 }
 
 func (s *Stores) NewDataRepository() store.DataRepository {
 	return &DataRepository{
-		Repository:        s.Store.GetRepository("deviceData"),
-		BucketStore:       s.BucketStore,
-		DataTypesArchived: s.DataTypesArchived,
-		DataTypesBucketed: s.DataTypesBucketed,
-		DataTypesLegacy:   s.DataTypesLegacy,
+		Repository:            s.Store.GetRepository("deviceData"),
+		BucketStore:           s.BucketStore,
+		DataTypesArchived:     s.DataTypesArchived,
+		DataTypesBucketed:     s.DataTypesBucketed,
+		DataTypesKeptInLegacy: s.DataTypesKeptInLegacy,
 	}
 }
 
 type DataRepository struct {
 	*storeStructuredMongo.Repository
-	BucketStore       *MongoBucketStoreClient
-	DataTypesArchived []string
-	DataTypesBucketed []string
-	DataTypesLegacy   []string
+	BucketStore           *MongoBucketStoreClient
+	DataTypesArchived     []string
+	DataTypesBucketed     []string
+	DataTypesKeptInLegacy []string
 }
 
 func (d *DataRepository) GetDataSetsForUserByID(ctx context.Context, userID string, filter *store.Filter, pagination *page.Pagination) ([]*upload.Upload, error) {
@@ -477,9 +476,6 @@ func (d *DataRepository) CreateDataSetData(ctx context.Context, dataSet *upload.
 		/*If data type is not in write to bucket ENV VAR, we write it to legacy deviceData*/
 		/*We also write it if write to legacy is set alongside write to bucket ENV VAR*/
 		if !writeToBucket || (writeToBucket && writeToLegacy) {
-			if writeToBucket {
-				fmt.Printf("toto legacy et bucket type %s", datum.GetType())
-			}
 			insertData = append(insertData, writeOp)
 		}
 	}
@@ -547,7 +543,7 @@ func (d *DataRepository) isDatumToBucket(datum data.Datum) bool {
 
 func (d *DataRepository) isDatumToLegacy(datum data.Datum) bool {
 	datumType := datum.GetType()
-	for _, legacyType := range d.DataTypesLegacy {
+	for _, legacyType := range d.DataTypesKeptInLegacy {
 		if legacyType == datumType {
 			return true
 		}

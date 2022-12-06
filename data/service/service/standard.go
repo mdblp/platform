@@ -205,9 +205,9 @@ func (s *Standard) initializeDataStore() error {
 	mongoDbReadConfig.Database = "data_read"
 
 	migrateConfig := dataStoreMongo.BucketMigrationConfig{
-		DataTypesArchived: getArchivedDataTypesEnv(),
-		DataTypesBucketed: getBucketsDataTypesEnv(),
-		DataTypesLegacy:   getLegacyDataTypesEnv(),
+		DataTypesArchived:     getArchivedDataTypesEnv(),
+		DataTypesBucketed:     getBucketsDataTypesEnv(),
+		DataTypesKeptInLegacy: getKeptInLegacyDataTypesEnv(),
 	}
 
 	str, err := dataStoreMongo.NewStores(cfg, mongoDbReadConfig, s.Logger(), logrusLogger, migrateConfig)
@@ -309,9 +309,9 @@ func getenvStr(key string) (string, error) {
 }
 
 func getArchivedDataTypesEnv() []string {
-	s, err := getenvStr("WRITE_TO_ARCHIVE")
+	s, err := getenvStr("ARCHIVED_DATA_TYPES")
 	if err != nil {
-		logrusLogger.Warn("environment variable WRITE_TO_ARCHIVE not exported, set empty by default")
+		logrusLogger.Warn("environment variable ARCHIVED_DATA_TYPES not exported, set empty by default")
 		return []string{}
 	}
 	if s != "" {
@@ -322,9 +322,9 @@ func getArchivedDataTypesEnv() []string {
 }
 
 func getBucketsDataTypesEnv() []string {
-	s, err := getenvStr("WRITE_TO_BUCKET")
+	s, err := getenvStr("BUCKETED_DATA_TYPES")
 	if err != nil {
-		logrusLogger.Warn("environment variable WRITE_TO_BUCKET not exported, set empty by default")
+		logrusLogger.Warn("environment variable BUCKETED_DATA_TYPES not exported, set empty by default")
 		return []string{}
 	}
 	if s != "" {
@@ -334,10 +334,10 @@ func getBucketsDataTypesEnv() []string {
 	return []string{}
 }
 
-func getLegacyDataTypesEnv() []string {
-	s, err := getenvStr("WRITE_TO_LEGACY")
+func getKeptInLegacyDataTypesEnv() []string {
+	s, err := getenvStr("KEPT_IN_LEGACY_DATA_TYPES")
 	if err != nil {
-		logrusLogger.Warn("environment variable WRITE_TO_LEGACY not exported, set empty by default")
+		logrusLogger.Warn("environment variable KEPT_IN_LEGACY_DATA_TYPES not exported, set empty by default")
 		return []string{}
 	}
 	if s != "" {

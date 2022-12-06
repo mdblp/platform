@@ -5,6 +5,7 @@
 # OPS_DOCKER_REGISTRY
 # OPS_DOCKER_USERNAME
 # OPS_DOCKER_PASSWORD
+# VERSION
 
 ROOT_DIRECTORY:=$(realpath $(dir $(realpath $(lastword $(MAKEFILE_LIST)))))
 
