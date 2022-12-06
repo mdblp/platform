@@ -237,6 +237,7 @@ generate-soups:
 
 service-soup:
 	@cd ${SERVICE_DIRECTORY} && \
+		echo "# SOUPs List for ${SERVICE}@${VERSION}" && \
 		echo "# SOUPs List for ${SERVICE}@${VERSION}" > soup.md && \
 		go list -f '## {{printf "%s \n\t* description: \n\t* version: %s\n\t* webSite: https://%s\n\t* sources:" .Path .Version .Path}}' -m all >> soup.md && \
 		mkdir -p $(ROOT_DIRECTORY)/${TARGET}/${SERVICE} && \
