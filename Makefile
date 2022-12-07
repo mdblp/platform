@@ -16,11 +16,9 @@ REPOSITORY_NAME:=$(notdir $(REPOSITORY_PACKAGE))
 BIN_DIRECTORY := ${ROOT_DIRECTORY}/_bin
 PATH := ${PATH}:${BIN_DIRECTORY}
 
-ifndef $(VERSION)
-	VERSION:=0.0.0
+ifeq ($(VERSION),)
+  VERSION:=0.0.0
 endif
-
-
 VERSION_SHORT_COMMIT:=$(shell git rev-parse --short HEAD)
 VERSION_FULL_COMMIT:=$(shell git rev-parse HEAD)
 VERSION_PACKAGE:=$(REPOSITORY_PACKAGE)/application
