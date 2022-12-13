@@ -1,11 +1,12 @@
 package mongo_test
 
 import (
-	"github.com/tidepool-org/platform/data/schema"
-	"github.com/tidepool-org/platform/data/store/mongo"
 	"reflect"
 	"testing"
 	"time"
+
+	"github.com/tidepool-org/platform/data/schema"
+	"github.com/tidepool-org/platform/data/store/mongo"
 )
 
 func TestMongoBucketStoreClient_BuildUserMetadata(t *testing.T) {
