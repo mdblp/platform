@@ -243,7 +243,10 @@ func (c *MongoBucketStoreClient) BuildUserMetadata(incomingUserMetadata *schema.
 			NewestDataTimestamp: dataTimestamp,
 		}
 	} else {
-		if incomingUserMetadata.OldestDataTimestamp.After(dataTimestamp) {
+		//Linked to YLP-1981, in some situation the DBLG1 is sending a data with a timestamp in the near 1970's ...
+		//We do not want to update our metadata with this value. The CBG will be recorded with the 1970's date to keep
+		//a trace of it, but it won't be displayed since the data is erroneous.
+		if incomingUserMetadata.OldestDataTimestamp.After(dataTimestamp) && dataTimestamp.Year() > 2015 {
 			incomingUserMetadata.OldestDataTimestamp = dataTimestamp
 		} else if incomingUserMetadata.NewestDataTimestamp.Before(dataTimestamp) {
 			incomingUserMetadata.NewestDataTimestamp = dataTimestamp
