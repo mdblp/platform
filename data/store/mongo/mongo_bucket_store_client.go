@@ -25,11 +25,12 @@ var dailyPrefixCollections = []string{"coldDaily", "hotDaily"}
 
 type MongoBucketStoreClient struct {
 	*goComMgo.StoreClient
-	log *log.Logger
+	log                         *log.Logger
+	minimalYearSupportedForData int
 }
 
 // Create a new bucket store client for a mongo DB if active is set to true, nil otherwise
-func NewMongoBucketStoreClient(config *goComMgo.Config, logger *log.Logger) (*MongoBucketStoreClient, error) {
+func NewMongoBucketStoreClient(config *goComMgo.Config, logger *log.Logger, minimalYearSupportedForData int) (*MongoBucketStoreClient, error) {
 	if config == nil {
 		return nil, errors.New("bucket store mongo configuration is missing")
 	}
@@ -43,6 +44,7 @@ func NewMongoBucketStoreClient(config *goComMgo.Config, logger *log.Logger) (*Mo
 	client.log = logger
 	store, err := goComMgo.NewStoreClient(config, logger)
 	client.StoreClient = store
+	client.minimalYearSupportedForData = minimalYearSupportedForData
 	return &client, err
 }
 
@@ -246,7 +248,7 @@ func (c *MongoBucketStoreClient) BuildUserMetadata(incomingUserMetadata *schema.
 		//Linked to YLP-1981, in some situation the DBLG1 is sending a data with a timestamp in the near 1970's ...
 		//We do not want to update our metadata with this value. The CBG will be recorded with the 1970's date to keep
 		//a trace of it, but it won't be displayed since the data is erroneous.
-		if incomingUserMetadata.OldestDataTimestamp.After(dataTimestamp) && dataTimestamp.Year() > 2015 {
+		if incomingUserMetadata.OldestDataTimestamp.After(dataTimestamp) && dataTimestamp.Year() > c.minimalYearSupportedForData {
 			incomingUserMetadata.OldestDataTimestamp = dataTimestamp
 		} else if incomingUserMetadata.NewestDataTimestamp.Before(dataTimestamp) {
 			incomingUserMetadata.NewestDataTimestamp = dataTimestamp

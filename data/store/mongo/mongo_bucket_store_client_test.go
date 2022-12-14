@@ -84,10 +84,32 @@ func TestMongoBucketStoreClient_BuildUserMetadata(t *testing.T) {
 				NewestDataTimestamp: testTime,
 			},
 		},
+		{
+			name: "given a normal data timestamp should update newest metadata",
+			args: args{
+				incomingUserMetadata: &schema.Metadata{
+					Id:                  "metadata1234",
+					CreationTimestamp:   beforeTestTime,
+					UserId:              "123456789",
+					OldestDataTimestamp: beforeTestTime,
+					NewestDataTimestamp: beforeTestTime,
+				},
+				creationTimestamp: testTime,
+				strUserId:         "123456789",
+				dataTimestamp:     testTime,
+			},
+			want: &schema.Metadata{
+				Id:                  "metadata1234",
+				CreationTimestamp:   beforeTestTime,
+				UserId:              "123456789",
+				OldestDataTimestamp: beforeTestTime,
+				NewestDataTimestamp: testTime,
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c, _ := mongo.NewMongoBucketStoreClient(nil, nil)
+			c, _ := mongo.NewMongoBucketStoreClient(nil, nil, 2015)
 			if got := c.BuildUserMetadata(tt.args.incomingUserMetadata, tt.args.creationTimestamp, tt.args.strUserId, tt.args.dataTimestamp); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("BuildUserMetadata() = %v, want %v", got, tt.want)
 			}
