@@ -1,11 +1,12 @@
 package mongo_test
 
 import (
-	goComMgo "github.com/mdblp/go-common/clients/mongo"
-	log "github.com/sirupsen/logrus"
 	"reflect"
 	"testing"
 	"time"
+
+	goComMgo "github.com/mdblp/go-common/clients/mongo"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/tidepool-org/platform/data/schema"
 	"github.com/tidepool-org/platform/data/store/mongo"
