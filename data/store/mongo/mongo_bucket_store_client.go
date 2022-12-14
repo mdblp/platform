@@ -37,7 +37,6 @@ func NewMongoBucketStoreClient(config *goComMgo.Config, logger *log.Logger, mini
 
 	if logger == nil {
 		return nil, errors.New("logger is missing for bucket store client")
-
 	}
 
 	client := MongoBucketStoreClient{}

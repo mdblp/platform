@@ -1,6 +1,8 @@
 package mongo_test
 
 import (
+	goComMgo "github.com/mdblp/go-common/clients/mongo"
+	log "github.com/sirupsen/logrus"
 	"reflect"
 	"testing"
 	"time"
@@ -109,7 +111,7 @@ func TestMongoBucketStoreClient_BuildUserMetadata(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c, _ := mongo.NewMongoBucketStoreClient(nil, nil, 2015)
+			c, _ := mongo.NewMongoBucketStoreClient(&goComMgo.Config{}, &log.Logger{}, 2015)
 			if got := c.BuildUserMetadata(tt.args.incomingUserMetadata, tt.args.creationTimestamp, tt.args.strUserId, tt.args.dataTimestamp); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("BuildUserMetadata() = %v, want %v", got, tt.want)
 			}
