@@ -237,6 +237,7 @@ func (c *MongoBucketStoreClient) UpsertMetaData(ctx context.Context, userId *str
 
 func (c *MongoBucketStoreClient) BuildUserMetadata(incomingUserMetadata *schema.Metadata, creationTimestamp time.Time, strUserId string, dataTimestamp time.Time) *schema.Metadata {
 	if incomingUserMetadata == nil {
+		c.log.Infof("Setting default value, first data getted")
 		incomingUserMetadata = &schema.Metadata{
 			CreationTimestamp:   creationTimestamp,
 			UserId:              strUserId,
@@ -244,6 +245,8 @@ func (c *MongoBucketStoreClient) BuildUserMetadata(incomingUserMetadata *schema.
 			NewestDataTimestamp: dataTimestamp,
 		}
 	} else {
+		c.log.Infof("Setting new value, not first data getted")
+		c.log.Infof("Setting %d %d ", dataTimestamp.Year(), c.minimalYearSupportedForData)
 		//Linked to YLP-1981, in some situation the DBLG1 is sending a data with a timestamp in the near 1970's ...
 		//We do not want to update our metadata with this value. The CBG will be recorded with the 1970's date to keep
 		//a trace of it, but it won't be displayed since the data is erroneous.
