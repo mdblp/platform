@@ -212,9 +212,7 @@ func (s *Standard) initializeDataStore() error {
 		DataTypesBucketed:     getBucketsDataTypesEnv(),
 		DataTypesKeptInLegacy: getKeptInLegacyDataTypesEnv(),
 	}
-
-	logrusLogger.Infof("TOTO")
-
+	
 	str, err := dataStoreMongo.NewStores(cfg, mongoDbReadConfig, logrusLogger, migrateConfig, getMinimalYearSupportedForData())
 	if err != nil {
 		return errors.Wrap(err, "unable to create data store")
