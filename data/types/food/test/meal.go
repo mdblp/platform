@@ -23,6 +23,6 @@ func CloneMeal(datum *food.Meal) *food.Meal {
 	clone.Meal = pointer.CloneString(datum.Meal)
 	clone.Snack = pointer.CloneString(datum.Snack)
 	clone.Fat = pointer.CloneString(datum.Fat)
-	datum.Source = pointer.CloneString(datum.Source)
+	clone.Source = pointer.CloneString(datum.Source)
 	return clone
 }
