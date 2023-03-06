@@ -22,8 +22,8 @@ require (
 	go.mongodb.org/mongo-driver v1.7.2
 	go.uber.org/fx v1.17.1
 	golang.org/x/lint v0.0.0-20201208152925-83fdc39ff7b5
-	golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd // indirect
-	golang.org/x/tools v0.1.5
+	golang.org/x/net v0.7.0 // indirect
+	golang.org/x/tools v0.1.12
 	google.golang.org/protobuf v1.27.1 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/tylerb/graceful.v1 v1.2.15
