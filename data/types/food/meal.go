@@ -6,14 +6,14 @@ import (
 )
 
 const (
-	SmallMeal   = "small"
-	MediumMeal  = "medium"
-	LargeMeal   = "large"
-	Snack       = "yes"
-	NotASnack   = "no"
-	FatMeal     = "yes"
-	NotAFatMeal = "no"
-	UmmSource   = "umm"
+	SmallMeal    = "small"
+	MediumMeal   = "medium"
+	LargeMeal    = "large"
+	Snack        = "yes"
+	NotASnack    = "no"
+	FatMeal      = "yes"
+	NotAFatMeal  = "no"
+	UmmSource    = "umm"
 	ManualSource = "manual"
 )
 
