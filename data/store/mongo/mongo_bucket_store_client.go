@@ -78,8 +78,8 @@ func (c *MongoBucketStoreClient) UpsertMany(ctx context.Context, userId *string,
 		ts := sample.GetTimestamp().Format("2006-01-02")
 		ops, _ := buildUpdateOneModel(dataType, sample, userId, ts, creationTimestamp)
 		operations = append(operations, ops...)
-
 	}
+
 	// Specify an option to turn the bulk insertion with no order of operation
 	bulkOption := options.BulkWriteOptions{}
 	bulkOption.SetOrdered(false)
@@ -195,6 +195,66 @@ func buildUpdateOneModel(dataType string, sample schema.ISample, userId *string,
 				{Key: "samples", Value: sample}}},
 		})
 		updates = append(updates, basalFirstOp, basalSecondOp, basalThirdOp)
+	case "Bolus":
+		// Insert the bucket if not exist and then insert the sample in it
+		bolusFirstOp := mongo.NewUpdateOneModel()
+		var array []schema.ISample
+		bolusFirstOp.SetFilter(bson.D{{Key: "_id", Value: strUserId + "_" + ts}})
+		bolusFirstOp.SetUpdate(bson.D{ // update
+			{Key: "$setOnInsert", Value: bson.D{
+				{Key: "_id", Value: strUserId + "_" + ts},
+				{Key: "creationTimestamp", Value: creationTimestamp},
+				{Key: "day", Value: day},
+				{Key: "userId", Value: strUserId},
+				{Key: "samples", Value: append(array, sample)},
+			},
+			},
+		})
+		bolusFirstOp.SetUpsert(true)
+		updates = append(updates, bolusFirstOp)
+
+		// Update the bolus
+		elemfilter := sample.(schema.BolusSample)
+		if elemfilter.Guid != "" && elemfilter.DeviceId != "" {
+			bolusSecondOp := mongo.NewUpdateOneModel()
+			bolusSecondOp.SetFilter(bson.D{
+				{Key: "userId", Value: strUserId + "_" + ts},
+				{Key: "samples", Value: bson.D{
+					{Key: "$elemMatch", Value: bson.D{
+						{Key: "guid", Value: elemfilter.Guid},
+						{Key: "deviceId", Value: elemfilter.DeviceId},
+					},
+					},
+				},
+				},
+			})
+			bolusSecondOp.SetUpdate(bson.D{ // update
+				{Key: "$set", Value: bson.D{
+					{Key: "samples.$.normal", Value: elemfilter.Normal},
+					//{Key: "samples.$.expectedNormal", Value: elemfilter.ExpectedNormal},
+					//{Key: "samples.$.part", Value: elemfilter.Part},
+					//{Key: "samples.$.biphasicId", Value: elemfilter.BiphasicId},
+					//{Key: "samples.$.prescriptor", Value: elemfilter.Prescriptor},
+					//{Key: "samples.$.insulinOnBoard", Value: elemfilter.InsulinOnBoard},
+					//{Key: "samples.$.bolusType", Value: elemfilter.BolusType},
+					{Key: "samples.$.uuid", Value: elemfilter.Uuid},
+					//{Key: "samples.$.timestamp", Value: elemfilter.Timestamp},
+					//{Key: "samples.$.timezone", Value: elemfilter.Timezone},
+					//{Key: "samples.$.timezoneOffset", Value: elemfilter.TimezoneOffset},
+				},
+				},
+			})
+			updates = append(updates, bolusSecondOp)
+		}
+		// Otherwise we know that we did not update, so we guarantee an insertion
+		// in the array
+		bolusThirdOp := mongo.NewUpdateOneModel()
+		bolusThirdOp.SetFilter(bson.D{{Key: "_id", Value: strUserId + "_" + ts}})
+		bolusThirdOp.SetUpdate(bson.D{ // update
+			{Key: "$addToSet", Value: bson.D{
+				{Key: "samples", Value: sample}}},
+		})
+		updates = append(updates, bolusThirdOp)
 	}
 
 	return updates, nil
