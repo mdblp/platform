@@ -11,8 +11,8 @@ import (
 	"github.com/tidepool-org/platform/data/types/basal/scheduled"
 	"github.com/tidepool-org/platform/data/types/basal/temporary"
 	"github.com/tidepool-org/platform/data/types/blood/glucose/continuous"
-	`github.com/tidepool-org/platform/data/types/bolus/biphasic`
-	`github.com/tidepool-org/platform/data/types/bolus/normal`
+	"github.com/tidepool-org/platform/data/types/bolus/biphasic"
+	"github.com/tidepool-org/platform/data/types/bolus/normal"
 	"github.com/tidepool-org/platform/errors"
 )
 
