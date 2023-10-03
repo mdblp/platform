@@ -13,16 +13,16 @@ type (
 
 	BolusSample struct {
 		Sample         `bson:",inline"`
-		Uuid           string   `bson:"uuid,omitempty"`
-		DeviceId       string   `bson:"deviceId,omitempty"`
-		Guid           string   `bson:"guid,omitempty"`
-		BolusType      string   `bson:"bolusType,omitempty" json:"bolusType,omitempty"`
-		Normal         float64  `bson:"normal,omitempty" json:"normal,omitempty"`
-		ExpectedNormal *float64 `bson:"expectedNormal,omitempty" json:"expectedNormal,omitempty"`
-		InsulinOnBoard *float64 `bson:"insulinOnBoard,omitempty" json:"insulinOnBoard,omitempty"`
-		Prescriptor    *string  `bson:"prescriptor,omitempty" json:"prescriptor,omitempty"`
-		BiphasicId     *string  `bson:"biphasicId,omitempty" json:"biphasicId,omitempty"`
-		Part           int64    `bson:"part,omitempty" json:"part,omitempty"`
+		Uuid           string  `bson:"uuid,omitempty"`
+		DeviceId       string  `bson:"deviceId,omitempty"`
+		Guid           string  `bson:"guid,omitempty"`
+		BolusType      string  `bson:"bolusType,omitempty"`
+		Normal         float64 `bson:"normal,omitempty"`
+		ExpectedNormal float64 `bson:"expectedNormal,omitempty"`
+		InsulinOnBoard float64 `bson:"insulinOnBoard,omitempty"`
+		Prescriptor    string  `bson:"prescriptor,omitempty"`
+		BiphasicId     string  `bson:"biphasicId,omitempty"`
+		Part           int64   `bson:"part,omitempty"`
 	}
 )
 

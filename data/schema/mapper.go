@@ -32,16 +32,22 @@ func (s *BolusSample) MapForNormalBolus(event *normal.Normal) error {
 	}
 	// bolus struct field
 	s.BolusType = "normal"
-	//if event.InsulinOnBoard != nil && event.InsulinOnBoard != iob.NewIob() {
-	//	s.InsulinOnBoard = event.InsulinOnBoard.InsulinOnBoard
-	//}
+	if event.InsulinOnBoard != nil {
+		if event.InsulinOnBoard.InsulinOnBoard != nil {
+			s.InsulinOnBoard = *event.InsulinOnBoard.InsulinOnBoard
+		}
+	}
 	if event.Prescriptor != nil {
-		s.Prescriptor = event.Prescriptor.Prescriptor
+		if event.Prescriptor.Prescriptor != nil {
+			s.Prescriptor = *event.Prescriptor.Prescriptor
+		}
 	}
 
 	// normal field
 	s.Normal = *event.Normal
-	s.ExpectedNormal = event.NormalExpected
+	if event.NormalExpected != nil {
+		s.ExpectedNormal = *event.NormalExpected
+	}
 
 	// map
 	s.Timezone = *event.TimeZoneName
@@ -70,14 +76,20 @@ func (s *BolusSample) MapForBiphasicBolus(event *biphasic.Biphasic) error {
 	// bolus struct field
 	s.BolusType = "biphasic"
 	if event.InsulinOnBoard != nil {
-		s.InsulinOnBoard = event.InsulinOnBoard.InsulinOnBoard
+		if event.InsulinOnBoard.InsulinOnBoard != nil {
+			s.InsulinOnBoard = *event.InsulinOnBoard.InsulinOnBoard
+		}
 	}
 	if event.Prescriptor != nil {
-		s.Prescriptor = event.Prescriptor.Prescriptor
+		if event.Prescriptor.Prescriptor != nil {
+			s.Prescriptor = *event.Prescriptor.Prescriptor
+		}
 	}
 
 	s.Normal = *event.Normal.Normal
-	s.ExpectedNormal = event.NormalExpected
+	if event.NormalExpected != nil {
+		s.ExpectedNormal = *event.NormalExpected
+	}
 
 	// biphasic field
 	if event.Part != nil {
@@ -85,7 +97,7 @@ func (s *BolusSample) MapForBiphasicBolus(event *biphasic.Biphasic) error {
 	}
 
 	// is a guid in fact
-	s.BiphasicId = event.BiphasicID
+	s.BiphasicId = *event.BiphasicID
 
 	// map
 	s.Timezone = *event.TimeZoneName

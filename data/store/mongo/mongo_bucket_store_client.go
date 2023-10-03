@@ -218,7 +218,7 @@ func buildUpdateOneModel(dataType string, sample schema.ISample, userId *string,
 		if elemfilter.Guid != "" && elemfilter.DeviceId != "" {
 			bolusSecondOp := mongo.NewUpdateOneModel()
 			bolusSecondOp.SetFilter(bson.D{
-				{Key: "userId", Value: strUserId + "_" + ts},
+				{Key: "_id", Value: strUserId + "_" + ts},
 				{Key: "samples", Value: bson.D{
 					{Key: "$elemMatch", Value: bson.D{
 						{Key: "guid", Value: elemfilter.Guid},
@@ -231,16 +231,7 @@ func buildUpdateOneModel(dataType string, sample schema.ISample, userId *string,
 			bolusSecondOp.SetUpdate(bson.D{ // update
 				{Key: "$set", Value: bson.D{
 					{Key: "samples.$.normal", Value: elemfilter.Normal},
-					//{Key: "samples.$.expectedNormal", Value: elemfilter.ExpectedNormal},
-					//{Key: "samples.$.part", Value: elemfilter.Part},
-					//{Key: "samples.$.biphasicId", Value: elemfilter.BiphasicId},
-					//{Key: "samples.$.prescriptor", Value: elemfilter.Prescriptor},
-					//{Key: "samples.$.insulinOnBoard", Value: elemfilter.InsulinOnBoard},
-					//{Key: "samples.$.bolusType", Value: elemfilter.BolusType},
 					{Key: "samples.$.uuid", Value: elemfilter.Uuid},
-					//{Key: "samples.$.timestamp", Value: elemfilter.Timestamp},
-					//{Key: "samples.$.timezone", Value: elemfilter.Timezone},
-					//{Key: "samples.$.timezoneOffset", Value: elemfilter.TimezoneOffset},
 				},
 				},
 			})
