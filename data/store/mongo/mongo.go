@@ -466,13 +466,13 @@ func (d *DataRepository) CreateDataSetData(ctx context.Context, dataSet *upload.
 				log.LoggerFromContext(ctx).WithFields(loggerFields).Debug("add a bolus entry")
 				var s = &schema.BolusSample{}
 				s.MapForNormalBolus(event)
-				log.LoggerFromContext(ctx).WithFields(log.Fields{"sample": s}).Debug("add  bolus in bucket")
+				log.LoggerFromContext(ctx).WithFields(log.Fields{"sample": s}).Debug("add normal bolus in bucket")
 				allSamples["Bolus"] = append(allSamples["Bolus"], *s)
 			case *biphasic.Biphasic:
 				log.LoggerFromContext(ctx).WithFields(loggerFields).Debug("add a bolus entry")
 				var s = &schema.BolusSample{}
 				s.MapForBiphasicBolus(event)
-				log.LoggerFromContext(ctx).WithFields(log.Fields{"sample": s}).Debug("add  bolus in bucket")
+				log.LoggerFromContext(ctx).WithFields(log.Fields{"sample": s}).Debug("add biphasic bolus in bucket")
 				allSamples["Bolus"] = append(allSamples["Bolus"], *s)
 			default:
 				d.BucketStore.log.Infof("object ignored %v", event)
