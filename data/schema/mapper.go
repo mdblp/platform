@@ -32,15 +32,12 @@ func (s *BolusSample) MapForNormalBolus(event *normal.Normal) error {
 	}
 	// bolus struct field
 	s.BolusType = "normal"
-	if event.InsulinOnBoard != nil {
-		if event.InsulinOnBoard.InsulinOnBoard != nil {
-			s.InsulinOnBoard = *event.InsulinOnBoard.InsulinOnBoard
-		}
+	if event.InsulinOnBoard != nil && event.InsulinOnBoard.InsulinOnBoard != nil {
+		s.InsulinOnBoard = *event.InsulinOnBoard.InsulinOnBoard
 	}
-	if event.Prescriptor != nil {
-		if event.Prescriptor.Prescriptor != nil {
-			s.Prescriptor = *event.Prescriptor.Prescriptor
-		}
+	
+	if event.Prescriptor != nil && event.Prescriptor.Prescriptor != nil {
+		s.Prescriptor = *event.Prescriptor.Prescriptor
 	}
 
 	// normal field
@@ -75,15 +72,12 @@ func (s *BolusSample) MapForBiphasicBolus(event *biphasic.Biphasic) error {
 	}
 	// bolus struct field
 	s.BolusType = "biphasic"
-	if event.InsulinOnBoard != nil {
-		if event.InsulinOnBoard.InsulinOnBoard != nil {
-			s.InsulinOnBoard = *event.InsulinOnBoard.InsulinOnBoard
-		}
+	if event.InsulinOnBoard != nil && event.InsulinOnBoard.InsulinOnBoard != nil {
+		s.InsulinOnBoard = *event.InsulinOnBoard.InsulinOnBoard
 	}
-	if event.Prescriptor != nil {
-		if event.Prescriptor.Prescriptor != nil {
-			s.Prescriptor = *event.Prescriptor.Prescriptor
-		}
+	
+	if event.Prescriptor != nil && event.Prescriptor.Prescriptor != nil {
+		s.Prescriptor = *event.Prescriptor.Prescriptor
 	}
 
 	s.Normal = *event.Normal.Normal

@@ -105,8 +105,8 @@ func (c *MongoBucketStoreClient) UpsertMany(ctx context.Context, userId *string,
 	return nil
 }
 
-func buildCbgUpdateOneModel(sample schema.ISample, userId *string, ts string, creationTimestamp time.Time) ([]mongo.WriteModel, error) {
-	day, err := time.Parse("2006-01-02", ts)
+func buildCbgUpdateOneModel(sample schema.ISample, userId *string, date string, creationTimestamp time.Time) ([]mongo.WriteModel, error) {
+	day, err := time.Parse("2006-01-02", date)
 	if err != nil {
 		return nil, ErrUnableToParseBucketDayTime
 	}
@@ -115,12 +115,12 @@ func buildCbgUpdateOneModel(sample schema.ISample, userId *string, ts string, cr
 	var updates []mongo.WriteModel
 
 	op := mongo.NewUpdateOneModel()
-	op.SetFilter(bson.D{{Key: "_id", Value: strUserId + "_" + ts}})
+	op.SetFilter(bson.D{{Key: "_id", Value: strUserId + "_" + date}})
 	op.SetUpdate(bson.D{ // update
 		{Key: "$addToSet", Value: bson.D{
 			{Key: "samples", Value: sample}}},
 		{Key: "$setOnInsert", Value: bson.D{
-			{Key: "_id", Value: strUserId + "_" + ts},
+			{Key: "_id", Value: strUserId + "_" + date},
 			{Key: "creationTimestamp", Value: creationTimestamp},
 			{Key: "day", Value: day},
 			{Key: "userId", Value: strUserId}}},
@@ -130,8 +130,8 @@ func buildCbgUpdateOneModel(sample schema.ISample, userId *string, ts string, cr
 	return updates, nil
 }
 
-func buildBasalUpdateOneModel(sample schema.ISample, userId *string, ts string, creationTimestamp time.Time) ([]mongo.WriteModel, error) {
-	day, err := time.Parse("2006-01-02", ts)
+func buildBasalUpdateOneModel(sample schema.ISample, userId *string, date string, creationTimestamp time.Time) ([]mongo.WriteModel, error) {
+	day, err := time.Parse("2006-01-02", date)
 	if err != nil {
 		return nil, ErrUnableToParseBucketDayTime
 	}
@@ -142,10 +142,10 @@ func buildBasalUpdateOneModel(sample schema.ISample, userId *string, ts string, 
 	// Insert the bucket if not exist and then insert the sample in it
 	basalFirstOp := mongo.NewUpdateOneModel()
 	var array []schema.ISample
-	basalFirstOp.SetFilter(bson.D{{Key: "_id", Value: strUserId + "_" + ts}})
+	basalFirstOp.SetFilter(bson.D{{Key: "_id", Value: strUserId + "_" + date}})
 	basalFirstOp.SetUpdate(bson.D{ // update
 		{Key: "$setOnInsert", Value: bson.D{
-			{Key: "_id", Value: strUserId + "_" + ts},
+			{Key: "_id", Value: strUserId + "_" + date},
 			{Key: "creationTimestamp", Value: creationTimestamp},
 			{Key: "day", Value: day},
 			{Key: "userId", Value: strUserId},
@@ -161,7 +161,7 @@ func buildBasalUpdateOneModel(sample schema.ISample, userId *string, ts string, 
 	if elemfilter.Guid != "" {
 		// All fields update based on guid
 		basalSecondOp.SetFilter(bson.D{
-			{Key: "_id", Value: strUserId + "_" + ts},
+			{Key: "_id", Value: strUserId + "_" + date},
 			{Key: "samples", Value: bson.D{
 				{Key: "$elemMatch", Value: bson.D{
 					{Key: "guid", Value: elemfilter.Guid},
@@ -183,7 +183,7 @@ func buildBasalUpdateOneModel(sample schema.ISample, userId *string, ts string, 
 	} else {
 		// Duration update based on rate/deliveryType/timestamp (nil guid)
 		basalSecondOp.SetFilter(bson.D{
-			{Key: "_id", Value: strUserId + "_" + ts},
+			{Key: "_id", Value: strUserId + "_" + date},
 			{Key: "samples", Value: bson.D{
 				{Key: "$elemMatch", Value: bson.D{
 					{Key: "guid", Value: nil},
@@ -207,7 +207,7 @@ func buildBasalUpdateOneModel(sample schema.ISample, userId *string, ts string, 
 	// Otherwise we know that we did not update the basal so we guarantee an insertion
 	// in the array
 	basalThirdOp := mongo.NewUpdateOneModel()
-	basalThirdOp.SetFilter(bson.D{{Key: "_id", Value: strUserId + "_" + ts}})
+	basalThirdOp.SetFilter(bson.D{{Key: "_id", Value: strUserId + "_" + date}})
 	basalThirdOp.SetUpdate(bson.D{ // update
 		{Key: "$addToSet", Value: bson.D{
 			{Key: "samples", Value: sample}}},
@@ -217,8 +217,8 @@ func buildBasalUpdateOneModel(sample schema.ISample, userId *string, ts string, 
 	return updates, nil
 }
 
-func buildBolusUpdateOneModel(sample schema.ISample, userId *string, ts string, creationTimestamp time.Time) ([]mongo.WriteModel, error) {
-	day, err := time.Parse("2006-01-02", ts)
+func buildBolusUpdateOneModel(sample schema.ISample, userId *string, date string, creationTimestamp time.Time) ([]mongo.WriteModel, error) {
+	day, err := time.Parse("2006-01-02", date)
 	if err != nil {
 		return nil, ErrUnableToParseBucketDayTime
 	}
@@ -229,10 +229,10 @@ func buildBolusUpdateOneModel(sample schema.ISample, userId *string, ts string, 
 	// Insert the bucket if not exist and then insert the sample in it
 	bolusFirstOp := mongo.NewUpdateOneModel()
 	var array []schema.ISample
-	bolusFirstOp.SetFilter(bson.D{{Key: "_id", Value: strUserId + "_" + ts}})
+	bolusFirstOp.SetFilter(bson.D{{Key: "_id", Value: strUserId + "_" + date}})
 	bolusFirstOp.SetUpdate(bson.D{ // update
 		{Key: "$setOnInsert", Value: bson.D{
-			{Key: "_id", Value: strUserId + "_" + ts},
+			{Key: "_id", Value: strUserId + "_" + date},
 			{Key: "creationTimestamp", Value: creationTimestamp},
 			{Key: "day", Value: day},
 			{Key: "userId", Value: strUserId},
@@ -248,7 +248,7 @@ func buildBolusUpdateOneModel(sample schema.ISample, userId *string, ts string, 
 	if elemfilter.Guid != "" && elemfilter.DeviceId != "" {
 		bolusSecondOp := mongo.NewUpdateOneModel()
 		bolusSecondOp.SetFilter(bson.D{
-			{Key: "_id", Value: strUserId + "_" + ts},
+			{Key: "_id", Value: strUserId + "_" + date},
 			{Key: "samples", Value: bson.D{
 				{Key: "$elemMatch", Value: bson.D{
 					{Key: "guid", Value: elemfilter.Guid},
@@ -270,7 +270,7 @@ func buildBolusUpdateOneModel(sample schema.ISample, userId *string, ts string, 
 	// Otherwise we know that we did not update, so we guarantee an insertion
 	// in the array
 	bolusThirdOp := mongo.NewUpdateOneModel()
-	bolusThirdOp.SetFilter(bson.D{{Key: "_id", Value: strUserId + "_" + ts}})
+	bolusThirdOp.SetFilter(bson.D{{Key: "_id", Value: strUserId + "_" + date}})
 	bolusThirdOp.SetUpdate(bson.D{ // update
 		{Key: "$addToSet", Value: bson.D{
 			{Key: "samples", Value: sample}}},
