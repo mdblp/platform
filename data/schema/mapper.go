@@ -35,7 +35,6 @@ func (s *BolusSample) MapForNormalBolus(event *normal.Normal) error {
 	if event.InsulinOnBoard != nil && event.InsulinOnBoard.InsulinOnBoard != nil {
 		s.InsulinOnBoard = *event.InsulinOnBoard.InsulinOnBoard
 	}
-	
 	if event.Prescriptor != nil && event.Prescriptor.Prescriptor != nil {
 		s.Prescriptor = *event.Prescriptor.Prescriptor
 	}
@@ -75,7 +74,6 @@ func (s *BolusSample) MapForBiphasicBolus(event *biphasic.Biphasic) error {
 	if event.InsulinOnBoard != nil && event.InsulinOnBoard.InsulinOnBoard != nil {
 		s.InsulinOnBoard = *event.InsulinOnBoard.InsulinOnBoard
 	}
-	
 	if event.Prescriptor != nil && event.Prescriptor.Prescriptor != nil {
 		s.Prescriptor = *event.Prescriptor.Prescriptor
 	}
