@@ -1,7 +1,7 @@
 # Platform 
 The data platform API
 
-## unreleased
+## 0.23.0-RC1 - 2023-10-04
 ### Engineering
 - YLP-2588 push bolus in bucket store
 
