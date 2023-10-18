@@ -421,7 +421,6 @@ func (d *DataRepository) CreateDataSetData(ctx context.Context, dataSet *upload.
 	var err error
 	var incomingUserMetadata *schema.Metadata
 	strUserId := *dataSet.UserID
-	uploadDeviceId := dataSet.DeviceID
 
 	for _, datum := range dataSetData {
 		datum.SetUserID(dataSet.UserID)
@@ -432,10 +431,6 @@ func (d *DataRepository) CreateDataSetData(ctx context.Context, dataSet *upload.
 		writeToLegacy := d.isDatumToLegacy(datum)
 		guid := datum.GetGUID()
 		deviceId := datum.GetDeviceID()
-		if deviceId == nil {
-			deviceId = uploadDeviceId
-		}
-
 		/*If data type is in write to bucket ENV VAR, we write it to bucket*/
 		if writeToBucket {
 			// Prepare cbg to be pushed into data read db

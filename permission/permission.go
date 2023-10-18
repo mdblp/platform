@@ -14,6 +14,7 @@ const Read = "view"
 
 type Client interface {
 	GetUserPermissions(req *rest.Request, targetUserID string) (bool, error)
+	GetPatientPermissions(req *rest.Request) (bool, string, error)
 }
 
 func FixOwnerPermissions(permissions Permissions) Permissions {

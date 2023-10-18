@@ -104,6 +104,23 @@ func (c *Client) GetUserPermissions(req *rest.Request, targetUserID string) (boo
 	return false, nil
 }
 
+func (c *Client) GetPatientPermissions(req *rest.Request) (bool, string, error) {
+	ctx := req.Context()
+	if ctx == nil {
+		return false, "", errors.New("context is missing")
+	}
+	details := request.DetailsFromContext(ctx)
+	if details == nil {
+		return false, "", request.ErrorUnauthenticated()
+	}
+	requestUserID := details.UserID()
+	if requestUserID == "" {
+		return false, "", errors.New("request user id is missing")
+	}
+	// TODO check role is patient ?
+	return false, requestUserID, nil
+}
+
 func formatRequest(req *rest.Request, targetUserID string) CoastguardRequestBody {
 	var opaReq CoastguardRequestBody
 	url := *req.URL
