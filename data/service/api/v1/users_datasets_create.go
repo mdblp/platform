@@ -98,16 +98,9 @@ func UsersDataSetsCreate(dataServiceContext dataService.Context) {
 		return
 	}
 
-	if deduplicator, err := dataServiceContext.DataDeduplicatorFactory().New(dataSet); err != nil {
-		dataServiceContext.RespondWithInternalServerFailure("Unable to get deduplicator", err)
-		return
-	} else if deduplicator == nil {
-		dataServiceContext.RespondWithInternalServerFailure("Deduplicator not found", err)
-		return
-	} else if dataSet, err = deduplicator.Open(ctx, dataServiceContext.DataRepository(), dataSet); err != nil {
+	if err = dataServiceContext.DataRepository().CreateDataSet(ctx, dataSet); err != nil {
 		dataServiceContext.RespondWithInternalServerFailure("Unable to open", err)
 		return
 	}
-
 	dataServiceContext.RespondWithStatusAndData(http.StatusCreated, dataSet)
 }

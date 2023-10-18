@@ -118,13 +118,7 @@ func DataSetsDataCreate(dataServiceContext dataService.Context) {
 		datum.SetDataSetID(dataSet.UploadID)
 	}
 
-	if deduplicator, getErr := dataServiceContext.DataDeduplicatorFactory().Get(dataSet); getErr != nil {
-		dataServiceContext.RespondWithInternalServerFailure("Unable to get deduplicator", getErr)
-		return
-	} else if deduplicator == nil {
-		dataServiceContext.RespondWithInternalServerFailure("Deduplicator not found")
-		return
-	} else if err = deduplicator.AddData(ctx, dataServiceContext.DataRepository(), dataSet, datumArray); err != nil { // write in DB
+	if err = dataServiceContext.DataRepository().CreateDataSetData(ctx, dataSet, datumArray); err != nil { // write in DB
 		dataServiceContext.RespondWithInternalServerFailure("Unable to add data", err)
 		return
 	}

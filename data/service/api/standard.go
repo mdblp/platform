@@ -7,7 +7,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	dataClient "github.com/tidepool-org/platform/data/client"
-	"github.com/tidepool-org/platform/data/deduplicator"
 	dataService "github.com/tidepool-org/platform/data/service"
 	dataContext "github.com/tidepool-org/platform/data/service/context"
 	dataStore "github.com/tidepool-org/platform/data/store"
@@ -15,32 +14,22 @@ import (
 	"github.com/tidepool-org/platform/permission"
 	"github.com/tidepool-org/platform/service"
 	"github.com/tidepool-org/platform/service/api"
-	syncTaskStore "github.com/tidepool-org/platform/synctask/store"
 )
 
 type Standard struct {
 	*api.API
-	permissionClient        permission.Client
-	dataDeduplicatorFactory deduplicator.Factory
-	dataStore               dataStore.Store
-	syncTaskStore           syncTaskStore.Store
-	dataClient              dataClient.Client
+	permissionClient permission.Client
+	dataStore        dataStore.Store
+	dataClient       dataClient.Client
 }
 
 func NewStandard(svc service.Service, permissionClient permission.Client,
-	dataDeduplicatorFactory deduplicator.Factory,
-	store dataStore.Store, syncTaskStore syncTaskStore.Store, dataClient dataClient.Client) (*Standard, error) {
+	store dataStore.Store, dataClient dataClient.Client) (*Standard, error) {
 	if permissionClient == nil {
 		return nil, errors.New("permission client is missing")
 	}
-	if dataDeduplicatorFactory == nil {
-		return nil, errors.New("data deduplicator factory is missing")
-	}
 	if store == nil {
 		return nil, errors.New("data store DEPRECATED is missing")
-	}
-	if syncTaskStore == nil {
-		return nil, errors.New("sync task store is missing")
 	}
 	if dataClient == nil {
 		return nil, errors.New("data client is missing")
@@ -52,12 +41,10 @@ func NewStandard(svc service.Service, permissionClient permission.Client,
 	}
 
 	return &Standard{
-		API:                     a,
-		permissionClient:        permissionClient,
-		dataDeduplicatorFactory: dataDeduplicatorFactory,
-		dataStore:               store,
-		syncTaskStore:           syncTaskStore,
-		dataClient:              dataClient,
+		API:              a,
+		permissionClient: permissionClient,
+		dataStore:        store,
+		dataClient:       dataClient,
 	}, nil
 }
 
@@ -94,7 +81,5 @@ func (s *Standard) DEPRECATEDInitializeRouter(routes []dataService.Route) error 
 }
 
 func (s *Standard) withContext(handler dataService.HandlerFunc) rest.HandlerFunc {
-	return dataContext.WithContext(s.AuthClient(), s.permissionClient,
-		s.dataDeduplicatorFactory,
-		s.dataStore, s.syncTaskStore, s.dataClient, handler)
+	return dataContext.WithContext(s.AuthClient(), s.permissionClient, s.dataStore, s.dataClient, handler)
 }
