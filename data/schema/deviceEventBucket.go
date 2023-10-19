@@ -48,7 +48,7 @@ type (
 		DeviceId   string  `bson:"deviceId,omitempty"`
 		Guid       string  `bson:"guid,omitempty"`
 		Status     string  `bson:"status,omitempty"`
-		StatusCode int     `bson:"statusCode,omitempty"`
+		StatusCode *int    `bson:"statusCode,omitempt"`
 		Volume     float64 `bson:"volume,omitempty"`
 	}
 
@@ -146,7 +146,7 @@ func (f Flush) GetTimestamp() time.Time {
 	return f.Timestamp
 }
 
-func (f Flush) MapForFlush(event *flush.Flush) error {
+func (f *Flush) MapForFlush(event *flush.Flush) error {
 	var err error
 	if event.GUID != nil {
 		f.Guid = *event.GUID
@@ -156,7 +156,7 @@ func (f Flush) MapForFlush(event *flush.Flush) error {
 	}
 
 	f.Status = *event.Status
-	f.StatusCode = *event.StatusCode
+	f.StatusCode = event.StatusCode
 	f.Volume = *event.Volume
 
 	// time infos mapping
@@ -176,7 +176,7 @@ func (p Prime) GetTimestamp() time.Time {
 	return p.Timestamp
 }
 
-func (p Prime) MapForPrime(event *prime.Prime) error {
+func (p *Prime) MapForPrime(event *prime.Prime) error {
 	var err error
 	if event.GUID != nil {
 		p.Guid = *event.GUID
@@ -205,7 +205,7 @@ func (r ReservoirChange) GetTimestamp() time.Time {
 	return r.Timestamp
 }
 
-func (r ReservoirChange) MapForReservoirChange(event *reservoirchange.ReservoirChange) error {
+func (r *ReservoirChange) MapForReservoirChange(event *reservoirchange.ReservoirChange) error {
 	var err error
 	if event.GUID != nil {
 		r.Guid = *event.GUID

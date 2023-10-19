@@ -114,20 +114,29 @@ func (c *MongoBucketStoreClient) UpsertMany(ctx context.Context, userId *string,
 	bulkOption := options.BulkWriteOptions{}
 	bulkOption.SetOrdered(false)
 
-	// update or insert in Hot Daily and Cold Daily
-	for _, collectionPrefix := range dailyPrefixCollections {
-		var collectionName string
-		//TODO: to enhance
-		if dataType == "Alarm" || dataType == "Mode" ||
-			dataType == "Calibration" || dataType == "Flush" ||
-			dataType == "Prime" || dataType == "ReservoirChange" {
-			collectionName = collectionPrefix + "DeviceEvent"
-		} else {
-			collectionName = collectionPrefix + dataType
-		}
-		_, err := c.Collection(collectionName).BulkWrite(ctx, operations, &bulkOption)
+	
+	if dataType == "loopMode" {
+		// loop mode event is recorded with out hot/cold collection
+		_, err := c.Collection("loopMode").BulkWrite(ctx, operations, &bulkOption)
 		if err != nil {
 			return err
+		}
+	} else {
+		// update or insert in Hot Daily and Cold Daily
+		for _, collectionPrefix := range dailyPrefixCollections {
+			var collectionName string
+			//TODO: to enhance
+			if dataType == "Alarm" || dataType == "Mode" ||
+				dataType == "Calibration" || dataType == "Flush" ||
+				dataType == "Prime" || dataType == "ReservoirChange" {
+				collectionName = collectionPrefix + "DeviceEvent"
+			} else {
+				collectionName = collectionPrefix + dataType
+			}
+			_, err := c.Collection(collectionName).BulkWrite(ctx, operations, &bulkOption)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -352,6 +361,7 @@ func buildAlarmUpdateOneModel(sample schema.ISample, userId *string, date string
 		})
 		secondOp.SetUpdate(bson.D{ // update
 			{Key: "$set", Value: bson.D{
+				{Key: "alarms.$.level", Value: elemfilter.Level},
 				{Key: "alarms.$.ackStatus", Value: elemfilter.AckStatus},
 				{Key: "alarms.$.updateTimestamp", Value: elemfilter.UpdateTimestamp},
 			},
@@ -538,6 +548,7 @@ func buildReservoirChangeUpdateOneModel(sample schema.ISample, userId *string, d
 	strUserId := *userId
 	var updates []mongo.WriteModel
 
+	// one operation because normally the event is sent once
 	op := mongo.NewUpdateOneModel()
 	op.SetFilter(bson.D{{Key: "_id", Value: strUserId + "_" + date}})
 	op.SetUpdate(bson.D{ // update
