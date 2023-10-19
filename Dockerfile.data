@@ -30,8 +30,7 @@ FROM --platform=$BUILDPLATFORM alpine:latest AS production
 RUN apk --no-cache update && \
     apk --no-cache upgrade && \
     apk add --no-cache ca-certificates tzdata && \
-    adduser -D tidepool && \
-    chown -R tidepool /go/pkg/mod
+    adduser -D tidepool
 
 WORKDIR /home/tidepool
 USER tidepool
