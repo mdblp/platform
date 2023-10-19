@@ -7,7 +7,11 @@ WORKDIR /go/src/github.com/tidepool-org/platform
 RUN apk --no-cache add git make tzdata && \
     apk add --no-cache ca-certificates tzdata git && \
     go install github.com/githubnemo/CompileDaemon@latest && \
-    adduser -D tidepool && \
+    adduser -D tidepool
+
+COPY go.mod ./
+COPY go.sum ./
+RUN go mod download && \
     chown -R tidepool /go/pkg/mod
 
 COPY . .
@@ -26,7 +30,9 @@ FROM --platform=$BUILDPLATFORM alpine:latest AS production
 RUN apk --no-cache update && \
     apk --no-cache upgrade && \
     apk add --no-cache ca-certificates tzdata && \
-    adduser -D tidepool
+    adduser -D tidepool && \
+    chown -R tidepool /go/pkg/mod
+
 WORKDIR /home/tidepool
 USER tidepool
 ENV ZONEINFO=/usr/local/go/lib/time/zoneinfo.zip
