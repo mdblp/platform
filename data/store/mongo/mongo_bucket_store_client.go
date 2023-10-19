@@ -114,7 +114,6 @@ func (c *MongoBucketStoreClient) UpsertMany(ctx context.Context, userId *string,
 	bulkOption := options.BulkWriteOptions{}
 	bulkOption.SetOrdered(false)
 
-	
 	if dataType == "loopMode" {
 		// loop mode event is recorded with out hot/cold collection
 		_, err := c.Collection("loopMode").BulkWrite(ctx, operations, &bulkOption)

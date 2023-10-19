@@ -3,11 +3,11 @@ package schema
 import (
 	"time"
 
-	`github.com/tidepool-org/platform/data/types/device/calibration`
-	`github.com/tidepool-org/platform/data/types/device/flush`
+	"github.com/tidepool-org/platform/data/types/device/calibration"
+	"github.com/tidepool-org/platform/data/types/device/flush"
 	"github.com/tidepool-org/platform/data/types/device/mode"
-	`github.com/tidepool-org/platform/data/types/device/prime`
-	`github.com/tidepool-org/platform/data/types/device/reservoirchange`
+	"github.com/tidepool-org/platform/data/types/device/prime"
+	"github.com/tidepool-org/platform/data/types/device/reservoirchange"
 	"github.com/tidepool-org/platform/errors"
 )
 
