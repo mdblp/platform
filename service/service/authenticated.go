@@ -37,7 +37,6 @@ func (a *Authenticated) initializeAuthClient() error {
 
 	userAgent := a.UserAgent()
 	cfg := authClient.NewConfig()
-	cfg.UserAgent = userAgent
 	cfg.ExternalConfig.AuthenticationConfig.UserAgent = userAgent
 	cfg.ExternalConfig.AuthorizationConfig.UserAgent = userAgent
 	if err := cfg.Load(a.ConfigReporter().WithScopes("auth", "client")); err != nil {
@@ -52,12 +51,6 @@ func (a *Authenticated) initializeAuthClient() error {
 	}
 	a.authClient = clnt
 
-	a.Logger().Debug("Starting auth client")
-
-	if err = a.authClient.Start(); err != nil {
-		return errors.Wrap(err, "unable to start auth client")
-	}
-
 	a.SetAuthClient(a.authClient)
 
 	return nil
@@ -65,9 +58,6 @@ func (a *Authenticated) initializeAuthClient() error {
 
 func (a *Authenticated) terminateAuthClient() {
 	if a.authClient != nil {
-		a.Logger().Debug("Closing auth client")
-		a.authClient.Close()
-
 		a.Logger().Debug("Destroying auth client")
 		a.authClient = nil
 

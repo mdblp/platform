@@ -56,12 +56,6 @@ func (a *Auth) MiddlewareFunc(handlerFunc rest.HandlerFunc) rest.HandlerFunc {
 
 			lgr := log.LoggerFromContext(req.Context())
 
-			if serverSessionToken, err := a.authClient.ServerSessionToken(); err == nil {
-				req.Request = req.WithContext(auth.NewContextWithServerSessionToken(req.Context(), serverSessionToken))
-			} else {
-				lgr.WithError(err).Warn("Unable to obtain server session token in auth middleware")
-			}
-
 			if details, err := a.authenticate(req); err != nil {
 				// TODO: Sleep exponential fallback based upon IP and occurrences in period
 				request.MustNewResponder(res, req).Error(request.StatusCodeForError(err), err)
@@ -115,7 +109,7 @@ func (a *Auth) authenticateServiceSecret(req *rest.Request) (request.Details, er
 		return nil, request.ErrorUnauthorized()
 	}
 
-	return request.NewDetails(request.MethodServiceSecret, "", ""), nil
+	return request.NewDetails(request.MethodServiceSecret, "", "", "server"), nil
 }
 
 func (a *Auth) authenticateAccessToken(req *rest.Request) (request.Details, error) {
@@ -142,7 +136,7 @@ func (a *Auth) authenticateAccessToken(req *rest.Request) (request.Details, erro
 	}
 	uid := strings.Split(parsedToken.RegisteredClaims.Subject, "|")[1]
 
-	return request.NewDetails(request.MethodAccessToken, uid, parts[1]), nil
+	return request.NewDetails(request.MethodAccessToken, uid, parts[1], "patient"), nil
 }
 
 func (a *Auth) authenticateSessionToken(req *rest.Request) (request.Details, error) {

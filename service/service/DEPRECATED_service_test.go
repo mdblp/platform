@@ -89,11 +89,6 @@ var _ = Describe("DEPRECATEDService", func() {
 					Expect(svc.Initialize(provider)).To(MatchError("secret is missing"))
 				})
 
-				It("returns an error when the auth client cannot be initialized", func() {
-					delete(authClientConfig, "address")
-					Expect(svc.Initialize(provider)).To(MatchError("unable to create auth client; config is invalid; address is missing"))
-				})
-
 				It("returns successfully", func() {
 					Expect(svc.Initialize(provider)).To(Succeed())
 				})
@@ -120,7 +115,6 @@ var _ = Describe("DEPRECATEDService", func() {
 					It("returns successfully with server token", func() {
 						authClient := svc.AuthClient()
 						Expect(authClient).ToNot(BeNil())
-						Eventually(authClient.ServerSessionToken).Should(Equal(sessionToken))
 					})
 				})
 			})
