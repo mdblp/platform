@@ -27,10 +27,6 @@ type EnsureAuthorizedUserOutput struct {
 }
 
 type ExternalAccessor struct {
-	ServerSessionTokenInvocations      int
-	ServerSessionTokenStub             func() (string, error)
-	ServerSessionTokenOutputs          []ServerSessionTokenOutput
-	ServerSessionTokenOutput           *ServerSessionTokenOutput
 	ValidateSessionTokenInvocations    int
 	ValidateSessionTokenInputs         []string
 	ValidateSessionTokenStub           func(ctx context.Context, token string) (request.Details, error)
@@ -53,22 +49,6 @@ type ExternalAccessor struct {
 
 func NewExternalAccessor() *ExternalAccessor {
 	return &ExternalAccessor{}
-}
-
-func (e *ExternalAccessor) ServerSessionToken() (string, error) {
-	e.ServerSessionTokenInvocations++
-	if e.ServerSessionTokenStub != nil {
-		return e.ServerSessionTokenStub()
-	}
-	if len(e.ServerSessionTokenOutputs) > 0 {
-		output := e.ServerSessionTokenOutputs[0]
-		e.ServerSessionTokenOutputs = e.ServerSessionTokenOutputs[1:]
-		return output.Token, output.Error
-	}
-	if e.ServerSessionTokenOutput != nil {
-		return e.ServerSessionTokenOutput.Token, e.ServerSessionTokenOutput.Error
-	}
-	panic("ServerSessionToken has no output")
 }
 
 func (e *ExternalAccessor) ValidateSessionToken(ctx context.Context, token string) (request.Details, error) {
@@ -138,9 +118,6 @@ func (e *ExternalAccessor) EnsureAuthorizedUser(ctx context.Context, targetUserI
 }
 
 func (e *ExternalAccessor) AssertOutputsEmpty() {
-	if len(e.ServerSessionTokenOutputs) > 0 {
-		panic("ServerSessionTokenOutputs is not empty")
-	}
 	if len(e.ValidateSessionTokenOutputs) > 0 {
 		panic("ValidateSessionTokenOutputs is not empty")
 	}

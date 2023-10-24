@@ -2,18 +2,16 @@ package client
 
 import (
 	"context"
-	"net/http"
-	"strconv"
-	"sync"
 	"time"
 
-	"github.com/tidepool-org/platform/auth"
 	"github.com/tidepool-org/platform/config"
 	"github.com/tidepool-org/platform/errors"
 	"github.com/tidepool-org/platform/log"
 	"github.com/tidepool-org/platform/permission"
 	"github.com/tidepool-org/platform/platform"
 	"github.com/tidepool-org/platform/request"
+
+	"github.com/mdblp/shoreline/token"
 )
 
 const (
@@ -25,17 +23,16 @@ const (
 )
 
 type ExternalConfig struct {
-	AuthenticationConfig      *platform.Config
-	AuthorizationConfig       *platform.Config
-	ServerSessionTokenSecret  string
-	ServerSessionTokenTimeout time.Duration
+	AuthenticationConfig     *platform.Config
+	AuthorizationConfig      *platform.Config
+	UserSessionTokenSecret   string
+	ServerSessionTokenSecret string
 }
 
 func NewExternalConfig() *ExternalConfig {
 	return &ExternalConfig{
-		AuthenticationConfig:      platform.NewConfig(),
-		AuthorizationConfig:       platform.NewConfig(),
-		ServerSessionTokenTimeout: 3600 * time.Second,
+		AuthenticationConfig: platform.NewConfig(),
+		AuthorizationConfig:  platform.NewConfig(),
 	}
 }
 
@@ -49,14 +46,7 @@ func (e *ExternalConfig) Load(configReporter config.Reporter) error {
 	e.AuthenticationConfig.Address = configReporter.GetWithDefault("authentication_address", "")
 	e.AuthorizationConfig.Address = configReporter.GetWithDefault("authorization_address", "")
 	e.ServerSessionTokenSecret = configReporter.GetWithDefault("server_session_token_secret", "")
-	if serverSessionTokenTimeoutString, err := configReporter.Get("server_session_token_timeout"); err == nil {
-		var serverSessionTokenTimeoutInteger int64
-		serverSessionTokenTimeoutInteger, err = strconv.ParseInt(serverSessionTokenTimeoutString, 10, 0)
-		if err != nil {
-			return errors.New("server session token timeout is invalid")
-		}
-		e.ServerSessionTokenTimeout = time.Duration(serverSessionTokenTimeoutInteger) * time.Second
-	}
+	e.UserSessionTokenSecret = configReporter.GetWithDefault("user_session_token_secret", "")
 
 	return nil
 }
@@ -72,23 +62,16 @@ func (e *ExternalConfig) Validate() error {
 	if e.ServerSessionTokenSecret == "" {
 		return errors.New("server session token secret is missing")
 	}
-	if e.ServerSessionTokenTimeout <= 0 {
-		return errors.New("server session token timeout is invalid")
-	}
 
 	return nil
 }
 
 type External struct {
-	authenticationClient      *platform.Client
-	authorizationClient       *platform.Client
-	name                      string
-	logger                    log.Logger
-	serverSessionTokenSecret  string
-	serverSessionTokenTimeout time.Duration
-	serverSessionTokenMutex   sync.Mutex
-	serverSessionTokenSafe    string
-	closingChannel            chan chan bool
+	authorizationClient      *platform.Client
+	name                     string
+	logger                   log.Logger
+	serverSessionTokenSecret string
+	userSessionTokenSecret   string
 }
 
 func NewExternal(cfg *ExternalConfig, authorizeAs platform.AuthorizeAs, name string, lgr log.Logger) (*External, error) {
@@ -106,98 +89,40 @@ func NewExternal(cfg *ExternalConfig, authorizeAs platform.AuthorizeAs, name str
 		return nil, errors.Wrap(err, "config is invalid")
 	}
 
-	authenticationClnt, err := platform.NewClient(cfg.AuthenticationConfig, authorizeAs)
-	if err != nil {
-		return nil, err
-	}
 	authorizationClnt, err := platform.NewClient(cfg.AuthorizationConfig, authorizeAs)
 	if err != nil {
 		return nil, err
 	}
 
 	return &External{
-		authenticationClient:      authenticationClnt,
-		authorizationClient:       authorizationClnt,
-		logger:                    lgr,
-		name:                      name,
-		serverSessionTokenSecret:  cfg.ServerSessionTokenSecret,
-		serverSessionTokenTimeout: cfg.ServerSessionTokenTimeout,
+		authorizationClient:      authorizationClnt,
+		logger:                   lgr,
+		name:                     name,
+		serverSessionTokenSecret: cfg.ServerSessionTokenSecret,
+		userSessionTokenSecret:   cfg.UserSessionTokenSecret,
 	}, nil
 }
 
-func (e *External) Start() error {
-	if e.closingChannel == nil {
-		closingChannel := make(chan chan bool)
-		e.closingChannel = closingChannel
-
-		serverSessionTokenTimeout := e.timeoutServerSessionToken(0)
-
-		go func() {
-			for {
-				timer := time.After(serverSessionTokenTimeout)
-				select {
-				case closedChannel := <-closingChannel:
-					closedChannel <- true
-					close(closedChannel)
-					return
-				case <-timer:
-					serverSessionTokenTimeout = e.timeoutServerSessionToken(serverSessionTokenTimeout)
-				}
-			}
-		}()
-	}
-
-	return nil
-}
-
-func (e *External) Close() {
-	if e.closingChannel != nil {
-		closingChannel := e.closingChannel
-		e.closingChannel = nil
-
-		closedChannel := make(chan bool)
-		closingChannel <- closedChannel
-		close(closingChannel)
-		<-closedChannel
-	}
-}
-
-func (e *External) ServerSessionToken() (string, error) {
-	if e.closingChannel == nil {
-		return "", errors.New("client is closed")
-	}
-
-	serverSessionToken := e.serverSessionToken()
-	if serverSessionToken == "" {
-		return "", errors.New("unable to obtain server session token")
-	}
-
-	return serverSessionToken, nil
-}
-
-func (e *External) ValidateSessionToken(ctx context.Context, token string) (request.Details, error) {
+func (e *External) ValidateSessionToken(ctx context.Context, sessionToken string) (request.Details, error) {
 	if ctx == nil {
 		return nil, errors.New("context is missing")
 	}
-	if token == "" {
+	if sessionToken == "" {
 		return nil, errors.New("token is missing")
 	}
 
-	var result struct {
-		IsServer bool
-		UserID   string
-	}
-	if err := e.authenticationClient.RequestData(ctx, "GET", e.authenticationClient.ConstructURL("token", token), nil, nil, &result); err != nil {
-		return nil, err
+	tokenData, err := token.UnpackSessionTokenAndVerify(sessionToken, e.userSessionTokenSecret)
+	if err != nil {
+		return nil, errors.New(err.Error())
 	}
 
-	if result.IsServer {
-		result.UserID = ""
-	} else if result.UserID == "" {
+	if tokenData.IsServer {
+		tokenData.UserId = ""
+	} else if tokenData.UserId == "" {
 		return nil, errors.New("user id is missing")
 	}
 
-	return request.NewDetails(request.MethodSessionToken, result.UserID, token), nil
+	return request.NewDetails(request.MethodSessionToken, tokenData.UserId, sessionToken, tokenData.Role), nil
 }
 
 func (e *External) EnsureAuthorized(ctx context.Context) error {
@@ -250,7 +175,7 @@ func (e *External) EnsureAuthorizedUser(ctx context.Context, targetUserID string
 		} else {
 			url := e.authorizationClient.ConstructURL("access", targetUserID, authenticatedUserID)
 			permissions := permission.Permissions{}
-			if err := e.authorizationClient.RequestData(ctx, "GET", url, nil, nil, &permissions); err != nil {
+			if err := e.authorizationClient.RequestData(ctx, "GET", url, nil, &permissions); err != nil {
 				if !request.IsErrorResourceNotFound(err) {
 					return "", errors.Wrap(err, "unable to get user permissions")
 				}
@@ -264,71 +189,4 @@ func (e *External) EnsureAuthorizedUser(ctx context.Context, targetUserID string
 	}
 
 	return "", request.ErrorUnauthorized()
-}
-
-func (e *External) timeoutServerSessionToken(serverSessionTokenTimeout time.Duration) time.Duration {
-	if err := e.refreshServerSessionToken(); err != nil {
-		if serverSessionTokenTimeout == 0 || serverSessionTokenTimeout == e.serverSessionTokenTimeout {
-			serverSessionTokenTimeout = ServerSessionTokenTimeoutOnFailureFirst
-		} else {
-			serverSessionTokenTimeout *= 2
-			if serverSessionTokenTimeout > ServerSessionTokenTimeoutOnFailureLast {
-				serverSessionTokenTimeout = ServerSessionTokenTimeoutOnFailureLast
-			}
-		}
-		e.logger.WithError(err).WithField("retry", serverSessionTokenTimeout.String()).Warn("Unable to refresh server session token; retrying")
-	} else {
-		serverSessionTokenTimeout = e.serverSessionTokenTimeout
-	}
-
-	return serverSessionTokenTimeout
-}
-
-func (e *External) refreshServerSessionToken() error {
-	e.logger.Debug("Refreshing server session token")
-
-	requestMethod := "POST"
-	requestURL := e.authenticationClient.ConstructURL("serverlogin")
-	request, err := http.NewRequest(requestMethod, requestURL, nil)
-	if err != nil {
-		return errors.Wrapf(err, "unable to create new request for %s %s", requestMethod, requestURL)
-	}
-
-	request.Header.Add(TidepoolServerNameHeaderName, e.name)
-	request.Header.Add(TidepoolServerSecretHeaderName, e.serverSessionTokenSecret)
-
-	response, err := e.authenticationClient.HTTPClient().Do(request)
-	if err != nil {
-		return errors.Wrap(err, "unable to refresh server session token")
-	}
-	if response.Body != nil {
-		defer response.Body.Close()
-	}
-
-	if response.StatusCode != http.StatusOK {
-		return errors.Newf("unexpected response status code %d while refreshing server session token", response.StatusCode)
-	}
-
-	serverSessionTokenHeader := response.Header.Get(auth.TidepoolSessionTokenHeaderKey)
-	if serverSessionTokenHeader == "" {
-		return errors.New("server session token is missing")
-	}
-
-	e.setServerSessionToken(serverSessionTokenHeader)
-
-	return nil
-}
-
-func (e *External) setServerSessionToken(serverSessionToken string) {
-	e.serverSessionTokenMutex.Lock()
-	defer e.serverSessionTokenMutex.Unlock()
-
-	e.serverSessionTokenSafe = serverSessionToken
-}
-
-func (e *External) serverSessionToken() string {
-	e.serverSessionTokenMutex.Lock()
-	defer e.serverSessionTokenMutex.Unlock()
-
-	return e.serverSessionTokenSafe
 }

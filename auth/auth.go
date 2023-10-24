@@ -18,7 +18,6 @@ type Client interface {
 }
 
 type ExternalAccessor interface {
-	ServerSessionToken() (string, error)
 	ValidateSessionToken(ctx context.Context, token string) (request.Details, error)
 	EnsureAuthorized(ctx context.Context) error
 	EnsureAuthorizedService(ctx context.Context) error
