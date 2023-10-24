@@ -92,7 +92,7 @@ var _ = Describe("Client", func() {
 			BeforeEach(func() {
 				requestUserID = userTest.RandomID()
 				targetUserID = userTest.RandomID()
-				data := request.NewDetails(request.MethodSessionToken, requestUserID, sessionToken)
+				data := request.NewDetails(request.MethodSessionToken, requestUserID, sessionToken, "patient")
 				ctx = request.NewContextWithDetails(ctx, data)
 				httpReq, _ := http.NewRequestWithContext(ctx, "GET", "http://test.fr", nil)
 				req = &rest.Request{
@@ -121,7 +121,7 @@ var _ = Describe("Client", func() {
 
 				It("returns successfully when the requester is a service", func() {
 					// Service don't have userId set
-					data := request.NewDetails(request.MethodSessionToken, "", sessionToken)
+					data := request.NewDetails(request.MethodSessionToken, "", sessionToken, "server")
 					ctx = request.NewContextWithDetails(ctx, data)
 					httpReq, _ := http.NewRequestWithContext(ctx, "GET", "http://test.fr", nil)
 					req = &rest.Request{

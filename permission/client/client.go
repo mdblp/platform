@@ -96,7 +96,7 @@ func (c *Client) GetUserPermissions(req *rest.Request, targetUserID string) (boo
 
 		coastguardResponse := CoastguardResponseBody{}
 		requestBody := formatRequest(req, targetUserID)
-		if err := c.client.RequestData(ctx, authConfig.httpMethod, url, nil, &requestBody, &coastguardResponse); err != nil {
+		if err := c.client.RequestData(ctx, authConfig.httpMethod, url, &requestBody, &coastguardResponse); err != nil {
 			return false, err
 		}
 		return coastguardResponse.Result.Authorized, nil
