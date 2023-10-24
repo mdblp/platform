@@ -20,7 +20,7 @@ import (
 	"github.com/sirupsen/logrus"
 	logrusTest "github.com/sirupsen/logrus/hooks/test"
 
-	goComMgo "github.com/mdblp/go-common/clients/mongo"
+	goComMgo "github.com/mdblp/go-db/mongo"
 
 	"github.com/tidepool-org/platform/data"
 	bucketStoreTestHelper "github.com/tidepool-org/platform/data/store/test"

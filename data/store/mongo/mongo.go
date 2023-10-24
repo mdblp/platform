@@ -18,7 +18,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
-	goComMgo "github.com/mdblp/go-common/clients/mongo"
+	goComMgo "github.com/mdblp/go-db/mongo"
 
 	"github.com/tidepool-org/platform/data"
 	"github.com/tidepool-org/platform/data/schema"
@@ -131,7 +131,7 @@ func NewStores(cfg *storeStructuredMongo.Config, config *goComMgo.Config, lg *lo
 		return nil, err
 	}
 
-	bucketStore := &MongoBucketStoreClient{}
+	var bucketStore *MongoBucketStoreClient
 	bucketStore, err = NewMongoBucketStoreClient(config, lg, minimalYearSupportedForData)
 	if err != nil {
 		return nil, err

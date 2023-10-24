@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/mdblp/go-common/clients/mongo"
+	"github.com/mdblp/go-db/mongo"
 	"github.com/sirupsen/logrus"
 
 	"github.com/tidepool-org/platform/application"
