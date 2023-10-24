@@ -6,7 +6,6 @@ import (
 	"github.com/mdblp/go-json-rest/rest"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
-	dataClient "github.com/tidepool-org/platform/data/client"
 	dataService "github.com/tidepool-org/platform/data/service"
 	dataContext "github.com/tidepool-org/platform/data/service/context"
 	dataStore "github.com/tidepool-org/platform/data/store"
@@ -20,19 +19,15 @@ type Standard struct {
 	*api.API
 	permissionClient permission.Client
 	dataStore        dataStore.Store
-	dataClient       dataClient.Client
 }
 
 func NewStandard(svc service.Service, permissionClient permission.Client,
-	store dataStore.Store, dataClient dataClient.Client) (*Standard, error) {
+	store dataStore.Store) (*Standard, error) {
 	if permissionClient == nil {
 		return nil, errors.New("permission client is missing")
 	}
 	if store == nil {
 		return nil, errors.New("data store DEPRECATED is missing")
-	}
-	if dataClient == nil {
-		return nil, errors.New("data client is missing")
 	}
 
 	a, err := api.New(svc)
@@ -44,7 +39,6 @@ func NewStandard(svc service.Service, permissionClient permission.Client,
 		API:              a,
 		permissionClient: permissionClient,
 		dataStore:        store,
-		dataClient:       dataClient,
 	}, nil
 }
 
@@ -81,5 +75,5 @@ func (s *Standard) DEPRECATEDInitializeRouter(routes []dataService.Route) error 
 }
 
 func (s *Standard) withContext(handler dataService.HandlerFunc) rest.HandlerFunc {
-	return dataContext.WithContext(s.AuthClient(), s.permissionClient, s.dataStore, s.dataClient, handler)
+	return dataContext.WithContext(s.AuthClient(), s.permissionClient, s.dataStore, handler)
 }

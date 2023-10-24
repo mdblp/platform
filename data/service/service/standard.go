@@ -28,7 +28,6 @@ type Standard struct {
 	*service.DEPRECATEDService
 	permissionClient *permissionClient.Client
 	dataStore        *dataStoreMongo.Stores
-	dataClient       *Client
 	api              *api.Standard
 	server           *server.Standard
 }
@@ -52,9 +51,6 @@ func (s *Standard) Initialize(provider application.Provider) error {
 	if err := s.initializeDataStore(); err != nil {
 		return err
 	}
-	if err := s.initializeDataClient(); err != nil {
-		return err
-	}
 	if err := s.initializeAPI(); err != nil {
 		return err
 	}
@@ -64,7 +60,6 @@ func (s *Standard) Initialize(provider application.Provider) error {
 func (s *Standard) Terminate() {
 	s.server = nil
 	s.api = nil
-	s.dataClient = nil
 
 	if s.dataStore != nil {
 		s.dataStore.Terminate(context.Background())
@@ -159,22 +154,10 @@ func (s *Standard) initializeDataStore() error {
 	return nil
 }
 
-func (s *Standard) initializeDataClient() error {
-	s.Logger().Debug("Creating data client")
-
-	clnt, err := NewClient(s.dataStore)
-	if err != nil {
-		return errors.Wrap(err, "unable to create data client")
-	}
-	s.dataClient = clnt
-
-	return nil
-}
-
 func (s *Standard) initializeAPI() error {
 	s.Logger().Debug("Creating api")
 
-	newAPI, err := api.NewStandard(s, s.permissionClient, s.dataStore, s.dataClient)
+	newAPI, err := api.NewStandard(s, s.permissionClient, s.dataStore)
 	if err != nil {
 		return errors.Wrap(err, "unable to create api")
 	}

@@ -8,7 +8,6 @@ import (
 	"github.com/mdblp/go-json-rest/rest"
 
 	"github.com/tidepool-org/platform/auth"
-	dataClient "github.com/tidepool-org/platform/data/client"
 	dataService "github.com/tidepool-org/platform/data/service"
 	"github.com/tidepool-org/platform/errors"
 	"github.com/tidepool-org/platform/permission"
@@ -21,14 +20,12 @@ type Standard struct {
 	permissionClient permission.Client
 	dataStore        dataStore.Store
 	dataRepository   dataStore.DataRepository
-	dataClient       dataClient.Client
 }
 
 func WithContext(authClient auth.Client, permissionClient permission.Client,
-	store dataStore.Store, dataClient dataClient.Client, handler dataService.HandlerFunc) rest.HandlerFunc {
+	store dataStore.Store, handler dataService.HandlerFunc) rest.HandlerFunc {
 	return func(response rest.ResponseWriter, request *rest.Request) {
-		standard, standardErr := NewStandard(response, request, authClient, permissionClient,
-			store, dataClient)
+		standard, standardErr := NewStandard(response, request, authClient, permissionClient, store)
 		if standardErr != nil {
 			if responder, responderErr := serviceContext.NewResponder(response, request); responderErr != nil {
 				response.WriteHeader(http.StatusInternalServerError)
@@ -45,7 +42,7 @@ func WithContext(authClient auth.Client, permissionClient permission.Client,
 
 func NewStandard(response rest.ResponseWriter, request *rest.Request,
 	authClient auth.Client, permissionClient permission.Client,
-	store dataStore.Store, dataClient dataClient.Client) (*Standard, error) {
+	store dataStore.Store) (*Standard, error) {
 	if authClient == nil {
 		return nil, errors.New("auth client is missing")
 	}
@@ -54,9 +51,6 @@ func NewStandard(response rest.ResponseWriter, request *rest.Request,
 	}
 	if store == nil {
 		return nil, errors.New("data store DEPRECATED is missing")
-	}
-	if dataClient == nil {
-		return nil, errors.New("data client is missing")
 	}
 
 	responder, err := serviceContext.NewResponder(response, request)
@@ -69,7 +63,6 @@ func NewStandard(response rest.ResponseWriter, request *rest.Request,
 		authClient:       authClient,
 		permissionClient: permissionClient,
 		dataStore:        store,
-		dataClient:       dataClient,
 	}, nil
 }
 
@@ -92,8 +85,4 @@ func (s *Standard) DataRepository() dataStore.DataRepository {
 		s.dataRepository = s.dataStore.NewDataRepository()
 	}
 	return s.dataRepository
-}
-
-func (s *Standard) DataClient() dataClient.Client {
-	return s.dataClient
 }
