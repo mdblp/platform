@@ -449,12 +449,25 @@ func buildLoopModeWriteModel(sample schema.ISample, userId *string) ([]mongo.Wri
 	strUserId := *userId
 
 	elem := sample.(schema.Mode)
+	//hack: a mapping here is required to add the user id in to the saved document
+	// as the mode struct is a shared model with the bucket elements
+	doc := bson.M{}
+	doc["timestamp"] = elem.Timestamp
+	doc["timezone"] = elem.Timezone
+	doc["timezoneOffset"] = elem.TimezoneOffset
+	doc["subType"] = elem.SubType
+	doc["deviceId"] = elem.DeviceId
+	doc["guid"] = elem.Guid
+	doc["duration"] = elem.Duration
+	doc["inputTimestamp"] = elem.InputTimestamp
+	doc["userId"] = strUserId
+
 	var updates []mongo.WriteModel
 	var writeOp mongo.WriteModel
 	if elem.Guid != "" && elem.DeviceId != "" {
-		writeOp = mongo.NewReplaceOneModel().SetFilter(bson.M{"guid": elem.Guid, "userId": strUserId, "deviceId": elem.DeviceId}).SetReplacement(elem).SetUpsert(true)
+		writeOp = mongo.NewReplaceOneModel().SetFilter(bson.M{"guid": elem.Guid, "userId": strUserId, "deviceId": elem.DeviceId}).SetReplacement(doc).SetUpsert(true)
 	} else {
-		writeOp = mongo.NewInsertOneModel().SetDocument(elem)
+		writeOp = mongo.NewInsertOneModel().SetDocument(doc)
 	}
 	updates = append(updates, writeOp)
 	return updates, nil
@@ -499,7 +512,7 @@ func buildFlushUpdateOneModel(sample schema.ISample, userId *string, date string
 	op.SetFilter(bson.D{{Key: "_id", Value: strUserId + "_" + date}})
 	op.SetUpdate(bson.D{ // update
 		{Key: "$addToSet", Value: bson.D{
-			{Key: "flush", Value: sample}}},
+			{Key: "flushs", Value: sample}}},
 		{Key: "$setOnInsert", Value: bson.D{
 			{Key: "_id", Value: strUserId + "_" + date},
 			{Key: "creationTimestamp", Value: creationTimestamp},
