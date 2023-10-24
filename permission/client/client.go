@@ -118,7 +118,7 @@ func (c *Client) GetPatientPermissions(req *rest.Request) (bool, string, error) 
 		return false, "", errors.New("request user id is missing")
 	}
 	// TODO check role is patient ?
-	return false, requestUserID, nil
+	return true, requestUserID, nil
 }
 
 func formatRequest(req *rest.Request, targetUserID string) CoastguardRequestBody {

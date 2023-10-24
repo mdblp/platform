@@ -92,15 +92,12 @@ func UsersDataSetsCreate(dataServiceContext dataService.Context) {
 
 	dataSet.DataState = pointer.FromString("open") // TODO: Deprecated DataState (after data migration)
 	dataSet.State = pointer.FromString("open")
+	dataSet.Active = true
 
 	if err := dataServiceContext.DataRepository().CreateDataSet(ctx, dataSet); err != nil {
 		dataServiceContext.RespondWithInternalServerFailure("Unable to insert data set", err)
 		return
 	}
 
-	if err = dataServiceContext.DataRepository().CreateDataSet(ctx, dataSet); err != nil {
-		dataServiceContext.RespondWithInternalServerFailure("Unable to open", err)
-		return
-	}
 	dataServiceContext.RespondWithStatusAndData(http.StatusCreated, dataSet)
 }
