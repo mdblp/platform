@@ -11,4 +11,8 @@ securityScan: true
 dockerBuild: 
   platform: 'linux/arm64,linux/amd64'
   file: 'Dockerfile.data'
+  buildArgs:
+    - 'APP_VERSION=$version'
+    - 'GOPRIVATE=github.com/mdblp/*'
+    - 'GITHUB_TOKEN=$GITHUB_TOKEN'
 dockerImageName: platform-data
