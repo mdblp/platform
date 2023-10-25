@@ -8,19 +8,19 @@ import (
 	"github.com/tidepool-org/platform/platform"
 )
 
-type DEPRECATEDService struct {
+type Service struct {
 	*application.Application
 	secret     string
 	authClient *authClient.Client
 }
 
-func NewDEPRECATEDService() *DEPRECATEDService {
-	return &DEPRECATEDService{
+func NewService() *Service {
+	return &Service{
 		Application: application.New(),
 	}
 }
 
-func (d *DEPRECATEDService) Initialize(provider application.Provider) error {
+func (d *Service) Initialize(provider application.Provider) error {
 	if err := d.Application.Initialize(provider); err != nil {
 		return err
 	}
@@ -31,7 +31,7 @@ func (d *DEPRECATEDService) Initialize(provider application.Provider) error {
 	return d.initializeAuthClient()
 }
 
-func (d *DEPRECATEDService) Terminate() {
+func (d *Service) Terminate() {
 	if d.authClient != nil {
 		d.authClient = nil
 	}
@@ -40,15 +40,15 @@ func (d *DEPRECATEDService) Terminate() {
 	d.Application.Terminate()
 }
 
-func (d *DEPRECATEDService) Secret() string {
+func (d *Service) Secret() string {
 	return d.secret
 }
 
-func (d *DEPRECATEDService) AuthClient() auth.Client {
+func (d *Service) AuthClient() auth.Client {
 	return d.authClient
 }
 
-func (d *DEPRECATEDService) initializeSecret() error {
+func (d *Service) initializeSecret() error {
 	d.Logger().Debug("Initializing secret")
 
 	secret := d.ConfigReporter().GetWithDefault("secret", "")
@@ -60,7 +60,7 @@ func (d *DEPRECATEDService) initializeSecret() error {
 	return nil
 }
 
-func (d *DEPRECATEDService) initializeAuthClient() error {
+func (d *Service) initializeAuthClient() error {
 	d.Logger().Debug("Loading auth client config")
 
 	userAgent := d.UserAgent()

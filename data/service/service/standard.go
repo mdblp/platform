@@ -25,7 +25,7 @@ import (
 const DEFAULT_MINIMAL_YEAR = 2015
 
 type Standard struct {
-	*service.DEPRECATEDService
+	*service.Service
 	permissionClient *permissionClient.Client
 	dataStore        *dataStoreMongo.Stores
 	api              *api.Standard
@@ -36,12 +36,12 @@ var logrusLogger = logrus.New()
 
 func NewStandard() *Standard {
 	return &Standard{
-		DEPRECATEDService: service.NewDEPRECATEDService(),
+		Service: service.NewService(),
 	}
 }
 
 func (s *Standard) Initialize(provider application.Provider) error {
-	if err := s.DEPRECATEDService.Initialize(provider); err != nil {
+	if err := s.Service.Initialize(provider); err != nil {
 		return err
 	}
 
@@ -71,7 +71,7 @@ func (s *Standard) Terminate() {
 	}
 	s.permissionClient = nil
 
-	s.DEPRECATEDService.Terminate()
+	s.Service.Terminate()
 }
 
 func (s *Standard) Run() error {
