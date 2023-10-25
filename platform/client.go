@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/tidepool-org/platform/auth"
 	"github.com/tidepool-org/platform/client"
 	"github.com/tidepool-org/platform/errors"
 	"github.com/tidepool-org/platform/request"
@@ -72,8 +71,6 @@ func (c *Client) Mutators(ctx context.Context) ([]request.RequestMutator, error)
 	if c.IsAuthorizeAsService() {
 		if c.serviceSecret != "" {
 			authorizationMutator = NewServiceSecretHeaderMutator(c.serviceSecret)
-		} else if serverSessionToken := auth.ServerSessionTokenFromContext(ctx); serverSessionToken != "" {
-			authorizationMutator = NewSessionTokenHeaderMutator(serverSessionToken)
 		} else {
 			return nil, errors.New("service secret is missing")
 		}

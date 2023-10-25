@@ -8,7 +8,6 @@ import (
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/ghttp"
 
-	"github.com/tidepool-org/platform/auth"
 	authClient "github.com/tidepool-org/platform/auth/client"
 	authTest "github.com/tidepool-org/platform/auth/test"
 	"github.com/tidepool-org/platform/errors"
@@ -94,7 +93,6 @@ var _ = Describe("External", func() {
 			details = request.NewDetails(request.MethodSessionToken, "", sessionToken, "patient")
 			ctx = context.Background()
 			ctx = log.NewContextWithLogger(ctx, logger)
-			ctx = auth.NewContextWithServerSessionToken(ctx, sessionToken)
 		})
 
 		JustBeforeEach(func() {

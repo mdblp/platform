@@ -123,7 +123,6 @@ var _ = Describe("Client", func() {
 
 						BeforeEach(func() {
 							sessionToken = authTest.NewSessionToken()
-							ctx = auth.NewContextWithServerSessionToken(ctx, sessionToken)
 						})
 
 						It("returns the expected mutators", func() {

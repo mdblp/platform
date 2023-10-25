@@ -10,7 +10,6 @@ import (
 	. "github.com/onsi/gomega"
 	. "github.com/onsi/gomega/ghttp"
 
-	"github.com/tidepool-org/platform/auth"
 	authTest "github.com/tidepool-org/platform/auth/test"
 	"github.com/tidepool-org/platform/errors"
 	errorsTest "github.com/tidepool-org/platform/errors/test"
@@ -67,7 +66,6 @@ var _ = Describe("Client", func() {
 			sessionToken = authTest.NewSessionToken()
 			ctx = context.Background()
 			ctx = log.NewContextWithLogger(ctx, logger)
-			ctx = auth.NewContextWithServerSessionToken(ctx, sessionToken)
 		})
 
 		JustBeforeEach(func() {
