@@ -53,7 +53,6 @@ func NewDataSet(userID string, deviceID string) *upload.Upload {
 	dataSet.DeletedTime = nil
 	dataSet.DeletedUserID = nil
 	dataSet.DeviceID = pointer.FromString(deviceID)
-	dataSet.Location.GPS.Origin.Time = nil
 	dataSet.ModifiedTime = nil
 	dataSet.ModifiedUserID = nil
 	dataSet.Origin.Time = nil
