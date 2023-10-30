@@ -23,7 +23,6 @@ const (
 
 type ExternalConfig struct {
 	AuthenticationConfig     *platform.Config
-	AuthorizationConfig      *platform.Config
 	UserSessionTokenSecret   string
 	ServerSessionTokenSecret string
 }
@@ -31,7 +30,6 @@ type ExternalConfig struct {
 func NewExternalConfig() *ExternalConfig {
 	return &ExternalConfig{
 		AuthenticationConfig: platform.NewConfig(),
-		AuthorizationConfig:  platform.NewConfig(),
 	}
 }
 
@@ -39,11 +37,7 @@ func (e *ExternalConfig) Load(configReporter config.Reporter) error {
 	if err := e.AuthenticationConfig.Load(configReporter); err != nil {
 		return err
 	}
-	if err := e.AuthorizationConfig.Load(configReporter); err != nil {
-		return err
-	}
 	e.AuthenticationConfig.Address = configReporter.GetWithDefault("authentication_address", "")
-	e.AuthorizationConfig.Address = configReporter.GetWithDefault("authorization_address", "")
 	e.ServerSessionTokenSecret = configReporter.GetWithDefault("server_session_token_secret", "")
 	e.UserSessionTokenSecret = configReporter.GetWithDefault("user_session_token_secret", "")
 
@@ -54,10 +48,6 @@ func (e *ExternalConfig) Validate() error {
 	if err := e.AuthenticationConfig.Validate(); err != nil {
 		return err
 	}
-	if err := e.AuthorizationConfig.Validate(); err != nil {
-		return err
-	}
-
 	if e.ServerSessionTokenSecret == "" {
 		return errors.New("server session token secret is missing")
 	}

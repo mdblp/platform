@@ -65,7 +65,6 @@ func (d *Service) initializeAuthClient() error {
 	userAgent := d.UserAgent()
 	cfg := authClient.NewConfig()
 	cfg.ExternalConfig.AuthenticationConfig.UserAgent = userAgent
-	cfg.ExternalConfig.AuthorizationConfig.UserAgent = userAgent
 	if err := cfg.Load(d.ConfigReporter().WithScopes("auth", "client")); err != nil {
 		return errors.Wrap(err, "unable to load auth client config")
 	}

@@ -34,9 +34,7 @@ var _ = Describe("Client", func() {
 			config = authClient.NewConfig()
 			Expect(config).ToNot(BeNil())
 			config.ExternalConfig.AuthenticationConfig.Address = testHttp.NewAddress()
-			config.ExternalConfig.AuthorizationConfig.Address = testHttp.NewAddress()
 			config.ExternalConfig.AuthenticationConfig.UserAgent = testHttp.NewUserAgent()
-			config.ExternalConfig.AuthorizationConfig.UserAgent = testHttp.NewUserAgent()
 			config.ExternalConfig.ServerSessionTokenSecret = serverTokenSecret
 		})
 
@@ -72,13 +70,6 @@ var _ = Describe("Client", func() {
 			Expect(client).To(BeNil())
 		})
 
-		It("returns an error if config external authorization address is missing", func() {
-			config.ExternalConfig.AuthorizationConfig.Address = ""
-			client, err := authClient.NewClient(config, name, logger)
-			errorsTest.ExpectEqual(err, errors.New("config is invalid"))
-			Expect(client).To(BeNil())
-		})
-
 		It("returns success", func() {
 			client, err := authClient.NewClient(config, name, logger)
 			Expect(err).ToNot(HaveOccurred())
@@ -96,9 +87,7 @@ var _ = Describe("Client", func() {
 			config = authClient.NewConfig()
 			Expect(config).ToNot(BeNil())
 			config.ExternalConfig.AuthenticationConfig.Address = server.URL()
-			config.ExternalConfig.AuthorizationConfig.Address = server.URL()
 			config.ExternalConfig.AuthenticationConfig.UserAgent = testHttp.NewUserAgent()
-			config.ExternalConfig.AuthorizationConfig.UserAgent = testHttp.NewUserAgent()
 			config.ExternalConfig.ServerSessionTokenSecret = serverTokenSecret
 		})
 
