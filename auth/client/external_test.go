@@ -14,7 +14,6 @@ import (
 	errorsTest "github.com/tidepool-org/platform/errors/test"
 	"github.com/tidepool-org/platform/log"
 	logTest "github.com/tidepool-org/platform/log/test"
-	"github.com/tidepool-org/platform/permission"
 	"github.com/tidepool-org/platform/request"
 	"github.com/tidepool-org/platform/test"
 	testHttp "github.com/tidepool-org/platform/test/http"
@@ -159,13 +158,11 @@ var _ = Describe("External", func() {
 		Context("EnsureAuthorizedUser", func() {
 			var requestUserID string
 			var targetUserID string
-			var authorizedPermission string
 
 			BeforeEach(func() {
 				requestUserID = authTest.RandomUserID()
 				targetUserID = authTest.RandomUserID()
 				details = request.NewDetails(request.MethodSessionToken, requestUserID, sessionToken, "patient")
-				authorizedPermission = test.RandomStringFromArray([]string{permission.Write, permission.Read})
 			})
 
 			Context("without server response", func() {
@@ -175,47 +172,33 @@ var _ = Describe("External", func() {
 
 				It("returns an error when the context is missing", func() {
 					ctx = nil
-					userID, err := client.EnsureAuthorizedUser(ctx, targetUserID, authorizedPermission)
+					userID, err := client.EnsureAuthorizedUser(ctx, targetUserID)
 					errorsTest.ExpectEqual(err, errors.New("context is missing"))
 					Expect(userID).To(BeEmpty())
 				})
 
 				It("returns an error when the target user id is missing", func() {
 					targetUserID = ""
-					userID, err := client.EnsureAuthorizedUser(ctx, targetUserID, authorizedPermission)
+					userID, err := client.EnsureAuthorizedUser(ctx, targetUserID)
 					errorsTest.ExpectEqual(err, errors.New("target user id is missing"))
 					Expect(userID).To(BeEmpty())
 				})
 
 				It("returns an error when the details are missing", func() {
 					ctx = request.NewContextWithDetails(ctx, nil)
-					userID, err := client.EnsureAuthorizedUser(ctx, targetUserID, authorizedPermission)
+					userID, err := client.EnsureAuthorizedUser(ctx, targetUserID)
 					errorsTest.ExpectEqual(err, request.ErrorUnauthorized())
 					Expect(userID).To(BeEmpty())
 				})
 
 				It("returns successfully when the details are for a service and authorized permission is custodian", func() {
 					ctx = request.NewContextWithDetails(ctx, request.NewDetails(request.MethodSessionToken, "", sessionToken, "patient"))
-					authorizedPermission = permission.Custodian
-					Expect(client.EnsureAuthorizedUser(ctx, targetUserID, authorizedPermission)).To(Equal(""))
+					Expect(client.EnsureAuthorizedUser(ctx, targetUserID)).To(Equal(""))
 				})
 
-				It("returns successfully when the details are for the target user and authorized permission is owner", func() {
+				It("returns successfully when the details are for the target user", func() {
 					ctx = request.NewContextWithDetails(ctx, request.NewDetails(request.MethodSessionToken, targetUserID, sessionToken, "patient"))
-					authorizedPermission = permission.Owner
-					Expect(client.EnsureAuthorizedUser(ctx, targetUserID, authorizedPermission)).To(Equal(targetUserID))
-				})
-
-				It("returns successfully when the details are for the target user and authorized permission is upload", func() {
-					ctx = request.NewContextWithDetails(ctx, request.NewDetails(request.MethodSessionToken, targetUserID, sessionToken, "patient"))
-					authorizedPermission = permission.Write
-					Expect(client.EnsureAuthorizedUser(ctx, targetUserID, authorizedPermission)).To(Equal(targetUserID))
-				})
-
-				It("returns successfully when the details are for the target user and authorized permission is view", func() {
-					ctx = request.NewContextWithDetails(ctx, request.NewDetails(request.MethodSessionToken, targetUserID, sessionToken, "patient"))
-					authorizedPermission = permission.Read
-					Expect(client.EnsureAuthorizedUser(ctx, targetUserID, authorizedPermission)).To(Equal(targetUserID))
+					Expect(client.EnsureAuthorizedUser(ctx, targetUserID)).To(Equal(targetUserID))
 				})
 			})
 
@@ -227,8 +210,7 @@ var _ = Describe("External", func() {
 
 					It("returns an error", func() {
 						ctx = request.NewContextWithDetails(ctx, request.NewDetails(request.MethodSessionToken, "unknownId", sessionToken, "patient"))
-						authorizedPermission = permission.Write
-						userID, err := client.EnsureAuthorizedUser(ctx, targetUserID, authorizedPermission)
+						userID, err := client.EnsureAuthorizedUser(ctx, targetUserID)
 						errorsTest.ExpectEqual(err, request.ErrorUnauthorized())
 						Expect(userID).To(Equal(""))
 					})

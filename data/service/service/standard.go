@@ -16,7 +16,6 @@ import (
 	"github.com/tidepool-org/platform/errors"
 	"github.com/tidepool-org/platform/permission"
 	permissionClient "github.com/tidepool-org/platform/permission/client"
-	"github.com/tidepool-org/platform/platform"
 	"github.com/tidepool-org/platform/service/server"
 	"github.com/tidepool-org/platform/service/service"
 	storeStructuredMongo "github.com/tidepool-org/platform/store/structured/mongo"
@@ -87,20 +86,8 @@ func (s *Standard) PermissionClient() permission.Client {
 }
 
 func (s *Standard) initializePermissionClient() error {
-	s.Logger().Debug("Loading permission client config")
-
-	cfg := platform.NewConfig()
-	cfg.UserAgent = s.UserAgent()
-	reporter := s.ConfigReporter().WithScopes("permission", "client")
-	if err := cfg.Load(reporter); err != nil {
-		return errors.Wrap(err, "unable to load permission client config")
-	}
-
 	s.Logger().Debug("Creating permission client")
-	clnt, err := permissionClient.New(cfg)
-	if err != nil {
-		return errors.Wrap(err, "unable to create permission client")
-	}
+	clnt := permissionClient.New()
 	s.permissionClient = clnt
 
 	return nil

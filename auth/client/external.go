@@ -143,15 +143,12 @@ func (e *External) EnsureAuthorizedService(ctx context.Context) error {
 	return request.ErrorUnauthorized()
 }
 
-func (e *External) EnsureAuthorizedUser(ctx context.Context, targetUserID string, authorizedPermission string) (string, error) {
+func (e *External) EnsureAuthorizedUser(ctx context.Context, targetUserID string) (string, error) {
 	if ctx == nil {
 		return "", errors.New("context is missing")
 	}
 	if targetUserID == "" {
 		return "", errors.New("target user id is missing")
-	}
-	if authorizedPermission == "" {
-		return "", errors.New("authorized permission is missing")
 	}
 
 	if details := request.DetailsFromContext(ctx); details != nil {

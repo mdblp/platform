@@ -17,8 +17,7 @@ type ValidateSessionTokenOutput struct {
 }
 
 type EnsureAuthorizedUserInput struct {
-	TargetUserID         string
-	AuthorizedPermission string
+	TargetUserID string
 }
 
 type EnsureAuthorizedUserOutput struct {
@@ -42,7 +41,7 @@ type ExternalAccessor struct {
 	EnsureAuthorizedServiceOutput      *error
 	EnsureAuthorizedUserInvocations    int
 	EnsureAuthorizedUserInputs         []EnsureAuthorizedUserInput
-	EnsureAuthorizedUserStub           func(ctx context.Context, targetUserID string, authorizedPermission string) (string, error)
+	EnsureAuthorizedUserStub           func(ctx context.Context, targetUserID string) (string, error)
 	EnsureAuthorizedUserOutputs        []EnsureAuthorizedUserOutput
 	EnsureAuthorizedUserOutput         *EnsureAuthorizedUserOutput
 }
@@ -100,11 +99,11 @@ func (e *ExternalAccessor) EnsureAuthorizedService(ctx context.Context) error {
 	panic("EnsureAuthorizedService has no output")
 }
 
-func (e *ExternalAccessor) EnsureAuthorizedUser(ctx context.Context, targetUserID string, authorizedPermission string) (string, error) {
+func (e *ExternalAccessor) EnsureAuthorizedUser(ctx context.Context, targetUserID string) (string, error) {
 	e.EnsureAuthorizedUserInvocations++
-	e.EnsureAuthorizedUserInputs = append(e.EnsureAuthorizedUserInputs, EnsureAuthorizedUserInput{TargetUserID: targetUserID, AuthorizedPermission: authorizedPermission})
+	e.EnsureAuthorizedUserInputs = append(e.EnsureAuthorizedUserInputs, EnsureAuthorizedUserInput{TargetUserID: targetUserID})
 	if e.EnsureAuthorizedUserStub != nil {
-		return e.EnsureAuthorizedUserStub(ctx, targetUserID, authorizedPermission)
+		return e.EnsureAuthorizedUserStub(ctx, targetUserID)
 	}
 	if len(e.EnsureAuthorizedUserOutputs) > 0 {
 		output := e.EnsureAuthorizedUserOutputs[0]

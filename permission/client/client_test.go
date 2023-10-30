@@ -3,7 +3,6 @@ package client_test
 import (
 	"context"
 	"net/http"
-	"strings"
 
 	"github.com/mdblp/go-json-rest/rest"
 	. "github.com/onsi/ginkgo"
@@ -18,7 +17,6 @@ import (
 	permissionClient "github.com/tidepool-org/platform/permission/client"
 	"github.com/tidepool-org/platform/platform"
 	"github.com/tidepool-org/platform/request"
-	"github.com/tidepool-org/platform/test"
 	testHttp "github.com/tidepool-org/platform/test/http"
 	userTest "github.com/tidepool-org/platform/user/test"
 )
@@ -36,22 +34,14 @@ var _ = Describe("Client", func() {
 			config.Address = testHttp.NewAddress()
 		})
 
-		It("returns an error when the config is missing", func() {
-			config = nil
-			client, err := permissionClient.New(nil)
-			errorsTest.ExpectEqual(err, errors.New("config is missing"))
-			Expect(client).To(BeNil())
-		})
-
-		It("returns success when the config is present", func() {
-			Expect(permissionClient.New(config)).ToNot(BeNil())
+		It("returns success", func() {
+			Expect(permissionClient.New()).ToNot(BeNil())
 		})
 	})
 
-	Context("with server and coastguard client", func() {
+	Context("with server", func() {
 		var server *Server
 		var requestHandlers []http.HandlerFunc
-		var responseHeaders http.Header
 		var logger *logTest.Logger
 		var sessionToken string
 		var ctx context.Context
@@ -61,7 +51,6 @@ var _ = Describe("Client", func() {
 		BeforeEach(func() {
 			server = NewServer()
 			requestHandlers = nil
-			responseHeaders = http.Header{"Content-Type": []string{"application/json; charset=utf-8"}}
 			logger = logTest.NewLogger()
 			sessionToken = authTest.NewSessionToken()
 			ctx = context.Background()
@@ -70,10 +59,8 @@ var _ = Describe("Client", func() {
 
 		JustBeforeEach(func() {
 			server.AppendHandlers(CombineHandlers(requestHandlers...))
-			var err error
 			config.Address = server.URL()
-			client, err = permissionClient.New(config)
-			Expect(err).ToNot(HaveOccurred())
+			client = permissionClient.New()
 			Expect(client).ToNot(BeNil())
 		})
 
@@ -129,97 +116,32 @@ var _ = Describe("Client", func() {
 					Expect(err).To(BeNil())
 					Expect(permissions).To(Equal(true))
 				})
-			})
 
-			Context("with server response", func() {
-
-				BeforeEach(func() {
-					var requestBody permissionClient.CoastguardRequestBody
-					url := *req.URL
-					headers := make(map[string]string)
-					for k := range req.Header {
-						headers[strings.ToLower(k)] = req.Header.Get(k)
+				It("returns an error when the requester is not a patient", func() {
+					data := request.NewDetails(request.MethodSessionToken, requestUserID, sessionToken, "hcp")
+					ctx = request.NewContextWithDetails(ctx, data)
+					httpReq, _ := http.NewRequestWithContext(ctx, "GET", "http://test.fr", nil)
+					req = &rest.Request{
+						Request: httpReq,
 					}
-					requestBody.Input.Request.Headers = headers
-					requestBody.Input.Request.Method = req.Method
-					requestBody.Input.Request.Protocol = req.Proto
-					requestBody.Input.Request.Host = req.Host
-					requestBody.Input.Request.Path = url.Path
-					requestBody.Input.Request.Query = url.RawQuery
-					requestBody.Input.Request.Service = "platform"
-					requestBody.Input.Data.TargetUserID = targetUserID
-					requestHandlers = append(requestHandlers,
-						VerifyContentType("application/json; charset=utf-8"),
-						VerifyHeaderKV("X-Tidepool-Session-Token", sessionToken),
-						VerifyBody(test.MarshalRequestBody(&requestBody)),
-						VerifyRequest("POST", "/v1/data/backloops/access"),
-					)
+					permissions, err := client.GetUserPermissions(req, targetUserID)
+					Expect(err).To(BeNil())
+					Expect(permissions).To(Equal(false))
 				})
 
-				AfterEach(func() {
-					Expect(server.ReceivedRequests()).To(HaveLen(1))
-				})
-
-				Context("with an unauthenticated response", func() {
-					BeforeEach(func() {
-						requestHandlers = append(requestHandlers, RespondWith(http.StatusUnauthorized, nil, responseHeaders))
-					})
-
-					It("returns an error", func() {
-						permissions, err := client.GetUserPermissions(req, targetUserID)
-						Expect(err).NotTo(BeNil())
-						Expect(permissions).To(Equal(false))
-					})
-				})
-
-				Context("with a not found response ", func() {
-					BeforeEach(func() {
-						requestHandlers = append(requestHandlers, RespondWith(http.StatusNotFound, nil, responseHeaders))
-					})
-
-					It("returns an error", func() {
-						permissions, err := client.GetUserPermissions(req, targetUserID)
-						Expect(err).NotTo(BeNil())
-						Expect(permissions).To(Equal(false))
-					})
-				})
-
-				Context("with a successful response, but with empty response", func() {
-					BeforeEach(func() {
-						requestHandlers = append(requestHandlers, RespondWith(http.StatusOK, "{}", responseHeaders))
-					})
-
-					It("returns successfully with expected refused authorization", func() {
-						permissions, err := client.GetUserPermissions(req, targetUserID)
-						Expect(err).To(BeNil())
-						Expect(permissions).To(Equal(false))
-					})
-				})
-
-				Context("with a successful response with authorization set to false", func() {
-					BeforeEach(func() {
-						requestHandlers = append(requestHandlers, RespondWith(http.StatusOK, `{"result":{"authorized": false, "route": "test"}}`, responseHeaders))
-					})
-
-					It("returns successfully with expected refused authorization", func() {
-						permissions, err := client.GetUserPermissions(req, targetUserID)
-						Expect(err).To(BeNil())
-						Expect(permissions).To(Equal(false))
-					})
-				})
-
-				Context("with a successful response with authorization set to true", func() {
-					BeforeEach(func() {
-						requestHandlers = append(requestHandlers, RespondWith(http.StatusOK, `{"result":{"authorized": true, "route": "test"}}`, responseHeaders))
-					})
-
-					It("returns successfully with expected accepted authorization", func() {
-						permissions, err := client.GetUserPermissions(req, targetUserID)
-						Expect(err).To(BeNil())
-						Expect(permissions).To(Equal(true))
-					})
+				It("returns an error when the requester is not the same UserId", func() {
+					data := request.NewDetails(request.MethodSessionToken, requestUserID, sessionToken, "patient")
+					ctx = request.NewContextWithDetails(ctx, data)
+					httpReq, _ := http.NewRequestWithContext(ctx, "GET", "http://test.fr", nil)
+					req = &rest.Request{
+						Request: httpReq,
+					}
+					permissions, err := client.GetUserPermissions(req, targetUserID)
+					Expect(err).To(BeNil())
+					Expect(permissions).To(Equal(false))
 				})
 			})
+
 		})
 	})
 })
