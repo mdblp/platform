@@ -11,7 +11,6 @@ import (
 	errorsTest "github.com/tidepool-org/platform/errors/test"
 	"github.com/tidepool-org/platform/log"
 	logTest "github.com/tidepool-org/platform/log/test"
-	"github.com/tidepool-org/platform/platform"
 	"github.com/tidepool-org/platform/test"
 	testHttp "github.com/tidepool-org/platform/test/http"
 )
@@ -30,7 +29,6 @@ var _ = Describe("Client", func() {
 
 	Context("NewClient", func() {
 		var config *authClient.Config
-		var authorizeAs platform.AuthorizeAs
 
 		BeforeEach(func() {
 			config = authClient.NewConfig()
@@ -40,50 +38,49 @@ var _ = Describe("Client", func() {
 			config.ExternalConfig.AuthenticationConfig.UserAgent = testHttp.NewUserAgent()
 			config.ExternalConfig.AuthorizationConfig.UserAgent = testHttp.NewUserAgent()
 			config.ExternalConfig.ServerSessionTokenSecret = serverTokenSecret
-			authorizeAs = platform.AuthorizeAsService
 		})
 
 		It("returns an error if config is missing", func() {
-			client, err := authClient.NewClient(nil, authorizeAs, name, logger)
+			client, err := authClient.NewClient(nil, name, logger)
 			errorsTest.ExpectEqual(err, errors.New("config is missing"))
 			Expect(client).To(BeNil())
 		})
 
 		It("returns an error if name is missing", func() {
-			client, err := authClient.NewClient(config, authorizeAs, "", logger)
+			client, err := authClient.NewClient(config, "", logger)
 			errorsTest.ExpectEqual(err, errors.New("name is missing"))
 			Expect(client).To(BeNil())
 		})
 
 		It("returns an error if logger is missing", func() {
-			client, err := authClient.NewClient(config, authorizeAs, name, nil)
+			client, err := authClient.NewClient(config, name, nil)
 			errorsTest.ExpectEqual(err, errors.New("logger is missing"))
 			Expect(client).To(BeNil())
 		})
 
 		It("returns an error if config server session token secret is missing", func() {
 			config.ExternalConfig.ServerSessionTokenSecret = ""
-			client, err := authClient.NewClient(config, authorizeAs, name, logger)
+			client, err := authClient.NewClient(config, name, logger)
 			errorsTest.ExpectEqual(err, errors.New("config is invalid"))
 			Expect(client).To(BeNil())
 		})
 
 		It("returns an error if config external authentication address is missing", func() {
 			config.ExternalConfig.AuthenticationConfig.Address = ""
-			client, err := authClient.NewClient(config, authorizeAs, name, logger)
+			client, err := authClient.NewClient(config, name, logger)
 			errorsTest.ExpectEqual(err, errors.New("config is invalid"))
 			Expect(client).To(BeNil())
 		})
 
 		It("returns an error if config external authorization address is missing", func() {
 			config.ExternalConfig.AuthorizationConfig.Address = ""
-			client, err := authClient.NewClient(config, authorizeAs, name, logger)
+			client, err := authClient.NewClient(config, name, logger)
 			errorsTest.ExpectEqual(err, errors.New("config is invalid"))
 			Expect(client).To(BeNil())
 		})
 
 		It("returns success", func() {
-			client, err := authClient.NewClient(config, authorizeAs, name, logger)
+			client, err := authClient.NewClient(config, name, logger)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(client).ToNot(BeNil())
 		})
@@ -92,7 +89,6 @@ var _ = Describe("Client", func() {
 	Context("with started server and new client", func() {
 		var server *Server
 		var config *authClient.Config
-		var authorizeAs platform.AuthorizeAs
 		var client *authClient.Client
 
 		BeforeEach(func() {
@@ -104,12 +100,11 @@ var _ = Describe("Client", func() {
 			config.ExternalConfig.AuthenticationConfig.UserAgent = testHttp.NewUserAgent()
 			config.ExternalConfig.AuthorizationConfig.UserAgent = testHttp.NewUserAgent()
 			config.ExternalConfig.ServerSessionTokenSecret = serverTokenSecret
-			authorizeAs = platform.AuthorizeAsService
 		})
 
 		JustBeforeEach(func() {
 			var err error
-			client, err = authClient.NewClient(config, authorizeAs, name, logger)
+			client, err = authClient.NewClient(config, name, logger)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(client).ToNot(BeNil())
 		})

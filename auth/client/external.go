@@ -7,7 +7,6 @@ import (
 	"github.com/tidepool-org/platform/config"
 	"github.com/tidepool-org/platform/errors"
 	"github.com/tidepool-org/platform/log"
-	"github.com/tidepool-org/platform/permission"
 	"github.com/tidepool-org/platform/platform"
 	"github.com/tidepool-org/platform/request"
 
@@ -67,14 +66,13 @@ func (e *ExternalConfig) Validate() error {
 }
 
 type External struct {
-	authorizationClient      *platform.Client
 	name                     string
 	logger                   log.Logger
 	serverSessionTokenSecret string
 	userSessionTokenSecret   string
 }
 
-func NewExternal(cfg *ExternalConfig, authorizeAs platform.AuthorizeAs, name string, lgr log.Logger) (*External, error) {
+func NewExternal(cfg *ExternalConfig, name string, lgr log.Logger) (*External, error) {
 	if cfg == nil {
 		return nil, errors.New("config is missing")
 	}
@@ -89,13 +87,7 @@ func NewExternal(cfg *ExternalConfig, authorizeAs platform.AuthorizeAs, name str
 		return nil, errors.Wrap(err, "config is invalid")
 	}
 
-	authorizationClnt, err := platform.NewClient(cfg.AuthorizationConfig, authorizeAs)
-	if err != nil {
-		return nil, err
-	}
-
 	return &External{
-		authorizationClient:      authorizationClnt,
 		logger:                   lgr,
 		name:                     name,
 		serverSessionTokenSecret: cfg.ServerSessionTokenSecret,
@@ -169,22 +161,9 @@ func (e *External) EnsureAuthorizedUser(ctx context.Context, targetUserID string
 
 		authenticatedUserID := details.UserID()
 		if authenticatedUserID == targetUserID {
-			if authorizedPermission != permission.Custodian {
-				return authenticatedUserID, nil
-			}
+			return authenticatedUserID, nil
 		} else {
-			url := e.authorizationClient.ConstructURL("access", targetUserID, authenticatedUserID)
-			permissions := permission.Permissions{}
-			if err := e.authorizationClient.RequestData(ctx, "GET", url, nil, &permissions); err != nil {
-				if !request.IsErrorResourceNotFound(err) {
-					return "", errors.Wrap(err, "unable to get user permissions")
-				}
-			} else {
-				permissions = permission.FixOwnerPermissions(permissions)
-				if _, ok := permissions[authorizedPermission]; ok {
-					return authenticatedUserID, nil
-				}
-			}
+			return "", request.ErrorUnauthorized()
 		}
 	}
 
