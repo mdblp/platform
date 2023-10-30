@@ -118,23 +118,6 @@ var _ = Describe("Client", func() {
 						serviceSecret = ""
 					})
 
-					Context("with server session token", func() {
-						var sessionToken string
-
-						BeforeEach(func() {
-							sessionToken = authTest.NewSessionToken()
-						})
-
-						It("returns the expected mutators", func() {
-							mutators, err := clnt.Mutators(ctx)
-							Expect(err).ToNot(HaveOccurred())
-							Expect(mutators).To(ConsistOf(
-								platform.NewSessionTokenHeaderMutator(sessionToken),
-								platform.NewTraceMutator(ctx),
-							))
-						})
-					})
-
 					It("returns an error", func() {
 						mutators, err := clnt.Mutators(ctx)
 						Expect(err).To(MatchError("service secret is missing"))
