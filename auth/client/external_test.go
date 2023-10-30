@@ -68,7 +68,6 @@ var _ = Describe("External", func() {
 	Context("with server and new client", func() {
 		var server *Server
 		var requestHandlers []http.HandlerFunc
-		var responseHeaders http.Header
 		var client *authClient.External
 		var sessionToken string
 		var details request.Details
@@ -77,7 +76,6 @@ var _ = Describe("External", func() {
 		BeforeEach(func() {
 			server = NewServer()
 			requestHandlers = nil
-			responseHeaders = http.Header{"Content-Type": []string{"application/json; charset=utf-8"}}
 			sessionToken = authTest.NewSessionToken()
 			details = request.NewDetails(request.MethodSessionToken, "", sessionToken, "patient")
 			ctx = context.Background()
@@ -99,123 +97,6 @@ var _ = Describe("External", func() {
 			if server != nil {
 				server.Close()
 			}
-		})
-
-		Context("EnsureAuthorized", func() {
-			Context("without server response", func() {
-				AfterEach(func() {
-					Expect(server.ReceivedRequests()).To(BeEmpty())
-				})
-
-				It("returns an error when the context is missing", func() {
-					ctx = nil
-					errorsTest.ExpectEqual(client.EnsureAuthorized(ctx), errors.New("context is missing"))
-				})
-
-				It("returns an error when the details are missing", func() {
-					ctx = request.NewContextWithDetails(ctx, nil)
-					errorsTest.ExpectEqual(client.EnsureAuthorized(ctx), request.ErrorUnauthorized())
-				})
-
-				It("returns successfully when the details are for a user", func() {
-					ctx = request.NewContextWithDetails(ctx, request.NewDetails(request.MethodSessionToken, authTest.RandomUserID(), sessionToken, "patient"))
-					Expect(client.EnsureAuthorized(ctx)).To(Succeed())
-				})
-
-				It("returns successfully when the details are for a service", func() {
-					Expect(client.EnsureAuthorized(ctx)).To(Succeed())
-				})
-			})
-		})
-
-		Context("EnsureAuthorizedService", func() {
-			Context("without server response", func() {
-				AfterEach(func() {
-					Expect(server.ReceivedRequests()).To(BeEmpty())
-				})
-
-				It("returns an error when the context is missing", func() {
-					ctx = nil
-					errorsTest.ExpectEqual(client.EnsureAuthorizedService(ctx), errors.New("context is missing"))
-				})
-
-				It("returns an error when the details are missing", func() {
-					ctx = request.NewContextWithDetails(ctx, nil)
-					errorsTest.ExpectEqual(client.EnsureAuthorizedService(ctx), request.ErrorUnauthorized())
-				})
-
-				It("returns an error when the details are for not a service", func() {
-					ctx = request.NewContextWithDetails(ctx, request.NewDetails(request.MethodSessionToken, authTest.RandomUserID(), sessionToken, "patient"))
-					errorsTest.ExpectEqual(client.EnsureAuthorizedService(ctx), request.ErrorUnauthorized())
-				})
-
-				It("returns successfully when the details are for a service", func() {
-					Expect(client.EnsureAuthorizedService(ctx)).To(Succeed())
-				})
-			})
-		})
-
-		Context("EnsureAuthorizedUser", func() {
-			var requestUserID string
-			var targetUserID string
-
-			BeforeEach(func() {
-				requestUserID = authTest.RandomUserID()
-				targetUserID = authTest.RandomUserID()
-				details = request.NewDetails(request.MethodSessionToken, requestUserID, sessionToken, "patient")
-			})
-
-			Context("without server response", func() {
-				AfterEach(func() {
-					Expect(server.ReceivedRequests()).To(BeEmpty())
-				})
-
-				It("returns an error when the context is missing", func() {
-					ctx = nil
-					userID, err := client.EnsureAuthorizedUser(ctx, targetUserID)
-					errorsTest.ExpectEqual(err, errors.New("context is missing"))
-					Expect(userID).To(BeEmpty())
-				})
-
-				It("returns an error when the target user id is missing", func() {
-					targetUserID = ""
-					userID, err := client.EnsureAuthorizedUser(ctx, targetUserID)
-					errorsTest.ExpectEqual(err, errors.New("target user id is missing"))
-					Expect(userID).To(BeEmpty())
-				})
-
-				It("returns an error when the details are missing", func() {
-					ctx = request.NewContextWithDetails(ctx, nil)
-					userID, err := client.EnsureAuthorizedUser(ctx, targetUserID)
-					errorsTest.ExpectEqual(err, request.ErrorUnauthorized())
-					Expect(userID).To(BeEmpty())
-				})
-
-				It("returns successfully when the details are for a service and authorized permission is custodian", func() {
-					ctx = request.NewContextWithDetails(ctx, request.NewDetails(request.MethodSessionToken, "", sessionToken, "patient"))
-					Expect(client.EnsureAuthorizedUser(ctx, targetUserID)).To(Equal(""))
-				})
-
-				It("returns successfully when the details are for the target user", func() {
-					ctx = request.NewContextWithDetails(ctx, request.NewDetails(request.MethodSessionToken, targetUserID, sessionToken, "patient"))
-					Expect(client.EnsureAuthorizedUser(ctx, targetUserID)).To(Equal(targetUserID))
-				})
-			})
-
-			Context("with server response when the details are not for the target user", func() {
-				Context("with a successful response with incorrect permissions", func() {
-					BeforeEach(func() {
-						requestHandlers = append(requestHandlers, RespondWith(http.StatusOK, `{"view": {}}`, responseHeaders))
-					})
-
-					It("returns an error", func() {
-						ctx = request.NewContextWithDetails(ctx, request.NewDetails(request.MethodSessionToken, "unknownId", sessionToken, "patient"))
-						userID, err := client.EnsureAuthorizedUser(ctx, targetUserID)
-						errorsTest.ExpectEqual(err, request.ErrorUnauthorized())
-						Expect(userID).To(Equal(""))
-					})
-				})
-			})
 		})
 	})
 })
