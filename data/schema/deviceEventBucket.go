@@ -126,8 +126,12 @@ func (c *Calibration) MapForCalibration(event *calibration.Calibration) error {
 	}
 
 	c.SubType = event.SubType
-	c.Units = *event.Units
-	c.Value = *event.Value
+	if event.Units != nil {
+		c.Units = *event.Units
+	}
+	if event.Value != nil {
+		c.Value = *event.Value
+	}
 
 	// time infos mapping
 	c.Timezone = *event.TimeZoneName
@@ -154,10 +158,15 @@ func (f *Flush) MapForFlush(event *flush.Flush) error {
 	if event.DeviceID != nil {
 		f.DeviceId = *event.DeviceID
 	}
-
-	f.Status = *event.Status
-	f.StatusCode = event.StatusCode
-	f.Volume = *event.Volume
+	if event.Status != nil {
+		f.Status = *event.Status
+	}
+	if event.StatusCode != nil {
+		f.StatusCode = event.StatusCode
+	}
+	if event.Volume != nil {
+		f.Volume = *event.Volume
+	}
 
 	// time infos mapping
 	f.Timezone = *event.TimeZoneName
@@ -184,9 +193,12 @@ func (p *Prime) MapForPrime(event *prime.Prime) error {
 	if event.DeviceID != nil {
 		p.DeviceId = *event.DeviceID
 	}
-
-	p.Target = *event.Target
-	p.Volume = *event.Volume
+	if event.Target != nil {
+		p.Target = *event.Target
+	}
+	if event.Volume != nil {
+		p.Volume = *event.Volume
+	}
 
 	// time infos mapping
 	p.Timezone = *event.TimeZoneName
@@ -214,8 +226,9 @@ func (r *ReservoirChange) MapForReservoirChange(event *reservoirchange.Reservoir
 		r.DeviceId = *event.DeviceID
 	}
 
-	r.Status = *event.StatusID
-
+	if event.StatusID != nil {
+		r.Status = *event.StatusID
+	}
 	// time infos mapping
 	r.Timezone = *event.TimeZoneName
 	r.TimezoneOffset = *event.TimeZoneOffset
