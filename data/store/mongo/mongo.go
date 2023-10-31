@@ -12,6 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 
 	goComMgo "github.com/mdblp/go-db/mongo"
+
 	"github.com/tidepool-org/platform/data/types/basal/automated"
 	"github.com/tidepool-org/platform/data/types/basal/scheduled"
 	"github.com/tidepool-org/platform/data/types/basal/temporary"
