@@ -15,4 +15,4 @@ ENV PATH="$PATH:/home/mdblp/.local/bin"
 RUN git config --global url."https://${GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
 COPY go.mod ./
 COPY go.sum ./
-RUN go clean -modcache && go mod tidy && go mod download
+RUN go mod download
