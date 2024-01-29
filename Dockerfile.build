@@ -13,6 +13,6 @@ USER mdblp
 RUN  pipx install prance[cli,osv]
 ENV PATH="$PATH:/home/mdblp/.local/bin"
 RUN git config --global url."https://${GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
-COPY go.mod ./
-COPY go.sum ./
+COPY --chown=mdblp  go.mod ./
+COPY --chown=mdblp go.sum ./
 RUN ls -al && go mod download
