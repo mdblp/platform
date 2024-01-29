@@ -16,7 +16,7 @@ pipeline {
                     withCredentials ([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
                         builderImage = docker.build(
                             'go-build-image',
-                            '-f ./Dockerfile.build --no-cache --build-arg="GITHUB_TOKEN=${GITHUB_TOKEN}" --build-arg="GOPRIVATE=github.com/mdblp/*" .'
+                            '-f ./Dockerfile.build --build-arg="GITHUB_TOKEN=${GITHUB_TOKEN}" --build-arg="GOPRIVATE=github.com/mdblp/*" .'
                         )
                     }
                     env.RUN_ID = UUID.randomUUID().toString()
