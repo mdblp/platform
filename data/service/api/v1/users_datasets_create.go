@@ -33,7 +33,7 @@ import (
 // @Router /v1/users/:userId/datasets [post]
 func UsersDataSetsCreate(dataServiceContext dataService.Context) {
 	req := dataServiceContext.Request()
-	ctx := req.Context()
+	//ctx := req.Context()
 
 	targetUserID := req.PathParam("userId")
 	if targetUserID == "" {
@@ -94,10 +94,10 @@ func UsersDataSetsCreate(dataServiceContext dataService.Context) {
 	dataSet.State = pointer.FromString("open")
 	dataSet.Active = true
 
-	if err := dataServiceContext.DataRepository().CreateDataSet(ctx, dataSet); err != nil {
-		dataServiceContext.RespondWithInternalServerFailure("Unable to insert data set", err)
-		return
-	}
+	//if err := dataServiceContext.DataRepository().CreateDataSet(ctx, dataSet); err != nil {
+	//	dataServiceContext.RespondWithInternalServerFailure("Unable to insert data set", err)
+	//	return
+	//}
 
 	dataServiceContext.RespondWithStatusAndData(http.StatusCreated, dataSet)
 }
