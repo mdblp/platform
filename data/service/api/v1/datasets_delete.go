@@ -4,8 +4,6 @@ import (
 	"net/http"
 
 	dataService "github.com/tidepool-org/platform/data/service"
-	"github.com/tidepool-org/platform/request"
-	"github.com/tidepool-org/platform/service"
 )
 
 type dataSetsDeleteParams struct {
@@ -31,7 +29,7 @@ type dataSetsDeleteParams struct {
 // @Router /v1/datasets/:dataSetID [delete]
 func DataSetsDelete(dataServiceContext dataService.Context) {
 	req := dataServiceContext.Request()
-	ctx := req.Context()
+	//ctx := req.Context()
 
 	dataSetID := req.PathParam("dataSetId")
 	if dataSetID == "" {
@@ -39,48 +37,48 @@ func DataSetsDelete(dataServiceContext dataService.Context) {
 		return
 	}
 
-	dataSet, err := dataServiceContext.DataRepository().GetDataSetByID(ctx, dataSetID)
-	if err != nil {
-		dataServiceContext.RespondWithInternalServerFailure("Unable to get data set by id", err)
-		return
-	}
-	if dataSet == nil {
-		// FIXME: This is a temporary fix, it should return an error.
-		dataServiceContext.RespondWithStatusAndData(http.StatusOK, ErrorDataSetIDNotFound(dataSetID))
-		return
-	}
-
-	targetUserID := dataSet.UserID
-	if targetUserID == nil || *targetUserID == "" {
-		dataServiceContext.RespondWithInternalServerFailure("Unable to get user id from data set")
-		return
-	}
-
-	permissions, err := dataServiceContext.PermissionClient().GetUserPermissions(req, *targetUserID)
-	if err != nil {
-		if request.IsErrorUnauthorized(err) {
-			dataServiceContext.RespondWithError(service.ErrorUnauthorized())
-		} else {
-			dataServiceContext.RespondWithInternalServerFailure("Unable to get user permissions", err)
-		}
-		return
-	}
-	if !permissions {
-		dataServiceContext.RespondWithError(service.ErrorUnauthorized())
-		return
-	}
-
-	// Read delete options (remove dataset entry ?):
-	var jsonParams dataSetsDeleteParams
-	doPurge := false
-	if err := req.DecodeJsonPayload(&jsonParams); err == nil {
-		doPurge = jsonParams.Purge
-	}
-
-	if err = dataServiceContext.DataRepository().DeleteDataSet(ctx, dataSet, doPurge); err != nil {
-		dataServiceContext.RespondWithInternalServerFailure("Unable to delete data", err)
-		return
-	}
+	//dataSet, err := dataServiceContext.DataRepository().GetDataSetByID(ctx, dataSetID)
+	//if err != nil {
+	//	dataServiceContext.RespondWithInternalServerFailure("Unable to get data set by id", err)
+	//	return
+	//}
+	//if dataSet == nil {
+	//	// FIXME: This is a temporary fix, it should return an error.
+	//	dataServiceContext.RespondWithStatusAndData(http.StatusOK, ErrorDataSetIDNotFound(dataSetID))
+	//	return
+	//}
+	//
+	//targetUserID := dataSet.UserID
+	//if targetUserID == nil || *targetUserID == "" {
+	//	dataServiceContext.RespondWithInternalServerFailure("Unable to get user id from data set")
+	//	return
+	//}
+	//
+	//permissions, err := dataServiceContext.PermissionClient().GetUserPermissions(req, *targetUserID)
+	//if err != nil {
+	//	if request.IsErrorUnauthorized(err) {
+	//		dataServiceContext.RespondWithError(service.ErrorUnauthorized())
+	//	} else {
+	//		dataServiceContext.RespondWithInternalServerFailure("Unable to get user permissions", err)
+	//	}
+	//	return
+	//}
+	//if !permissions {
+	//	dataServiceContext.RespondWithError(service.ErrorUnauthorized())
+	//	return
+	//}
+	//
+	//// Read delete options (remove dataset entry ?):
+	//var jsonParams dataSetsDeleteParams
+	//doPurge := false
+	//if err := req.DecodeJsonPayload(&jsonParams); err == nil {
+	//	doPurge = jsonParams.Purge
+	//}
+	//
+	//if err = dataServiceContext.DataRepository().DeleteDataSet(ctx, dataSet, doPurge); err != nil {
+	//	dataServiceContext.RespondWithInternalServerFailure("Unable to delete data", err)
+	//	return
+	//}
 
 	dataServiceContext.RespondWithStatusAndData(http.StatusOK, struct{}{})
 }
