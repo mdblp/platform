@@ -39,7 +39,7 @@ func (f FoodBucket) GetId() string {
 func (f Food) GetTimestamp() time.Time {
 	return f.Timestamp
 }
-func (f Food) MapForFood(event *food.Food) error {
+func (f *Food) MapForFood(event *food.Food) error {
 	var err error
 	if event.Meal != nil {
 		f.Type = *event.Meal
@@ -49,7 +49,7 @@ func (f Food) MapForFood(event *food.Food) error {
 		f.Prescriptor = event.Prescriptor.Prescriptor
 	}
 
-	if event.Nutrition != nil {
+	if event.Nutrition != nil && event.Nutrition.Carbohydrate != nil {
 		f.Nutrition = Nutrition{
 			Carbohydrate: Carb{
 				Net:   *event.Nutrition.Carbohydrate.Net,
@@ -58,7 +58,7 @@ func (f Food) MapForFood(event *food.Food) error {
 		}
 	}
 
-	if event.PrescribedNutrition != nil {
+	if event.PrescribedNutrition != nil && event.PrescribedNutrition.Carbohydrate != nil {
 		f.PrescribedNutrition = &Nutrition{
 			Carbohydrate: Carb{
 				Net:   *event.PrescribedNutrition.Carbohydrate.Net,

@@ -51,7 +51,7 @@ func (w Wizard) GetTimestamp() time.Time {
 	return w.Timestamp
 }
 
-func (w Wizard) MapForWizard(event *calculator.Calculator) error {
+func (w *Wizard) MapForWizard(event *calculator.Calculator) error {
 	var err error
 	if event.GUID != nil {
 		w.Guid = *event.GUID
@@ -80,7 +80,7 @@ func (w Wizard) MapForWizard(event *calculator.Calculator) error {
 		w.Units = *event.Units
 	}
 
-	if event.InputTime != nil {
+	if event.InputTime != nil && event.InputTime.InputTime != nil {
 		w.InputTimestamp = *event.InputTime.InputTime
 	}
 

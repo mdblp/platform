@@ -20,9 +20,9 @@ type (
 		Sample            `bson:",inline"`
 		DeviceId          string   `bson:"deviceId,omitempty"`
 		Guid              string   `bson:"guid,omitempty"`
-		Duration          Duration `bson:"duration,omitempty"`
-		ReportedIntensity string   `bson:"reportedIntensity"`
-		InputTimestamp    string   `bson:"inputTimestamp"`
+		Duration          Duration `bson:"duration,omitempty,omitempty"`
+		ReportedIntensity string   `bson:"reportedIntensity,omitempty"`
+		InputTimestamp    string   `bson:"inputTimestamp,omitempty"`
 	}
 )
 
@@ -33,7 +33,7 @@ func (p PhysicalActivityBucket) GetId() string {
 func (p PhysicalActivity) GetTimestamp() time.Time {
 	return p.Timestamp
 }
-func (p PhysicalActivity) MapForPhysical(event *physical.Physical) error {
+func (p *PhysicalActivity) MapForPhysical(event *physical.Physical) error {
 	var err error
 	if event.GUID != nil {
 		p.Guid = *event.GUID
@@ -53,7 +53,7 @@ func (p PhysicalActivity) MapForPhysical(event *physical.Physical) error {
 		p.ReportedIntensity = *event.ReportedIntensity
 	}
 
-	if event.InputTime != nil {
+	if event.InputTime != nil && event.InputTime.InputTime != nil {
 		p.InputTimestamp = *event.InputTime.InputTime
 	}
 

@@ -596,7 +596,10 @@ func buildWizardUpdateOneModel(sample schema.ISample, userId *string, date strin
 	strUserId := *userId
 	var updates []mongo.WriteModel
 
-	// one operation because normally the event is sent once
+	// one operation because normally the event is sent once,
+	// indeed the meal with bolus is sent at the "end" and not modifiable
+	// the tricky part is that the wizard object could be used for sending meal
+	// then in that case this section will have to be updated
 	op := mongo.NewUpdateOneModel()
 	op.SetFilter(bson.D{{Key: "_id", Value: strUserId + "_" + date}})
 	op.SetUpdate(bson.D{ // update
