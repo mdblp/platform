@@ -21,8 +21,7 @@ type (
 		Uuid           string       `bson:"uuid,omitempty"`
 		DeviceId       string       `bson:"deviceId,omitempty"`
 		Guid           string       `bson:"guid,omitempty"`
-		Bolus          *BolusSample `bson:"bolus,omitempty"`
-		BolusId        string       `bson:"bolusId,omitempty"`
+		BolusId        string       `bson:"bolus,omitempty"`
 		BolusIds       []string     `bson:"bolusIds,omitempty"`
 		CarbInput      float64      `bson:"carbInput,omitempty"`
 		InputMeal      *InputMeal   `bson:"inputMeal,omitempty"`

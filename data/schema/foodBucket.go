@@ -18,6 +18,7 @@ type (
 
 	Food struct {
 		Sample              `bson:",inline"`
+		Uuid                string     `bson:"uuid,omitempty"`
 		Type                string     `bson:"meal,omitempty"`
 		Nutrition           Nutrition  `bson:"nutrition,omitempty"`
 		Prescriptor         *string    `bson:"prescriptor,omitempty"`
@@ -41,6 +42,9 @@ func (f Food) GetTimestamp() time.Time {
 }
 func (f *Food) MapForFood(event *food.Food) error {
 	var err error
+	if event.ID != nil {
+		f.Uuid = *event.ID
+	}
 	if event.Meal != nil {
 		f.Type = *event.Meal
 	}
