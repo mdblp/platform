@@ -1,7 +1,7 @@
 # Platform 
 The data platform API
 
-## 0.24.0-rc0 - 2024-01-29
+## 0.24.0 - 2024-01-29
 ### Changed
 - YLP-2833 push in buckets remaining datatypes (wizard, physical activities, food)
 
