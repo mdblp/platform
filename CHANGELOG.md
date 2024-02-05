@@ -1,7 +1,7 @@
 # Platform 
 The data platform API
 
-## 0.25.0-rc0 - 2024-01-31
+## 0.25.0-rc1 - 2024-01-31
 ### Changed
 - YLP-2783 removes upload id references 
 
