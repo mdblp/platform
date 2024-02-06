@@ -264,6 +264,7 @@ func getUpLoadIdEnabledEnv() bool {
 			logrusLogger.Warn("environment variable UPLOADID_ENABLED conversion error, set true by default")
 			return true
 		}
+		logrusLogger.Warnf("environment variable UPLOADID_ENABLED set to [%t]", boolValue)
 		return boolValue
 
 	}

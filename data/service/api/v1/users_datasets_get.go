@@ -38,7 +38,6 @@ import (
 // @Router /v1/users/:userId/datasets [get]
 func UsersDataSetsGet(dataServiceContext dataService.Context) {
 	req := dataServiceContext.Request()
-	//ctx := req.Context()
 
 	targetUserID := req.PathParam("userId")
 	if targetUserID == "" {
@@ -67,35 +66,39 @@ func UsersDataSetsGet(dataServiceContext dataService.Context) {
 		return
 	}
 
-	id := pointer.FromString(data.NewID())
-	// fake one
-	dataset := &upload.Upload{
-		Base: types.Base{
-			Active:          true,
-			ID:              id,
-			UserID:          pointer.FromString(targetUserID),
-			VersionInternal: 3,
-			Type:            "upload",
-			UploadID:        id,
-		},
-		Client: &upload.Client{
-			Name:    pointer.FromString("api.your-loops.com"),
-			Version: pointer.FromString("1.0.0"),
-		},
-		DeviceManufacturers: &[]string{"Diabeloop"},
-		DataSetType:         pointer.FromString("continuous"),
-		DeviceModel:         pointer.FromString("DBLG1"),
-		DeviceTags:          &[]string{"cgm", "insulin-pump"},
-		DataState:           pointer.FromString("open"),
-		State:               pointer.FromString("open"),
+	if dataServiceContext.IsUploadIdUsed() {
+		ctx := req.Context()
+		dataSets, err := dataServiceContext.DataRepository().GetDataSetsForUserByID(ctx, targetUserID, filter, pagination)
+		if err != nil {
+			dataServiceContext.RespondWithInternalServerFailure("Unable to get data sets for user", err)
+			return
+		}
+		dataServiceContext.RespondWithStatusAndData(http.StatusOK, dataSets)
+	} else {
+		// fake one
+		id := pointer.FromString(data.NewID())
+		dataset := &upload.Upload{
+			Base: types.Base{
+				Active:          true,
+				ID:              id,
+				UserID:          pointer.FromString(targetUserID),
+				VersionInternal: 3,
+				Type:            "upload",
+				UploadID:        id,
+			},
+			Client: &upload.Client{
+				Name:    pointer.FromString("api.your-loops.com"),
+				Version: pointer.FromString("1.0.0"),
+			},
+			DeviceManufacturers: &[]string{"Diabeloop"},
+			DataSetType:         pointer.FromString("continuous"),
+			DeviceModel:         pointer.FromString("DBLG1"),
+			DeviceTags:          &[]string{"cgm", "insulin-pump"},
+			DataState:           pointer.FromString("open"),
+			State:               pointer.FromString("open"),
+		}
+		var dataSets []*upload.Upload
+		dataSets = append(dataSets, dataset)
+		dataServiceContext.RespondWithStatusAndData(http.StatusOK, dataSets)
 	}
-	var dataSets []*upload.Upload
-	dataSets = append(dataSets, dataset)
-	//, err := dataServiceContext.DataRepository().GetDataSetsForUserByID(ctx, targetUserID, filter, pagination)
-	//if err != nil {
-	//	dataServiceContext.RespondWithInternalServerFailure("Unable to get data sets for user", err)
-	//	return
-	//}
-
-	dataServiceContext.RespondWithStatusAndData(http.StatusOK, dataSets)
 }
