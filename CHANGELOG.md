@@ -1,6 +1,10 @@
 # Platform 
 The data platform API
 
+## UNRELEASED
+### Changed
+- YLP-2939 I have a duplicate physical activities created when a update is sent
+
 ## 0.25.0 - 2024-01-31
 ### Changed
 - YLP-2783 removes upload id references 
