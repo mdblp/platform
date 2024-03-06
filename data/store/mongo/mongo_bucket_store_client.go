@@ -689,6 +689,7 @@ func buildPhysicalActivitiesUpdateOneModel(sample schema.ISample, userId *string
 			{Key: "$set", Value: bson.D{
 				{Key: "samples.$.duration", Value: elemfilter.Duration},
 				{Key: "samples.$.inputTimestamp", Value: elemfilter.InputTimestamp},
+				{Key: "samples.$.timestamp", Value: elemfilter.Timestamp},
 			},
 			},
 		})
