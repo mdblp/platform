@@ -1,7 +1,7 @@
 # Platform 
 The data platform API
 
-## 0.27.0-rc2 - 2024-07-11
+## 0.27.0 - 2024-07-11
 ### Engineering
 - YLP-3143 DBLG1 meal is created twice
 
