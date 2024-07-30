@@ -1,7 +1,7 @@
 # Platform 
 The data platform API
 
-## 0.27.1-rc0 - 2024-07-29
+## 0.27.1 - 2024-07-29
 ### Fixed
 - YLP-2956 Bolus with subType pen are no longer saved in database
 
