@@ -1,7 +1,7 @@
 # Platform 
 The data platform API
 
-## 0.27.2-rc1 - 2024-09-05
+## 0.27.2 - 2024-09-05
 ### Engineering
 - YLP-3222 align mapping with orca and tidev2
 
