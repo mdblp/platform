@@ -1,7 +1,7 @@
 # Platform 
 The data platform API
 
-## 0.27.3-rc1 - 2024-09-05
+## 0.27.3-rc2 - 2024-09-05
 ### Fixed
 - YLP-3296 Fix data duplication (meals and physical activities)
 
