@@ -25,7 +25,7 @@ type (
 		BolusId        string       `bson:"bolus,omitempty"`
 		BolusIds       []string     `bson:"bolusIds,omitempty"`
 		CarbInput      float64      `bson:"carbInput,omitempty"`
-		CarbUnits      string       `bson:"carbUnits,omitempty"`
+		CarbUnits      string       `bson:"carbUnit,omitempty"` // name align with orca
 		InputMeal      *InputMeal   `bson:"inputMeal"`
 		Recommended    *Recommended `bson:"recommended,omitempty"`
 		Units          string       `bson:"units,omitempty"`

@@ -1,6 +1,10 @@
 # Platform 
 The data platform API
 
+## 0.27.4-rc1 - 2024-10-29
+### Fixed
+- YLP-3296 error mapping for meal (carb unit)
+
 ## 0.27.3 - 2024-09-05
 ### Fixed
 - YLP-3296 Fix data duplication (meals and physical activities)
