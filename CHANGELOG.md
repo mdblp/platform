@@ -1,9 +1,12 @@
 # Platform 
 The data platform API
 
-## 0.27.4-rc1 - 2024-10-29
+## 0.28.0-rc1 - 2024-11-19
+### Changed
+-  YLP-3304 changed basal safety storage to current settings collection for G1 users
+ 
 ### Fixed
-- YLP-3296 error mapping for meal (carb unit)
+- YLP-3324 error mapping for meal (carb unit)
 
 ## 0.27.3 - 2024-09-05
 ### Fixed
