@@ -43,9 +43,16 @@ func (s SecurityBasals) GetTimestamp() time.Time {
 
 func (s *SecurityBasals) MapForBasalSecurity(event *basalsecurity.BasalSecurity) error {
 	var err error
-
-	for _, rate := range s.Rates {
-		s.Rates = append(s.Rates, SecurityBasalRates{Rate: rate.Rate, Start: rate.Start})
+	basalRateScheduleArray := event.BasalRateSchedule
+	if basalRateScheduleArray != nil {
+		for _, brs := range *basalRateScheduleArray {
+			item := SecurityBasalRates{Start: brs.Start}
+			if brs.Rate != nil {
+				value := float32(*brs.Rate)
+				item.Rate = &value
+			}
+			s.Rates = append(s.Rates, item)
+		}
 	}
 
 	// time infos mapping
