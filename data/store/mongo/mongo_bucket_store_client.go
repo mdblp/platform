@@ -3,6 +3,7 @@ package mongo
 import (
 	"context"
 	"errors"
+	"strconv"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -136,6 +137,12 @@ func (c *MongoBucketStoreClient) UpsertMany(ctx context.Context, userId *string,
 	case "loopMode":
 		// loop mode event is recorded without hot/cold collection
 		_, err := c.Collection("loopMode").BulkWrite(ctx, operations, &bulkOption)
+		if err != nil {
+			return err
+		}
+	case "PhysicalActivity":
+		// event is recorded without hot/cold collection
+		_, err := c.Collection("coldYearlyPhysicalActivity").BulkWrite(ctx, operations, &bulkOption)
 		if err != nil {
 			return err
 		}
@@ -720,16 +727,17 @@ func buildPhysicalActivitiesUpdateOneModel(sample schema.ISample, userId *string
 
 	strUserId := *userId
 	var updates []mongo.WriteModel
+	id := strUserId + "_" + strconv.Itoa(day.Year())
 
 	// Insert the bucket if not exist and then insert the sample in it
 	firstOp := mongo.NewUpdateOneModel()
 	var array []schema.ISample
-	firstOp.SetFilter(bson.D{{Key: "_id", Value: strUserId + "_" + date}})
+	firstOp.SetFilter(bson.D{{Key: "_id", Value: id}})
 	firstOp.SetUpdate(bson.D{ // update
 		{Key: "$setOnInsert", Value: bson.D{
-			{Key: "_id", Value: strUserId + "_" + date},
+			{Key: "_id", Value: id},
 			{Key: "creationTimestamp", Value: creationTimestamp},
-			{Key: "day", Value: day},
+			{Key: "year", Value: day.Year()},
 			{Key: "userId", Value: strUserId},
 			{Key: "samples", Value: append(array, sample)},
 		},
@@ -743,7 +751,7 @@ func buildPhysicalActivitiesUpdateOneModel(sample schema.ISample, userId *string
 	if elemfilter.Guid != "" && elemfilter.DeviceId != "" {
 		secondOp := mongo.NewUpdateOneModel()
 		secondOp.SetFilter(bson.D{
-			{Key: "_id", Value: strUserId + "_" + date},
+			{Key: "_id", Value: id},
 			{Key: "samples", Value: bson.D{
 				{Key: "$elemMatch", Value: bson.D{
 					{Key: "guid", Value: elemfilter.Guid},
@@ -767,7 +775,7 @@ func buildPhysicalActivitiesUpdateOneModel(sample schema.ISample, userId *string
 	// Otherwise we know that we did not update, so we guarantee an insertion
 	// in the array
 	thirdOp := mongo.NewUpdateOneModel()
-	thirdOp.SetFilter(bson.D{{Key: "_id", Value: strUserId + "_" + date}})
+	thirdOp.SetFilter(bson.D{{Key: "_id", Value: id}})
 	thirdOp.SetUpdate(bson.D{ // update
 		{Key: "$addToSet", Value: bson.D{
 			{Key: "samples", Value: sample}}},

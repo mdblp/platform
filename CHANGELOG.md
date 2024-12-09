@@ -1,6 +1,10 @@
 # Platform 
 The data platform API
 
+## 0.29.0-rc1 - 2024-11-19
+### Changed
+-  YLP-3304 bucket physical activity per years for G1 users
+
 ## 0.28.0 - 2024-11-19
 ### Changed
 -  YLP-3304 changed basal safety storage to current settings collection for G1 users
