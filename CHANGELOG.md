@@ -1,7 +1,7 @@
 # Platform 
 The data platform API
 
-## 0.28.1-rc0 - 2024-01-20
+## 0.28.1 - 2024-01-20
 ### Fixed
 - add missing log fields for our dashboard and reduce info log
 
