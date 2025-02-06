@@ -1,7 +1,7 @@
 # Platform 
 The data platform API
 
-## 0.28.2-rc0 - 2025-02-02
+## 0.28.2 - 2025-02-02
 ### Fixed
 - YLP-3425 fix start value
 
