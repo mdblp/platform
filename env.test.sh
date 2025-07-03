@@ -5,7 +5,7 @@ export TIDEPOOL_ENV="test"
 
 export TIDEPOOL_LOGGER_LEVEL="error"
 
-export TIDEPOOL_STORE_ADDRESSES="mongo4platform${RUN_ID}:27017"
+export TIDEPOOL_STORE_ADDRESSES="localhost:27018"
 #export TIDEPOOL_STORE_ADDRESSES="localhost:27018"
 export TIDEPOOL_STORE_TLS="false"
 export TIDEPOOL_STORE_DATABASE="tidepool_test"
@@ -24,3 +24,4 @@ export KEPT_IN_LEGACY_DATA_TYPES="basal"
 export ARCHIVED_DATA_TYPES="cbg"
 export BUCKETED_DATA_TYPES="cbg,basal"
 export MINIMAL_YEAR_SUPPORTED_FOR_DATA="2015"
+export AUTH0_AUDIENCE="http://your-loops.com"
