@@ -1,6 +1,10 @@
 # Platform 
 The data platform API
 
+## 0.28.4 - 2025-07-03
+### Security
+- Update go version
+
 ## 0.28.3 - 2025-03-24
 ### Fixed
 - Update go version

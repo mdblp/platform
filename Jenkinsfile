@@ -44,7 +44,7 @@ pipeline {
                 sh """
                     docker network create platform_build${RUN_ID}
 
-                    docker container run -d --ulimit nofile=1048576 --name mongo4platform${RUN_ID} --network=platform_build${RUN_ID} mongo:4.2
+                    docker container run -d --ulimit nofile=1048576 --name mongo4platform${RUN_ID} --network=platform_build${RUN_ID} mongo:8.0
 
                 """
                 script {
