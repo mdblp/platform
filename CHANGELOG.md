@@ -1,6 +1,10 @@
 # Platform 
 The data platform API
 
+## 0.29.0 - 2025-11-24
+### Changed
+- YLP-572 enhance logs for audits
+
 ## 0.28.4 - 2025-07-03
 ### Security
 - Update go version

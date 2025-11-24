@@ -16,6 +16,7 @@ type AccessLog struct{}
 const (
 	_LogErrors           = "errors"
 	_LogMethod           = "method"
+	_LogUserId           = "userId"
 	_LogProto            = "proto"
 	_LogRefererer        = "referrer"
 	_LogRemoteAddress    = "clientIp"
@@ -32,6 +33,7 @@ const (
 	_RequestEnvRemoteUser   = "REMOTE_USER"
 	_RequestEnvStartTime    = "START_TIME"
 	_RequestEnvStatusCode   = "STATUS_CODE"
+	_RequestEnvUserId       = "USER_ID"
 )
 
 func NewAccessLog() (*AccessLog, error) {
@@ -86,6 +88,9 @@ func (a *AccessLog) MiddlewareFunc(handler rest.HandlerFunc) rest.HandlerFunc {
 			// DEPRECATED: Needs to be replaced with context version
 			if logger := service.GetRequestLogger(req); logger != nil {
 				loggerFields := map[string]interface{}{}
+				if userid, ok := req.Env[_RequestEnvUserId].(string); ok {
+					loggerFields[_LogUserId] = userid
+				}
 				if method := req.Method; method != "" {
 					loggerFields[_LogMethod] = method
 				}

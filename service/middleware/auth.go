@@ -90,6 +90,7 @@ func (a *Auth) MiddlewareFunc(handlerFunc rest.HandlerFunc) rest.HandlerFunc {
 				if details.HasToken() {
 					req.Request = req.WithContext(log.NewContextWithLogger(req.Context(), lgr.WithField("tokenHash", crypto.HexEncodedMD5Hash(details.Token()))))
 				}
+				req.Env[_RequestEnvUserId] = details.UserID()
 			}
 
 			handlerFunc(res, req)
