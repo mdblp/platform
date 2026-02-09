@@ -721,6 +721,9 @@ func buildPhysicalActivitiesUpdateOneModel(sample schema.ISample, userId *string
 	strUserId := *userId
 	var updates []mongo.WriteModel
 
+	pa := sample.(schema.PhysicalActivity)
+	pa.CreateTimestamp = pa.UpdateTimestamp
+
 	// Insert the bucket if not exist and then insert the sample in it
 	firstOp := mongo.NewUpdateOneModel()
 	var array []schema.ISample
@@ -739,15 +742,14 @@ func buildPhysicalActivitiesUpdateOneModel(sample schema.ISample, userId *string
 	updates = append(updates, firstOp)
 
 	// Update
-	elemfilter := sample.(schema.PhysicalActivity)
-	if elemfilter.Guid != "" && elemfilter.DeviceId != "" {
+	if pa.Guid != "" && pa.DeviceId != "" {
 		secondOp := mongo.NewUpdateOneModel()
 		secondOp.SetFilter(bson.D{
 			{Key: "_id", Value: strUserId + "_" + date},
 			{Key: "samples", Value: bson.D{
 				{Key: "$elemMatch", Value: bson.D{
-					{Key: "guid", Value: elemfilter.Guid},
-					{Key: "deviceId", Value: elemfilter.DeviceId},
+					{Key: "guid", Value: pa.Guid},
+					{Key: "deviceId", Value: pa.DeviceId},
 				},
 				},
 			},
@@ -755,10 +757,10 @@ func buildPhysicalActivitiesUpdateOneModel(sample schema.ISample, userId *string
 		})
 		secondOp.SetUpdate(bson.D{ // update
 			{Key: "$set", Value: bson.D{
-				{Key: "samples.$.reportedIntensity", Value: elemfilter.ReportedIntensity},
-				{Key: "samples.$.duration", Value: elemfilter.Duration},
-				{Key: "samples.$.inputTimestamp", Value: elemfilter.InputTimestamp},
-				{Key: "samples.$.timestamp", Value: elemfilter.Timestamp},
+				{Key: "samples.$.reportedIntensity", Value: pa.ReportedIntensity},
+				{Key: "samples.$.duration", Value: pa.Duration},
+				{Key: "samples.$.inputTimestamp", Value: pa.UpdateTimestamp},
+				{Key: "samples.$.timestamp", Value: pa.Timestamp},
 			},
 			},
 		})
