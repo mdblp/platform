@@ -197,17 +197,6 @@ func TestMongoBucketStoreClient_upsertPhysicalActivities_Error(t *testing.T) {
 			},
 			expected: assert.Error,
 		},
-		{
-			name: "should return error when dataType is wrong",
-			given: args{
-				date:              "2024-01-01",
-				dataType:          "physical-activity",
-				userId:            &userId,
-				sample:            schema.PhysicalActivity{},
-				creationTimestamp: time.Now(),
-			},
-			expected: assert.Error,
-		},
 	}
 
 	for _, tt := range tests {

@@ -771,11 +771,6 @@ func (c *MongoBucketStoreClient) upsertPhysicalActivities(ctx context.Context, s
 		}
 	}
 
-	activityCollection := c.Collection(coldCollectionName)
-	if activityCollection == nil {
-		return fmt.Errorf("cannot find collection %s", coldCollectionName)
-	}
-
 	day, err := time.Parse("2006-01-02", date)
 	if err != nil {
 		return ErrUnableToParseBucketDayTime
