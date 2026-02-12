@@ -23,7 +23,8 @@ type (
 		DeviceId          string   `bson:"deviceId,omitempty"`
 		Duration          Duration `bson:"duration,omitempty,omitempty"`
 		ReportedIntensity string   `bson:"reportedIntensity,omitempty"`
-		InputTimestamp    string   `bson:"inputTimestamp,omitempty"`
+		UpdateTimestamp   string   `bson:"updateTimestamp,omitempty"`
+		CreateTimestamp   string   `bson:"createTimestamp,omitempty"`
 	}
 )
 
@@ -56,7 +57,7 @@ func (p *PhysicalActivity) MapForPhysical(event *physical.Physical) error {
 	}
 
 	if event.InputTime != nil && event.InputTime.InputTime != nil {
-		p.InputTimestamp = *event.InputTime.InputTime
+		p.UpdateTimestamp = *event.InputTime.InputTime
 	}
 
 	// time infos mapping

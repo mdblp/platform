@@ -3,6 +3,8 @@ package mongo
 import (
 	"context"
 	"errors"
+	"fmt"
+	"strings"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -15,7 +17,6 @@ import (
 	"github.com/tidepool-org/platform/data/schema"
 )
 
-var ErrNoSamples = errors.New("impossible to bulk upsert an array of zero samples")
 var ErrIncorrectTimestamp = errors.New("impossible to bulk upsert samples having a incorrect timestamp")
 var ErrEmptyOrNilUserId = errors.New("impossible to upsert an array of sample for an empty or nil user id")
 var ErrUnableToParseBucketDayTime = errors.New("unable to parse cbg day time")
@@ -114,8 +115,10 @@ func (c *MongoBucketStoreClient) UpsertMany(ctx context.Context, userId *string,
 			ops, _ := buildFoodUpdateOneModel(sample, userId, ts, creationTimestamp)
 			operations = append(operations, ops...)
 		case "PhysicalActivity":
-			ops, _ := buildPhysicalActivitiesUpdateOneModel(sample, userId, ts, creationTimestamp)
-			operations = append(operations, ops...)
+			err := c.upsertPhysicalActivities(ctx, sample, userId, ts, creationTimestamp, dataType)
+			if err != nil {
+				return fmt.Errorf("cannot upsert physical activity %v : %w", sample, err)
+			}
 		case "SecurityBasal":
 			ops, _ := buildSecurityBasalUpdateOneModel(sample, userId, ts, creationTimestamp)
 			operations = append(operations, ops...)
@@ -127,6 +130,8 @@ func (c *MongoBucketStoreClient) UpsertMany(ctx context.Context, userId *string,
 	bulkOption.SetOrdered(false)
 
 	switch dataType {
+	/* Do nothing in case of physical activity since operation on the DB are already done */
+	case "PhysicalActivity":
 	case "SecurityBasal":
 		// SecurityBasal event is recorded without hot/cold collection
 		_, err := c.Collection("currentSettings").BulkWrite(ctx, operations, &bulkOption)
@@ -712,69 +717,146 @@ func buildFoodUpdateOneModel(sample schema.ISample, userId *string, date string,
 	return updates, nil
 }
 
-func buildPhysicalActivitiesUpdateOneModel(sample schema.ISample, userId *string, date string, creationTimestamp time.Time) ([]mongo.WriteModel, error) {
+type PhysicalActivityBucket struct {
+	Id                string                    `bson:"_id,omitempty"`
+	CreationTimestamp time.Time                 `bson:"creationTimestamp,omitempty"`
+	UserId            string                    `bson:"userId,omitempty"`
+	Day               time.Time                 `bson:"day,omitempty"` // ie: 2021-09-28
+	Samples           []schema.PhysicalActivity `bson:"samples"`
+}
+
+func findPhysicalActivityBucket(ctx context.Context, collection *mongo.Collection, _id string) (*PhysicalActivityBucket, error) {
+	filter := bson.D{
+		{Key: "_id", Value: _id},
+	}
+	var result *PhysicalActivityBucket
+	err := collection.FindOne(ctx, filter).Decode(&result)
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return nil, nil
+		}
+		return result, fmt.Errorf("error while fetching physicalActivity bucket in hot collection"+
+			" with _id=[%s]: %s", _id, err.Error())
+	}
+	return result, err
+}
+
+func (c *MongoBucketStoreClient) runInsertOperation(ctx context.Context, document bson.D, dataType string) error {
+	for _, collectionPrefix := range dailyPrefixCollections {
+		collectionName := collectionPrefix + dataType
+		_, err := c.Collection(collectionName).InsertOne(ctx, document)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (c *MongoBucketStoreClient) runUpdateOperation(ctx context.Context, filter bson.D, document bson.D, dataType string) error {
+	for _, collectionPrefix := range dailyPrefixCollections {
+		collectionName := collectionPrefix + dataType
+		_, err := c.Collection(collectionName).UpdateOne(ctx, filter, document)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (c *MongoBucketStoreClient) upsertPhysicalActivities(ctx context.Context, sample schema.ISample, userId *string, date string, creationTimestamp time.Time, dataType string) error {
+	coldCollectionName := ""
+	for _, collectionPrefix := range dailyPrefixCollections {
+		if strings.Contains(collectionPrefix, "cold") {
+			coldCollectionName = collectionPrefix + dataType
+		}
+	}
+
 	day, err := time.Parse("2006-01-02", date)
 	if err != nil {
-		return nil, ErrUnableToParseBucketDayTime
+		return ErrUnableToParseBucketDayTime
 	}
-
+	if userId == nil {
+		return fmt.Errorf("userId cannot be nil")
+	}
+	if sample == nil {
+		return fmt.Errorf("sample cannot be nil")
+	}
+	pa, ok := sample.(schema.PhysicalActivity)
+	if !ok {
+		return fmt.Errorf("invalid sample type, expecting PhysicalActivity")
+	}
 	strUserId := *userId
-	var updates []mongo.WriteModel
+	id := strUserId + "_" + date
 
-	// Insert the bucket if not exist and then insert the sample in it
-	firstOp := mongo.NewUpdateOneModel()
-	var array []schema.ISample
-	firstOp.SetFilter(bson.D{{Key: "_id", Value: strUserId + "_" + date}})
-	firstOp.SetUpdate(bson.D{ // update
-		{Key: "$setOnInsert", Value: bson.D{
-			{Key: "_id", Value: strUserId + "_" + date},
-			{Key: "creationTimestamp", Value: creationTimestamp},
-			{Key: "day", Value: day},
-			{Key: "userId", Value: strUserId},
-			{Key: "samples", Value: append(array, sample)},
-		},
-		},
-	})
-	firstOp.SetUpsert(true)
-	updates = append(updates, firstOp)
-
-	// Update
-	elemfilter := sample.(schema.PhysicalActivity)
-	if elemfilter.Guid != "" && elemfilter.DeviceId != "" {
-		secondOp := mongo.NewUpdateOneModel()
-		secondOp.SetFilter(bson.D{
-			{Key: "_id", Value: strUserId + "_" + date},
-			{Key: "samples", Value: bson.D{
-				{Key: "$elemMatch", Value: bson.D{
-					{Key: "guid", Value: elemfilter.Guid},
-					{Key: "deviceId", Value: elemfilter.DeviceId},
-				},
-				},
-			},
-			},
-		})
-		secondOp.SetUpdate(bson.D{ // update
-			{Key: "$set", Value: bson.D{
-				{Key: "samples.$.reportedIntensity", Value: elemfilter.ReportedIntensity},
-				{Key: "samples.$.duration", Value: elemfilter.Duration},
-				{Key: "samples.$.inputTimestamp", Value: elemfilter.InputTimestamp},
-				{Key: "samples.$.timestamp", Value: elemfilter.Timestamp},
-			},
-			},
-		})
-		updates = append(updates, secondOp)
+	paBucket, err := findPhysicalActivityBucket(ctx, c.Collection(coldCollectionName), id)
+	if err != nil {
+		return err
 	}
+
+	/* Create bucket if it does not exist */
+	if paBucket == nil {
+		return c.createBucketAndInsertActivity(ctx, pa, id, creationTimestamp, day, userId, dataType)
+	}
+
+	/*Bucket existing, we add the sample to it or update it if already existing*/
+	array := paBucket.Samples
+	sampleFound := false
+	for _, sample := range array {
+		if sample.DeviceId == pa.DeviceId && sample.Guid == pa.Guid {
+			sampleFound = true
+			break
+		}
+	}
+
+	if sampleFound {
+		fmt.Printf("Updating activity")
+		return c.updateActivity(ctx, id, pa, dataType)
+	}
+
 	// Otherwise we know that we did not update, so we guarantee an insertion
 	// in the array
-	thirdOp := mongo.NewUpdateOneModel()
-	thirdOp.SetFilter(bson.D{{Key: "_id", Value: strUserId + "_" + date}})
-	thirdOp.SetUpdate(bson.D{ // update
-		{Key: "$addToSet", Value: bson.D{
-			{Key: "samples", Value: sample}}},
-	})
-	updates = append(updates, thirdOp)
+	return c.insertActivity(ctx, id, pa, dataType)
+}
 
-	return updates, nil
+func (c *MongoBucketStoreClient) insertActivity(ctx context.Context, id string, pa schema.PhysicalActivity, dataType string) error {
+	filter := bson.D{{Key: "_id", Value: id}}
+	pa.CreateTimestamp = pa.UpdateTimestamp
+	update := bson.D{
+		{Key: "$addToSet", Value: bson.D{
+			{Key: "samples", Value: pa},
+		}}}
+	return c.runUpdateOperation(ctx, filter, update, dataType)
+}
+
+func (c *MongoBucketStoreClient) updateActivity(ctx context.Context, id string, pa schema.PhysicalActivity, dataType string) error {
+	filter := bson.D{
+		{Key: "_id", Value: id},
+		{Key: "samples.deviceId", Value: pa.DeviceId},
+		{Key: "samples.guid", Value: pa.Guid},
+	}
+	update := bson.D{
+		{Key: "$set", Value: bson.D{
+			{Key: "samples.$.reportedIntensity", Value: pa.ReportedIntensity},
+			{Key: "samples.$.duration", Value: pa.Duration},
+			{Key: "samples.$.updateTimestamp", Value: pa.UpdateTimestamp},
+			{Key: "samples.$.timestamp", Value: pa.Timestamp},
+		}},
+	}
+
+	fmt.Printf("update operation with %v and %v", filter, update)
+	return c.runUpdateOperation(ctx, filter, update, dataType)
+}
+
+func (c *MongoBucketStoreClient) createBucketAndInsertActivity(ctx context.Context, pa schema.PhysicalActivity, id string, creationTimestamp time.Time, day time.Time, userId *string, dataType string) error {
+	pa.CreateTimestamp = pa.UpdateTimestamp
+	document := bson.D{
+		{Key: "_id", Value: id},
+		{Key: "creationTimestamp", Value: creationTimestamp},
+		{Key: "day", Value: day},
+		{Key: "userId", Value: userId},
+		{Key: "samples", Value: []schema.PhysicalActivity{pa}},
+	}
+	return c.runInsertOperation(ctx, document, dataType)
 }
 
 // UpsertMetaData update or insert in MetaData

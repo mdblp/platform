@@ -1,6 +1,10 @@
 # Platform 
 The data platform API
 
+## 0.30.0-RC11 - 2026-02-09
+### Changed
+- YLP-3818 Save creation timestamp for physical activities in legacy service
+
 ## 0.29.0 - 2025-11-24
 ### Changed
 - YLP-572 enhance logs for audits
