@@ -1,6 +1,13 @@
 # Platform 
 The data platform API
 
+## 0.31.0 - 2026-03-27
+### Changed
+- Update Go version to 1.26
+- Disable CGO in build process
+- Replace Alpine base image with distroless for production
+- Remove gcc and musl-dev dependencies
+
 ## 0.30.0 - 2026-02-09
 ### Changed
 - YLP-3818 Save creation timestamp for physical activities in legacy service

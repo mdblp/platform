@@ -1,8 +1,6 @@
 module github.com/tidepool-org/platform
 
-go 1.24.0
-
-toolchain go1.24.6
+go 1.26
 
 require (
 	github.com/auth0/go-jwt-middleware/v2 v2.3.0
