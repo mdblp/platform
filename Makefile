@@ -149,10 +149,9 @@ ci-build-watch: CompileDaemon
 
 service-build:
 ifeq ($(TARGETPLATFORM),linux/arm64)
-	export GOOS=darwin && export GOARCH=arm64 && export CGO_ENABLED=0
-else
-	export CGO_ENABLED=0
+	export GOOS=darwin && export GOARCH=arm64
 endif
+export CGO_ENABLED=0
 ifdef SERVICE
 	@$(MAKE) build BUILD=$${SERVICE}
 endif
