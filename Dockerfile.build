@@ -6,7 +6,7 @@ ENV XDG_CACHE_HOME="/go/src/github.com/mdblp/.cache"
 WORKDIR /go/src/github.com/mdblp/
 RUN apk --no-cache update && \
     apk --no-cache upgrade && \
-    apk add --no-cache gcc musl-dev git rsync python3 python3-dev pipx make tzdata && \
+    apk add --no-cache git rsync python3 python3-dev pipx make tzdata && \
     adduser -D mdblp && \
     chown -R mdblp /go
 USER mdblp
