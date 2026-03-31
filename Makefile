@@ -151,8 +151,8 @@ service-build:
 ifeq ($(TARGETPLATFORM),linux/arm64)
 	export GOOS=darwin && export GOARCH=arm64
 endif
-export CGO_ENABLED=0
 ifdef SERVICE
+	export CGO_ENABLED=0
 	@$(MAKE) build BUILD=$${SERVICE}
 endif
 
