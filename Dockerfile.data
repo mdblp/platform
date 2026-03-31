@@ -1,5 +1,5 @@
 # Development
-FROM --platform=$BUILDPLATFORM golang:1.24-alpine AS development
+FROM --platform=$BUILDPLATFORM golang:1.26-alpine AS development
 ARG GOPRIVATE
 ARG GITHUB_TOKEN
 ENV GO111MODULE on
@@ -22,14 +22,10 @@ RUN ["make", "service-build"]
 CMD ["make", "service-start"]
 
 # Production
-FROM --platform=$BUILDPLATFORM alpine:latest AS production
-RUN apk --no-cache update && \
-    apk --no-cache upgrade && \
-    apk add --no-cache ca-certificates tzdata && \
-    adduser -D tidepool
-WORKDIR /home/tidepool
-USER tidepool
+FROM gcr.io/distroless/static:nonroot AS production
+WORKDIR /home/mdblp
+USER nonroot
 ENV ZONEINFO=/usr/local/go/lib/time/zoneinfo.zip
-COPY --from=development --chown=tidepool /go/src/github.com/tidepool-org/platform/_bin/services/data/ .
-COPY --from=development --chown=tidepool /usr/local/go/lib/time/zoneinfo.zip /usr/local/go/lib/time/
+COPY --from=development --chown=nonroot /go/src/github.com/tidepool-org/platform/_bin/services/data/ .
+COPY --from=development --chown=nonroot /usr/local/go/lib/time/zoneinfo.zip /usr/local/go/lib/time/
 CMD ["./data"]

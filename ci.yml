@@ -1,6 +1,5 @@
 module: platform
 type: golang
-goVersion: "1.24"
 runTests: false
 docker: true
 dockerPushToProduction : true

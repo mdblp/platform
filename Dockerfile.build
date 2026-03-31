@@ -1,9 +1,11 @@
-FROM golang:1.24-alpine AS builder
+FROM golang:1.26-alpine AS builder
 ARG GOPRIVATE
 ARG GITHUB_TOKEN
 ENV GO111MODULE=on
 ENV XDG_CACHE_HOME="/go/src/github.com/mdblp/.cache"
 WORKDIR /go/src/github.com/mdblp/
+# gcc and musl-dev are needed to build some of the dependencies,
+# this docker image is not the one used to build and push the data service
 RUN apk --no-cache update && \
     apk --no-cache upgrade && \
     apk add --no-cache gcc musl-dev git rsync python3 python3-dev pipx make tzdata && \
