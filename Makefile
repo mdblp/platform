@@ -178,12 +178,12 @@ service-restart-all:
 	@cd $(ROOT_DIRECTORY) && for SERVICE in migrations tools; do $(MAKE) service-restart SERVICE="$${SERVICE}"; done
 
 test: ginkgo
-    export CGO_ENABLED=0
+    export CGO_ENABLED=1
 	@echo "ginkgo -requireSuite -slowSpecThreshold=10 -r $(TEST)"
 	@cd $(ROOT_DIRECTORY) && . ./env.test.sh && ginkgo -requireSuite -slowSpecThreshold=10 -r $(TEST)
 
 ci-test: ginkgo
-    export CGO_ENABLED=0
+    export CGO_ENABLED=1
 	@echo "ginkgo -requireSuite -slowSpecThreshold=10 --compilers=2 -r -randomizeSuites -randomizeAllSpecs -failOnPending -race -timeout=8m --reportFile=junit-report/report.xml $(TEST)"
 	@cd $(ROOT_DIRECTORY) && . ./env.test.sh && ginkgo -requireSuite -slowSpecThreshold=10 --compilers=2 -r -randomizeSuites -randomizeAllSpecs -failOnPending -race -timeout=8m --reportFile=junit-report/report.xml $(TEST)
 
