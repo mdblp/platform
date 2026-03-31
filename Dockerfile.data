@@ -23,7 +23,7 @@ CMD ["make", "service-start"]
 
 # Production
 FROM gcr.io/distroless/static:nonroot AS production
-WORKDIR /home/nonroot
+WORKDIR /home/mdblp
 USER nonroot
 ENV ZONEINFO=/usr/local/go/lib/time/zoneinfo.zip
 COPY --from=development --chown=nonroot /go/src/github.com/tidepool-org/platform/_bin/services/data/ .
