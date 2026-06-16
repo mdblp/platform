@@ -9,4 +9,5 @@ jobs:
     uses: mdblp/.github/.github/workflows/sbom.yml@main
     with:
       app-name: data
+      main-path: ./services/data
     secrets: inherit
