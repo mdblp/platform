@@ -1,6 +1,10 @@
 # Platform 
 The data platform API
 
+## 0.31.1 - 2026-06-16
+### fix
+- YLP-3980 Fix CVE and upload SBOM
+
 ## 0.31.0 - 2026-03-27
 ### Changed
 - Update Go version to 1.26
