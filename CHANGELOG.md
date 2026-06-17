@@ -1,6 +1,10 @@
 # Platform 
 The data platform API
 
+## 0.31.2 - 2026-06-17
+### fix
+- YLP-39880 Bump go-router to fix token validation
+
 ## 0.31.1 - 2026-06-16
 ### fix
 - YLP-3980 Fix CVE and upload SBOM
