@@ -1,7 +1,7 @@
 # Platform 
 The data platform API
 
-## 0.31.3-rc0 - 2026-06-19
+## 0.31.3 - 2026-06-19
 ### fix
 - YLP-3980 Fix CVE and upload SBOM
 
