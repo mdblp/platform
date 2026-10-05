@@ -1,6 +1,10 @@
 # Platform 
 The data platform API
 
+## 0.31.4-rc0 - 2026-10-05
+### fix
+- YLP-0000 Fix CVEs: Go 1.26.8, golang.org/x/crypto 0.56.0, golang.org/x/text 0.41.0, golang.org/x/mod 0.40.0, go.mongodb.org/mongo-driver 1.17.7
+
 ## 0.31.3 - 2026-06-19
 ### fix
 - YLP-3980 Fix CVE and upload SBOM
