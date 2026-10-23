@@ -6,9 +6,9 @@ import (
 	"sync"
 	"time"
 
-	mongoDriver "go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
-	"go.mongodb.org/mongo-driver/mongo/readpref"
+	mongoDriver "go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
+	"go.mongodb.org/mongo-driver/v2/mongo/readpref"
 
 	"github.com/tidepool-org/platform/errors"
 )
@@ -106,7 +106,7 @@ func initConnexion(store *Store) error {
 		ApplyURI(cs).
 		SetConnectTimeout(store.config.Timeout).
 		SetServerSelectionTimeout(store.config.Timeout)
-	store.client, err = mongoDriver.Connect(context.Background(), clientOptions)
+	store.client, err = mongoDriver.Connect(clientOptions)
 	if err != nil {
 		fmt.Println("connection options are invalid")
 		return errors.Wrap(err, "connection options are invalid")

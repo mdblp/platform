@@ -1,6 +1,10 @@
 # Platform 
 The data platform API
 
+## 0.31.6 - 2026-10-23
+### Changed
+- YLP-4163 Migrate mongo client v1 to v2 (mongo-driver v2.9.2, go-db v3)
+
 ## 0.31.5 - 2026-10-15
 ### fix
 - YLP-0000 Update Go to 1.27.2 and golang.org/x/net to 0.60.0
