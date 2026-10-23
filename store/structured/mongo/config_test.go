@@ -46,15 +46,15 @@ var _ = Describe("Config", func() {
 	Context("Load", func() {
 		var config *mongo.Config
 		var variables = []string{
-			"TIDEPOOL_STORE_SCHEME",
-			"TIDEPOOL_STORE_TLS",
-			"TIDEPOOL_STORE_DATABASE",
-			"TIDEPOOL_STORE_ADDRESSES",
-			"TIDEPOOL_STORE_COLLECTION_PREFIX",
-			"TIDEPOOL_STORE_USERNAME",
-			"TIDEPOOL_STORE_PASSWORD",
-			"TIDEPOOL_STORE_TIMEOUT",
-			"TIDEPOOL_STORE_OPT_PARAMS",
+			"BLP_STORE_SCHEME",
+			"BLP_STORE_TLS",
+			"BLP_STORE_DATABASE",
+			"BLP_STORE_ADDRESSES",
+			"BLP_STORE_COLLECTION_PREFIX",
+			"BLP_STORE_USERNAME",
+			"BLP_STORE_PASSWORD",
+			"BLP_STORE_TIMEOUT",
+			"BLP_STORE_OPT_PARAMS",
 		}
 		var existingEnvVars map[string]string
 
@@ -64,15 +64,15 @@ var _ = Describe("Config", func() {
 				existingEnvVars[v] = os.Getenv(v)
 			}
 
-			Expect(os.Setenv("TIDEPOOL_STORE_SCHEME", scheme)).To(Succeed())
-			Expect(os.Setenv("TIDEPOOL_STORE_TLS", fmt.Sprintf("%v", tls))).To(Succeed())
-			Expect(os.Setenv("TIDEPOOL_STORE_DATABASE", database)).To(Succeed())
-			Expect(os.Setenv("TIDEPOOL_STORE_ADDRESSES", strings.Join(addresses, ","))).To(Succeed())
-			Expect(os.Setenv("TIDEPOOL_STORE_COLLECTION_PREFIX", collectionPrefix)).To(Succeed())
-			Expect(os.Setenv("TIDEPOOL_STORE_USERNAME", username)).To(Succeed())
-			Expect(os.Setenv("TIDEPOOL_STORE_PASSWORD", password)).To(Succeed())
-			Expect(os.Setenv("TIDEPOOL_STORE_TIMEOUT", fmt.Sprintf("%vs", int(timeout.Seconds())))).To(Succeed())
-			Expect(os.Setenv("TIDEPOOL_STORE_OPT_PARAMS", optParams)).To(Succeed())
+			Expect(os.Setenv("BLP_STORE_SCHEME", scheme)).To(Succeed())
+			Expect(os.Setenv("BLP_STORE_TLS", fmt.Sprintf("%v", tls))).To(Succeed())
+			Expect(os.Setenv("BLP_STORE_DATABASE", database)).To(Succeed())
+			Expect(os.Setenv("BLP_STORE_ADDRESSES", strings.Join(addresses, ","))).To(Succeed())
+			Expect(os.Setenv("BLP_STORE_COLLECTION_PREFIX", collectionPrefix)).To(Succeed())
+			Expect(os.Setenv("BLP_STORE_USERNAME", username)).To(Succeed())
+			Expect(os.Setenv("BLP_STORE_PASSWORD", password)).To(Succeed())
+			Expect(os.Setenv("BLP_STORE_TIMEOUT", fmt.Sprintf("%vs", int(timeout.Seconds())))).To(Succeed())
+			Expect(os.Setenv("BLP_STORE_OPT_PARAMS", optParams)).To(Succeed())
 
 			config = &mongo.Config{}
 			Expect(config.Load()).To(Succeed())
@@ -84,15 +84,15 @@ var _ = Describe("Config", func() {
 				_ = os.Setenv(v, existingEnvVars[v])
 			}
 
-			_ = os.Unsetenv("TIDEPOOL_STORE_SCHEME")
-			_ = os.Unsetenv("TIDEPOOL_STORE_ADDRESSES")
-			_ = os.Unsetenv("TIDEPOOL_STORE_TLS")
-			_ = os.Unsetenv("TIDEPOOL_STORE_DATABASE")
-			_ = os.Unsetenv("TIDEPOOL_STORE_COLLECTION_PREFIX")
-			_ = os.Unsetenv("TIDEPOOL_STORE_USERNAME")
-			_ = os.Unsetenv("TIDEPOOL_STORE_PASSWORD")
-			_ = os.Unsetenv("TIDEPOOL_STORE_TIMEOUT")
-			_ = os.Unsetenv("TIDEPOOL_STORE_OPT_PARAMS")
+			_ = os.Unsetenv("BLP_STORE_SCHEME")
+			_ = os.Unsetenv("BLP_STORE_ADDRESSES")
+			_ = os.Unsetenv("BLP_STORE_TLS")
+			_ = os.Unsetenv("BLP_STORE_DATABASE")
+			_ = os.Unsetenv("BLP_STORE_COLLECTION_PREFIX")
+			_ = os.Unsetenv("BLP_STORE_USERNAME")
+			_ = os.Unsetenv("BLP_STORE_PASSWORD")
+			_ = os.Unsetenv("BLP_STORE_TIMEOUT")
+			_ = os.Unsetenv("BLP_STORE_OPT_PARAMS")
 		})
 
 		It("loads scheme from environment", func() {
@@ -108,7 +108,7 @@ var _ = Describe("Config", func() {
 		})
 
 		It("sets tls to 'true' if not found in env", func() {
-			Expect(os.Unsetenv("TIDEPOOL_STORE_TLS")).To(Succeed())
+			Expect(os.Unsetenv("BLP_STORE_TLS")).To(Succeed())
 			config = &mongo.Config{}
 			Expect(config.Load()).To(Succeed())
 			Expect(config.TLS).To(Equal(true))
@@ -137,7 +137,7 @@ var _ = Describe("Config", func() {
 		})
 
 		It("uses default timeout of 60 seconds if timeout not found in env", func() {
-			Expect(os.Unsetenv("TIDEPOOL_STORE_TIMEOUT")).To(Succeed())
+			Expect(os.Unsetenv("BLP_STORE_TIMEOUT")).To(Succeed())
 			config = &mongo.Config{}
 			Expect(config.Load()).To(Succeed())
 			Expect(config.Timeout).To(Equal(time.Second * time.Duration(60)))

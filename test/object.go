@@ -1,13 +1,13 @@
 package test
 
 import (
+	"bytes"
 	"encoding/json"
 	"reflect"
 	"time"
 
 	"github.com/onsi/gomega"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/bsontype"
+	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 type ObjectFormat int
@@ -24,11 +24,12 @@ func ExpectSerializedObjectBSON(object interface{}, expected interface{}) {
 	gomega.Expect(err).ToNot(gomega.HaveOccurred())
 	gomega.Expect(bites).ToNot(gomega.BeNil())
 	output := map[string]interface{}{}
-	reg := bson.NewRegistryBuilder().
-		RegisterTypeMapEntry(bsontype.DateTime, reflect.TypeOf(time.Time{})).
-		RegisterTypeMapEntry(bsontype.Array, reflect.TypeOf([]interface{}{})).
-		Build()
-	gomega.Expect(bson.UnmarshalWithRegistry(reg, bites, output)).To(gomega.Succeed())
+	reg := bson.NewRegistry()
+	reg.RegisterTypeMapEntry(bson.TypeDateTime, reflect.TypeOf(time.Time{}))
+	reg.RegisterTypeMapEntry(bson.TypeArray, reflect.TypeOf([]interface{}{}))
+	decoder := bson.NewDecoder(bson.NewDocumentReader(bytes.NewReader(bites)))
+	decoder.SetRegistry(reg)
+	gomega.Expect(decoder.Decode(&output)).To(gomega.Succeed())
 	gomega.Expect(output).To(gomega.Equal(expected), "Unexpected serialized BSON")
 }
 

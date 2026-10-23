@@ -7,9 +7,9 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 
 	storeStructuredMongo "github.com/tidepool-org/platform/store/structured/mongo"
 	storeStructuredMongoTest "github.com/tidepool-org/platform/store/structured/mongo/test"
@@ -126,13 +126,11 @@ var _ = Describe("Mongo", func() {
 							{
 								Keys: bson.D{{Key: "one", Value: 1}},
 								Options: options.Index().
-									SetUnique(true).
-									SetBackground(true),
+									SetUnique(true),
 							},
 							{
-								Keys: bson.D{{Key: "two", Value: 1}},
-								Options: options.Index().
-									SetBackground(true),
+								Keys:    bson.D{{Key: "two", Value: 1}},
+								Options: options.Index(),
 							},
 							{
 								Keys: bson.D{{Key: "three", Value: 1}},

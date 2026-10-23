@@ -9,10 +9,10 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	goComMgo "github.com/mdblp/go-db/mongo"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	goComMgo "github.com/mdblp/go-db/v3/mongo"
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 
 	"github.com/tidepool-org/platform/data/schema"
 )
@@ -126,21 +126,20 @@ func (c *MongoBucketStoreClient) UpsertMany(ctx context.Context, userId *string,
 	}
 
 	// Specify an option to turn the bulk insertion with no order of operation
-	bulkOption := options.BulkWriteOptions{}
-	bulkOption.SetOrdered(false)
+	bulkOption := options.BulkWrite().SetOrdered(false)
 
 	switch dataType {
 	/* Do nothing in case of physical activity since operation on the DB are already done */
 	case "PhysicalActivity":
 	case "SecurityBasal":
 		// SecurityBasal event is recorded without hot/cold collection
-		_, err := c.Collection("currentSettings").BulkWrite(ctx, operations, &bulkOption)
+		_, err := c.Collection("currentSettings").BulkWrite(ctx, operations, bulkOption)
 		if err != nil {
 			return err
 		}
 	case "loopMode":
 		// loop mode event is recorded without hot/cold collection
-		_, err := c.Collection("loopMode").BulkWrite(ctx, operations, &bulkOption)
+		_, err := c.Collection("loopMode").BulkWrite(ctx, operations, bulkOption)
 		if err != nil {
 			return err
 		}
@@ -161,7 +160,7 @@ func (c *MongoBucketStoreClient) UpsertMany(ctx context.Context, userId *string,
 				collectionName = collectionPrefix + "Food"
 			}
 
-			_, err := c.Collection(collectionName).BulkWrite(ctx, operations, &bulkOption)
+			_, err := c.Collection(collectionName).BulkWrite(ctx, operations, bulkOption)
 			if err != nil {
 				return err
 			}
@@ -872,7 +871,6 @@ func (c *MongoBucketStoreClient) UpsertMetaData(ctx context.Context, userId *str
 	}
 
 	dbUserMetadata, performUpdate = c.RefreshUserMetadata(dbUserMetadata, incomingUserMetadata)
-	valTrue := true
 
 	if performUpdate {
 		c.log.Debug("perform update on metadata collection in data_read db")
@@ -886,7 +884,7 @@ func (c *MongoBucketStoreClient) UpsertMetaData(ctx context.Context, userId *str
 					{Key: "creationTimestamp", Value: dbUserMetadata.CreationTimestamp},
 					{Key: "userId", Value: dbUserMetadata.UserId}}},
 			},
-			&options.UpdateOptions{Upsert: &valTrue},
+			options.UpdateOne().SetUpsert(true),
 		)
 		return err
 	}

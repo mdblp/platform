@@ -7,10 +7,10 @@ import (
 	"sync"
 	"time"
 
-	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo"
 
 	"github.com/kelseyhightower/envconfig"
-	"go.mongodb.org/mongo-driver/x/mongo/driver/connstring"
+	"go.mongodb.org/mongo-driver/v2/x/mongo/driver/connstring"
 
 	platformConfig "github.com/tidepool-org/platform/config"
 	"github.com/tidepool-org/platform/errors"
@@ -27,15 +27,15 @@ func NewConfig() *Config {
 
 // Config describe parameters need to make a connection to a Mongo database
 type Config struct {
-	Scheme                 string                        `json:"scheme" envconfig:"TIDEPOOL_STORE_SCHEME"`
-	Addresses              []string                      `json:"addresses" envconfig:"TIDEPOOL_STORE_ADDRESSES" required:"true"`
-	TLS                    bool                          `json:"tls" envconfig:"TIDEPOOL_STORE_TLS" default:"true"`
-	Database               string                        `json:"database" envconfig:"TIDEPOOL_STORE_DATABASE" required:"true"`
-	CollectionPrefix       string                        `json:"collectionPrefix" envconfig:"TIDEPOOL_STORE_COLLECTION_PREFIX"`
-	Username               *string                       `json:"-" envconfig:"TIDEPOOL_STORE_USERNAME"`
-	Password               *string                       `json:"-" envconfig:"TIDEPOOL_STORE_PASSWORD"`
-	Timeout                time.Duration                 `json:"timeout" envconfig:"TIDEPOOL_STORE_TIMEOUT" default:"60s"`
-	OptParams              *string                       `json:"optParams" envconfig:"TIDEPOOL_STORE_OPT_PARAMS"`
+	Scheme                 string                        `json:"scheme" envconfig:"BLP_STORE_SCHEME"`
+	Addresses              []string                      `json:"addresses" envconfig:"BLP_STORE_ADDRESSES" required:"true"`
+	TLS                    bool                          `json:"tls" envconfig:"BLP_STORE_TLS" default:"true"`
+	Database               string                        `json:"database" envconfig:"BLP_STORE_DATABASE" required:"true"`
+	CollectionPrefix       string                        `json:"collectionPrefix" envconfig:"BLP_STORE_COLLECTION_PREFIX"`
+	Username               *string                       `json:"-" envconfig:"BLP_STORE_USERNAME"`
+	Password               *string                       `json:"-" envconfig:"BLP_STORE_PASSWORD"`
+	Timeout                time.Duration                 `json:"timeout" envconfig:"BLP_STORE_TIMEOUT" default:"60s"`
+	OptParams              *string                       `json:"optParams" envconfig:"BLP_STORE_OPT_PARAMS"`
 	WaitConnectionInterval time.Duration                 `json:"waitConnectionInterval"`
 	MaxConnectionAttempts  int64                         `json:"maxConnectionAttempts"`
 	Indexes                map[string][]mongo.IndexModel `json:"indexes"`

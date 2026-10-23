@@ -7,11 +7,11 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/sirupsen/logrus"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 
-	goComMgo "github.com/mdblp/go-db/mongo"
+	goComMgo "github.com/mdblp/go-db/v3/mongo"
 
 	"github.com/tidepool-org/platform/data/types/activity/physical"
 	"github.com/tidepool-org/platform/data/types/basal/automated"
@@ -849,7 +849,8 @@ func (d *DataRepository) ArchiveDeviceDataUsingHashesFromDataSet(ctx context.Con
 		"uploadId": dataSet.UploadID,
 		"type":     bson.M{"$ne": "upload"},
 	}
-	hashes, err := d.Distinct(ctx, "_deduplicator.hash", selector)
+	var hashes []interface{}
+	err := d.Distinct(ctx, "_deduplicator.hash", selector).Decode(&hashes)
 	if err == nil && len(hashes) > 0 {
 		selector = bson.M{
 			"_userId":            dataSet.UserID,

@@ -1,17 +1,18 @@
 package mongo_test
 
 import (
+	"bytes"
 	"context"
 	"math/rand"
 	"time"
 
-	mongodb "go.mongodb.org/mongo-driver/mongo"
+	mongodb "go.mongodb.org/mongo-driver/v2/mongo"
 
 	dataStore "github.com/tidepool-org/platform/data/store"
 	"github.com/tidepool-org/platform/data/store/mongo"
 
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -20,7 +21,7 @@ import (
 	"github.com/sirupsen/logrus"
 	logrusTest "github.com/sirupsen/logrus/hooks/test"
 
-	goComMgo "github.com/mdblp/go-db/mongo"
+	goComMgo "github.com/mdblp/go-db/v3/mongo"
 
 	"github.com/tidepool-org/platform/data"
 	bucketStoreTestHelper "github.com/tidepool-org/platform/data/store/test"
@@ -150,8 +151,29 @@ func ValidateDataSetData(collection *mongodb.Collection, query bson.M, filter bs
 	cursor, err := collection.Find(context.Background(), query, opts)
 	Expect(err).ToNot(HaveOccurred())
 	Expect(cursor).ToNot(BeNil())
-	Expect(cursor.All(context.Background(), &actualDataSetData)).To(Succeed())
+	actualDataSetData = decodeAllAsM(cursor)
 	Expect(actualDataSetData).To(ConsistOf(DataSetDataAsInterface(expectedDataSetData)...))
+}
+
+// decodeAllAsM decodes every document of the cursor into a bson.M, nested documents included.
+// The v1 driver did this when decoding into a bson.M; the v2 driver decodes nested documents into bson.D unless asked otherwise.
+func decodeAllAsM(cursor *mongodb.Cursor) []bson.M {
+	defer cursor.Close(context.Background())
+	results := []bson.M{}
+	for cursor.Next(context.Background()) {
+		results = append(results, unmarshalAsM(cursor.Current))
+	}
+	Expect(cursor.Err()).ToNot(HaveOccurred())
+	return results
+}
+
+// unmarshalAsM unmarshals a BSON document into a bson.M, nested documents included (see decodeAllAsM).
+func unmarshalAsM(bites []byte) bson.M {
+	decoder := bson.NewDecoder(bson.NewDocumentReader(bytes.NewReader(bites)))
+	decoder.DefaultDocumentM()
+	var document bson.M
+	Expect(decoder.Decode(&document)).To(Succeed())
+	return document
 }
 
 func DataSetDataAsInterface(dataSetData data.Data) []interface{} {
@@ -166,9 +188,7 @@ func DataSetDatumAsInterface(dataSetDatum data.Datum) interface{} {
 	bites, err := bson.Marshal(dataSetDatum)
 	Expect(err).ToNot(HaveOccurred())
 	Expect(bites).ToNot(BeNil())
-	var dataSetDatumAsInterface bson.M
-	Expect(bson.Unmarshal(bites, &dataSetDatumAsInterface)).To(Succeed())
-	return dataSetDatumAsInterface
+	return unmarshalAsM(bites)
 }
 
 var _ = Describe("Mongo", func() {

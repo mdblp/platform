@@ -4,10 +4,9 @@ import (
 	"context"
 	"strings"
 
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 
 	"github.com/tidepool-org/platform/errors"
 	"github.com/tidepool-org/platform/page"
@@ -39,7 +38,7 @@ func (r *Repository) CreateAllIndexes(ctx context.Context, indexes []mongo.Index
 	return nil
 }
 
-func (r *Repository) FindOneByID(ctx context.Context, id primitive.ObjectID, model interface{}) error {
+func (r *Repository) FindOneByID(ctx context.Context, id bson.ObjectID, model interface{}) error {
 	return r.FindOne(ctx, bson.M{"_id": id}).Decode(model)
 }
 
@@ -119,7 +118,7 @@ func IsDup(err error) bool {
 	return false
 }
 
-func FindWithPagination(pagination *page.Pagination) *options.FindOptions {
+func FindWithPagination(pagination *page.Pagination) *options.FindOptionsBuilder {
 	return options.Find().
 		SetSkip(int64(pagination.Page * pagination.Size)).
 		SetLimit(int64(pagination.Size))

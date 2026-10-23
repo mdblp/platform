@@ -6,7 +6,7 @@ import (
 	"math/rand"
 
 	"github.com/onsi/gomega"
-	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/v2/bson"
 
 	"github.com/tidepool-org/platform/errors"
 	"github.com/tidepool-org/platform/test"
