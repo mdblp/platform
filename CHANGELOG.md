@@ -1,6 +1,10 @@
 # Platform 
 The data platform API
 
+## 0.31.6 - 2026-10-23
+### fix
+- YLP-0000 Update Go to 1.27.3
+
 ## 0.31.5 - 2026-10-15
 ### fix
 - YLP-0000 Update Go to 1.27.2 and golang.org/x/net to 0.60.0
