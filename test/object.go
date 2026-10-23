@@ -27,6 +27,8 @@ func ExpectSerializedObjectBSON(object interface{}, expected interface{}) {
 	reg := bson.NewRegistry()
 	reg.RegisterTypeMapEntry(bson.TypeDateTime, reflect.TypeOf(time.Time{}))
 	reg.RegisterTypeMapEntry(bson.TypeArray, reflect.TypeOf([]interface{}{}))
+	// v2 decodes nested documents into bson.D by default; v1 gave a map[string]interface{} when decoding into a map
+	reg.RegisterTypeMapEntry(bson.TypeEmbeddedDocument, reflect.TypeOf(map[string]interface{}{}))
 	decoder := bson.NewDecoder(bson.NewDocumentReader(bytes.NewReader(bites)))
 	decoder.SetRegistry(reg)
 	gomega.Expect(decoder.Decode(&output)).To(gomega.Succeed())
