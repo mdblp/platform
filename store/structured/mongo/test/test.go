@@ -8,9 +8,9 @@ import (
 
 	"github.com/onsi/ginkgo"
 	"github.com/onsi/gomega"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 
 	"github.com/tidepool-org/platform/test"
 )
@@ -20,13 +20,13 @@ var address string
 
 var _ = ginkgo.BeforeSuite(func() {
 	database = generateUniqueName("database")
-	address = os.Getenv("TIDEPOOL_STORE_ADDRESSES")
+	address = os.Getenv("BLP_STORE_ADDRESSES")
 })
 
 var _ = ginkgo.AfterSuite(func() {
 	cfg := NewConfig()
 	clientOptions := options.Client().ApplyURI(cfg.AsConnectionString())
-	client, err := mongo.Connect(context.Background(), clientOptions)
+	client, err := mongo.Connect(clientOptions)
 	gomega.Expect(err).ToNot(gomega.HaveOccurred())
 	err = client.Database(database).Drop(context.Background())
 	gomega.Expect(err).ToNot(gomega.HaveOccurred())

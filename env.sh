@@ -1,8 +1,8 @@
 export TIDEPOOL_ENV="local"
 export TIDEPOOL_LOGGER_LEVEL="debug"
-export TIDEPOOL_STORE_ADDRESSES="localhost"
-export TIDEPOOL_STORE_DATABASE="tidepool"
-export TIDEPOOL_STORE_TLS="false"
+export BLP_STORE_ADDRESSES="localhost"
+export BLP_STORE_DATABASE="tidepool"
+export BLP_STORE_TLS="false"
 export TIDEPOOL_SERVER_TLS="false"
 
 export TIDEPOOL_CONFIRMATION_STORE_DATABASE="confirm"

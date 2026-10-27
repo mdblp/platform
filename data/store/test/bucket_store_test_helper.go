@@ -1,7 +1,7 @@
 package test
 
 import (
-	goComMgo "github.com/mdblp/go-db/mongo"
+	goComMgo "github.com/mdblp/go-db/v3/mongo"
 )
 
 // NewConfig creates a test Mongo configuration

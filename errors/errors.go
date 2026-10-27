@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/v2/bson"
 
 	"github.com/tidepool-org/platform/structure"
 )

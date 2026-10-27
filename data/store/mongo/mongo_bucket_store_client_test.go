@@ -6,11 +6,11 @@ import (
 	"testing"
 	"time"
 
-	goComMgo "github.com/mdblp/go-db/mongo"
+	goComMgo "github.com/mdblp/go-db/v3/mongo"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
 
 	"github.com/tidepool-org/platform/data/schema"
 )
