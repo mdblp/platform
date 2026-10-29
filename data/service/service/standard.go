@@ -126,9 +126,7 @@ func (s *Standard) initializeDataStore() error {
 	mongoDbReadConfig.Database = "data_read"
 
 	migrateConfig := dataStoreMongo.BucketMigrationConfig{
-		DataTypesArchived:     getArchivedDataTypesEnv(),
-		DataTypesBucketed:     getBucketsDataTypesEnv(),
-		DataTypesKeptInLegacy: getKeptInLegacyDataTypesEnv(),
+		DataTypesArchived: getArchivedDataTypesEnv(),
 	}
 
 	str, err := dataStoreMongo.NewStores(cfg, mongoDbReadConfig, logrusLogger, migrateConfig, getMinimalYearSupportedForData())
@@ -207,19 +205,6 @@ func getArchivedDataTypesEnv() []string {
 	return []string{}
 }
 
-func getBucketsDataTypesEnv() []string {
-	s, err := getenvStr("BUCKETED_DATA_TYPES")
-	if err != nil {
-		logrusLogger.Warn("environment variable BUCKETED_DATA_TYPES not exported, set empty by default")
-		return []string{}
-	}
-	if s != "" {
-		dataTypes := strings.Split(s, ",")
-		return dataTypes
-	}
-	return []string{}
-}
-
 func getMinimalYearSupportedForData() int {
 	s, err := getenvStr("MINIMAL_YEAR_SUPPORTED_FOR_DATA")
 	if err != nil {
@@ -236,20 +221,6 @@ func getMinimalYearSupportedForData() int {
 	}
 	logrusLogger.Warnf("environment variable MINIMAL_YEAR_SUPPORTED_FOR_DATA is empty, set to %d by default", DEFAULT_MINIMAL_YEAR)
 	return DEFAULT_MINIMAL_YEAR
-}
-
-func getKeptInLegacyDataTypesEnv() []string {
-	s, err := getenvStr("KEPT_IN_LEGACY_DATA_TYPES")
-	if err != nil {
-		logrusLogger.Warn("environment variable KEPT_IN_LEGACY_DATA_TYPES not exported, set empty by default")
-		return []string{}
-	}
-	if s != "" {
-		dataTypes := strings.Split(s, ",")
-		return dataTypes
-	}
-
-	return []string{}
 }
 
 func getUpLoadIdEnabledEnv() bool {
