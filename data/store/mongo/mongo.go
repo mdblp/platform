@@ -64,18 +64,27 @@ var datumWriteToDeviceDataArchiveStoreMetrics = promauto.NewHistogram(prometheus
 	Namespace: "dblp",
 })
 
+// bucketedDataTypes are the datum types stored in the read store buckets only: they are not written to deviceData
+// (a datum of one of these types that has no bucket mapping is written to deviceData instead of being dropped)
+var bucketedDataTypes = map[string]struct{}{
+	"cbg":              {},
+	"basal":            {},
+	"bolus":            {},
+	"deviceEvent":      {},
+	"wizard":           {},
+	"food":             {},
+	"physicalActivity": {},
+	"basalSecurity":    {},
+}
+
 type Stores struct {
 	*storeStructuredMongo.Store
-	BucketStore           *MongoBucketStoreClient
-	DataTypesArchived     []string
-	DataTypesBucketed     []string
-	DataTypesKeptInLegacy []string
+	BucketStore       *MongoBucketStoreClient
+	DataTypesArchived []string
 }
 
 type BucketMigrationConfig struct {
-	DataTypesArchived     []string
-	DataTypesBucketed     []string
-	DataTypesKeptInLegacy []string
+	DataTypesArchived []string
 }
 
 var (
@@ -150,30 +159,24 @@ func NewStores(cfg *storeStructuredMongo.Config, config *goComMgo.Config, lg *lo
 	bucketStore.Start()
 
 	return &Stores{
-		Store:                 baseStore,
-		BucketStore:           bucketStore,
-		DataTypesArchived:     migrateConfig.DataTypesArchived,
-		DataTypesBucketed:     migrateConfig.DataTypesBucketed,
-		DataTypesKeptInLegacy: migrateConfig.DataTypesKeptInLegacy,
+		Store:             baseStore,
+		BucketStore:       bucketStore,
+		DataTypesArchived: migrateConfig.DataTypesArchived,
 	}, nil
 }
 
 func (s *Stores) NewDataRepository() store.DataRepository {
 	return &DataRepository{
-		Repository:            s.Store.GetRepository("deviceData"),
-		BucketStore:           s.BucketStore,
-		DataTypesArchived:     s.DataTypesArchived,
-		DataTypesBucketed:     s.DataTypesBucketed,
-		DataTypesKeptInLegacy: s.DataTypesKeptInLegacy,
+		Repository:        s.Store.GetRepository("deviceData"),
+		BucketStore:       s.BucketStore,
+		DataTypesArchived: s.DataTypesArchived,
 	}
 }
 
 type DataRepository struct {
 	*storeStructuredMongo.Repository
-	BucketStore           *MongoBucketStoreClient
-	DataTypesArchived     []string
-	DataTypesBucketed     []string
-	DataTypesKeptInLegacy []string
+	BucketStore       *MongoBucketStoreClient
+	DataTypesArchived []string
 }
 
 func (d *DataRepository) GetDataSetsForUserByID(ctx context.Context, userID string, filter *store.Filter, pagination *page.Pagination) ([]*upload.Upload, error) {
@@ -438,11 +441,10 @@ func (d *DataRepository) CreateDataSetData(ctx context.Context, dataSet *upload.
 		datum.SetDataSetID(dataSet.UploadID)
 		datum.SetCreatedTime(&strTimestamp)
 		writeToArchive := d.isDatumToArchive(datum)
-		writeToBucket := d.isDatumToBucket(datum)
-		writeToLegacy := d.isDatumToLegacy(datum)
+		writeToBucket := isDatumToBucket(datum)
 		guid := datum.GetGUID()
 		deviceId := datum.GetDeviceID()
-		/*If data type is in write to bucket ENV VAR, we write it to bucket*/
+		/*If data type is bucketed, we write it to bucket*/
 		if writeToBucket {
 			// Prepare  to be pushed into data read db
 			loggerFields := log.Fields{"datum": datum}
@@ -554,7 +556,9 @@ func (d *DataRepository) CreateDataSetData(ctx context.Context, dataSet *upload.
 				log.LoggerFromContext(ctx).WithFields(log.Fields{"sample": s}).Debug("add SecurityBasal in bucket")
 				allSamples["SecurityBasal"] = append(allSamples["SecurityBasal"], *s)
 			default:
-				d.BucketStore.log.Infof("object ignored %+v", event)
+				// No bucket mapping for this subtype: keep the datum in deviceData so it is not lost
+				writeToBucket = false
+				d.BucketStore.log.Warnf("no bucket mapping for datum type %q (%T), written to deviceData instead", datum.GetType(), event)
 			}
 		}
 
@@ -572,9 +576,8 @@ func (d *DataRepository) CreateDataSetData(ctx context.Context, dataSet *upload.
 			archiveData = append(archiveData, writeOp)
 		}
 
-		/*If data type is not in write to bucket ENV VAR, we write it to legacy deviceData*/
-		/*We also write it if write to legacy is set alongside write to bucket ENV VAR*/
-		if !writeToBucket || (writeToBucket && writeToLegacy) {
+		/*Data that is not stored in a bucket is written to legacy deviceData*/
+		if !writeToBucket {
 			insertData = append(insertData, writeOp)
 		}
 	}
@@ -630,24 +633,9 @@ func (d *DataRepository) isDatumToArchive(datum data.Datum) bool {
 	return false
 }
 
-func (d *DataRepository) isDatumToBucket(datum data.Datum) bool {
-	datumType := datum.GetType()
-	for _, bucketedType := range d.DataTypesBucketed {
-		if bucketedType == datumType {
-			return true
-		}
-	}
-	return false
-}
-
-func (d *DataRepository) isDatumToLegacy(datum data.Datum) bool {
-	datumType := datum.GetType()
-	for _, legacyType := range d.DataTypesKeptInLegacy {
-		if legacyType == datumType {
-			return true
-		}
-	}
-	return false
+func isDatumToBucket(datum data.Datum) bool {
+	_, isBucketed := bucketedDataTypes[datum.GetType()]
+	return isBucketed
 }
 
 func (d *DataRepository) ActivateDataSetData(ctx context.Context, dataSet *upload.Upload, selectors *data.Selectors) error {
