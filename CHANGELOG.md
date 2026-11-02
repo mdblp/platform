@@ -1,9 +1,9 @@
 # Platform 
 The data platform API
 
-## 0.31.8 - 2026-10-29
+## 0.31.8-rc1 - 2026-10-29
 ### Changed
-- YLP-0000 Remove BUCKETED_DATA_TYPES and KEPT_IN_LEGACY_DATA_TYPES env vars: cbg, basal, bolus, deviceEvent, wizard, food, physicalActivity and basalSecurity are always written to buckets, a datum with no bucket mapping is written to deviceData instead of being dropped
+- YLP-3755 Remove BUCKETED_DATA_TYPES and KEPT_IN_LEGACY_DATA_TYPES env vars
 
 ## 0.31.7 - 2026-10-27
 ### Changed
