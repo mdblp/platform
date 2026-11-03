@@ -858,38 +858,28 @@ func (c *MongoBucketStoreClient) createBucketAndInsertActivity(ctx context.Conte
 	return c.runInsertOperation(ctx, document, dataType)
 }
 
-// UpsertMetaData update or insert in MetaData
+// UpsertMetaData widens the user data range with the incoming one.
+// $min/$max apply in a single atomic update, so concurrent uploads for the same user cannot overwrite each other.
 func (c *MongoBucketStoreClient) UpsertMetaData(ctx context.Context, userId *string, incomingUserMetadata *schema.Metadata) error {
-
-	var dbUserMetadata *schema.Metadata
-	var performUpdate bool
-
-	opts := options.FindOne()
-	if err := c.Collection("metadata").FindOne(ctx, bson.M{"userId": userId}, opts).Decode(&dbUserMetadata); err != nil && err != mongo.ErrNoDocuments {
-		c.log.WithError(err)
-		return err
+	setOnInsert := bson.D{
+		{Key: "creationTimestamp", Value: incomingUserMetadata.CreationTimestamp},
+		{Key: "userId", Value: incomingUserMetadata.UserId},
 	}
-
-	dbUserMetadata, performUpdate = c.RefreshUserMetadata(dbUserMetadata, incomingUserMetadata)
-
-	if performUpdate {
-		c.log.Debug("perform update on metadata collection in data_read db")
-		_, err := c.Collection("metadata").UpdateOne(ctx,
-			bson.M{"userId": userId},
-			bson.D{
-				{Key: "$set", Value: bson.D{
-					{Key: "oldestDataTimestamp", Value: dbUserMetadata.OldestDataTimestamp},
-					{Key: "newestDataTimestamp", Value: dbUserMetadata.NewestDataTimestamp}}},
-				{Key: "$setOnInsert", Value: bson.D{
-					{Key: "creationTimestamp", Value: dbUserMetadata.CreationTimestamp},
-					{Key: "userId", Value: dbUserMetadata.UserId}}},
-			},
-			options.UpdateOne().SetUpsert(true),
-		)
-		return err
+	update := bson.D{
+		{Key: "$max", Value: bson.D{{Key: "newestDataTimestamp", Value: incomingUserMetadata.NewestDataTimestamp}}},
 	}
+	//Linked to YLP-1981, in some situation the DBLG1 is sending a data with a timestamp in the near 1970's ...
+	//We do not want to update our metadata with this value. The CBG will be recorded with the 1970's date to keep
+	//a trace of it, but it won't be displayed since the data is erroneous.
+	if incomingUserMetadata.OldestDataTimestamp.Year() > c.minimalYearSupportedForData {
+		update = append(update, bson.E{Key: "$min", Value: bson.D{{Key: "oldestDataTimestamp", Value: incomingUserMetadata.OldestDataTimestamp}}})
+	} else {
+		setOnInsert = append(setOnInsert, bson.E{Key: "oldestDataTimestamp", Value: incomingUserMetadata.OldestDataTimestamp})
+	}
+	update = append(update, bson.E{Key: "$setOnInsert", Value: setOnInsert})
 
-	return nil
+	_, err := c.Collection("metadata").UpdateOne(ctx, bson.M{"userId": userId}, update, options.UpdateOne().SetUpsert(true))
+	return err
 }
 
 func (c *MongoBucketStoreClient) BuildUserMetadata(incomingUserMetadata *schema.Metadata, creationTimestamp time.Time, strUserId string, dataTimestamp time.Time) *schema.Metadata {
@@ -908,26 +898,4 @@ func (c *MongoBucketStoreClient) BuildUserMetadata(incomingUserMetadata *schema.
 		}
 	}
 	return incomingUserMetadata
-}
-
-func (c *MongoBucketStoreClient) RefreshUserMetadata(dbUserMetadata *schema.Metadata, incomingUserMetadata *schema.Metadata) (*schema.Metadata, bool) {
-	if dbUserMetadata != nil {
-		var performUpdate = false
-		//Linked to YLP-1981, in some situation the DBLG1 is sending a data with a timestamp in the near 1970's ...
-		//We do not want to update our metadata with this value. The CBG will be recorded with the 1970's date to keep
-		//a trace of it, but it won't be displayed since the data is erroneous.
-		if dbUserMetadata.OldestDataTimestamp.After(incomingUserMetadata.OldestDataTimestamp) && incomingUserMetadata.OldestDataTimestamp.Year() > c.minimalYearSupportedForData {
-			c.log.WithField("oldestDataTimestamp", incomingUserMetadata.OldestDataTimestamp).Debug("set perform update to true and update OldestDataTimestamp db value")
-			performUpdate = true
-			dbUserMetadata.OldestDataTimestamp = incomingUserMetadata.OldestDataTimestamp
-		}
-		if dbUserMetadata.NewestDataTimestamp.Before(incomingUserMetadata.NewestDataTimestamp) {
-			c.log.WithField("newestDataTimestamp", incomingUserMetadata.NewestDataTimestamp).Debug("set perform update to true and update NewestDataTimestamp db value")
-			performUpdate = true
-			dbUserMetadata.NewestDataTimestamp = incomingUserMetadata.NewestDataTimestamp
-		}
-		return dbUserMetadata, performUpdate
-	} else {
-		return incomingUserMetadata, true
-	}
 }
