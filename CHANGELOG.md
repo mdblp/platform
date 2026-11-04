@@ -1,6 +1,10 @@
 # Platform 
 The data platform API
 
+## 0.31.9 - 2026-11-04
+### Fixed
+- Make user metadata range update atomic
+
 ## 0.31.8 - 2026-10-29
 ### Changed
 - YLP-3755 Remove BUCKETED_DATA_TYPES and KEPT_IN_LEGACY_DATA_TYPES env vars
