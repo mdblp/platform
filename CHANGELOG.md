@@ -1,7 +1,7 @@
 # Platform 
 The data platform API
 
-## 0.31.9 - 2026-11-09
+## 0.31.9 - 2026-11-04
 ### Fixed
 - Make user metadata range update atomic
 
